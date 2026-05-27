@@ -1,5 +1,4 @@
-
-|# PROJECT FROST
+# PROJECT FROST
 
 A psychological 2D infection horror game set in an isolated frozen facility.
 
