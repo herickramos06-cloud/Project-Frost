@@ -1,3 +1,4 @@
+
 |# PROJECT FROST
 
 A psychological 2D infection horror game set in an isolated frozen facility.
@@ -17,3 +18,4 @@ Godot 4
 - Minimal combat
 - Smart infected behavior
 - Atmospheric exploration
+
