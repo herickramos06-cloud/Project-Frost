@@ -1,0 +1,514 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:#0a0a0f;color:#e8e6e0;line-height:1.7}
+  .doc{max-width:820px;margin:0 auto;padding:0 0 80px}
+  .cover{background:linear-gradient(160deg,#0d1117 0%,#0a1628 40%,#0d0a1e 100%);padding:80px 60px 60px;border-bottom:1px solid #1e2a3a;position:relative;overflow:hidden}
+  .cover::before{content:'';position:absolute;top:-60px;right:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(40,80,160,0.15) 0%,transparent 70%);pointer-events:none}
+  .cover::after{content:'';position:absolute;bottom:-40px;left:-40px;width:300px;height:300px;background:radial-gradient(circle,rgba(120,40,40,0.12) 0%,transparent 70%);pointer-events:none}
+  .badge{display:inline-block;background:#1a2a1a;color:#4a9a4a;border:1px solid #2a4a2a;border-radius:4px;font-size:11px;font-weight:500;padding:4px 10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:24px}
+  .cover h1{font-size:42px;font-weight:700;color:#ffffff;letter-spacing:-1px;line-height:1.1;margin-bottom:8px}
+  .cover h1 span{color:#3a7bd5}
+  .cover .subtitle{font-size:16px;color:#8899aa;margin-bottom:32px;font-weight:400}
+  .cover-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px;padding-top:32px;border-top:1px solid #1e2a3a}
+  .cover-meta-item label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#556677;display:block;margin-bottom:4px}
+  .cover-meta-item span{font-size:13px;font-weight:500;color:#aabbcc}
+  .toc{background:#0d1117;padding:48px 60px;border-bottom:1px solid #1a2030}
+  .toc h2{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#445566;margin-bottom:24px;font-weight:500}
+  .toc-list{list-style:none}
+  .toc-list li{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #131820}
+  .toc-list li:last-child{border-bottom:none}
+  .toc-num{font-size:11px;color:#2a4a7a;font-weight:600;min-width:24px}
+  .toc-title{font-size:13px;color:#7a8fa0;flex:1}
+  .toc-dots{flex:1;border-bottom:1px dotted #1e2a3a}
+  .section{padding:56px 60px;border-bottom:1px solid #131820}
+  .section:nth-child(even){background:#0c0f1a}
+  .section-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:32px}
+  .section-num{font-size:11px;font-weight:700;color:#2a4a7a;border:1px solid #1a2a4a;border-radius:4px;padding:3px 8px;margin-top:3px;white-space:nowrap}
+  .section h2{font-size:22px;font-weight:600;color:#dde8f0;letter-spacing:-0.3px}
+  .section h3{font-size:14px;font-weight:600;color:#7ab0d8;text-transform:uppercase;letter-spacing:1px;margin:28px 0 12px}
+  .section p{font-size:14px;color:#8899aa;line-height:1.8;margin-bottom:14px}
+  .section p strong{color:#aabbcc;font-weight:500}
+  .callout{background:#0d1a0d;border-left:3px solid #2a6a2a;border-radius:0 6px 6px 0;padding:16px 20px;margin:20px 0}
+  .callout.danger{background:#1a0d0d;border-color:#6a2a2a}
+  .callout.info{background:#0d1220;border-color:#2a4a8a}
+  .callout.warn{background:#1a1505;border-color:#7a6020}
+  .callout p{margin:0;font-size:13px;color:#7a9a7a}
+  .callout.danger p{color:#9a7a7a}
+  .callout.info p{color:#7a8aaa}
+  .callout.warn p{color:#9a8a5a}
+  .callout strong{font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:20px 0}
+  .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin:20px 0}
+  .card{background:#0d1117;border:1px solid #1a2030;border-radius:8px;padding:16px}
+  .card h4{font-size:12px;font-weight:600;color:#5588aa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+  .card p{font-size:13px;color:#7a8a98;margin:0;line-height:1.6}
+  .card .value{font-size:22px;font-weight:700;color:#dde8f0;margin-bottom:4px}
+  .card .label{font-size:11px;color:#445566}
+  .tag{display:inline-block;background:#0f1a2a;color:#4a7aaa;border:1px solid #1a2a3a;border-radius:4px;font-size:11px;padding:3px 8px;margin:3px 3px 3px 0;font-weight:500}
+  .tag.green{background:#0d1a0d;color:#4a8a4a;border-color:#1a2a1a}
+  .tag.red{background:#1a0d0d;color:#8a4a4a;border-color:#2a1a1a}
+  .tag.yellow{background:#1a1505;color:#8a7a3a;border-color:#2a2010}
+  table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px}
+  thead tr{background:#0d1117;border-bottom:1px solid #1a2030}
+  thead th{padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:#445566;font-weight:500}
+  tbody tr{border-bottom:1px solid #0f1520}
+  tbody tr:hover{background:#0e1220}
+  tbody td{padding:10px 14px;color:#7a8898;vertical-align:top}
+  tbody td:first-child{color:#aabbcc;font-weight:500}
+  .phase{display:flex;gap:0;margin:20px 0;border-radius:8px;overflow:hidden;border:1px solid #1a2030}
+  .phase-step{flex:1;padding:14px;text-align:center;background:#0d1117;border-right:1px solid #1a2030}
+  .phase-step:last-child{border-right:none}
+  .phase-step .num{font-size:18px;font-weight:700;color:#3a6aaa;margin-bottom:4px}
+  .phase-step .name{font-size:11px;color:#556677;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+  .phase-step .desc{font-size:12px;color:#7a8898}
+  .loop{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin:20px 0}
+  .loop-item{background:#0d1a2a;border:1px solid #1a2a3a;padding:10px 14px;font-size:12px;color:#5a8aaa;font-weight:500}
+  .loop-arrow{color:#1a3a5a;font-size:18px;padding:0 2px}
+  .score-row{display:flex;align-items:center;gap:12px;margin:10px 0}
+  .score-label{font-size:13px;color:#7a8898;min-width:200px}
+  .score-bar{flex:1;height:6px;background:#1a2030;border-radius:3px;overflow:hidden}
+  .score-fill{height:100%;border-radius:3px}
+  .score-val{font-size:12px;font-weight:600;color:#aabbcc;min-width:32px;text-align:right}
+  .verdict{background:#070d14;border:1px solid #1a2030;border-radius:8px;padding:32px 40px;text-align:center;margin:32px 0}
+  .verdict .big{font-size:48px;font-weight:700;color:#3a7bd5;margin-bottom:8px}
+  .verdict .desc{font-size:15px;color:#7a8898}
+  .timeline{margin:20px 0}
+  .timeline-item{display:flex;gap:20px;padding:16px 0;border-bottom:1px solid #0f1520}
+  .timeline-item:last-child{border-bottom:none}
+  .timeline-left{min-width:100px;text-align:right}
+  .timeline-left .phase-label{font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:#2a4a7a;font-weight:600}
+  .timeline-left .duration{font-size:12px;color:#445566;margin-top:2px}
+  .timeline-right h4{font-size:14px;font-weight:500;color:#aabbcc;margin-bottom:6px}
+  .timeline-right p{font-size:13px;color:#7a8898;margin:0;line-height:1.7}
+  .footer{background:#070d14;padding:32px 60px;text-align:center;border-top:1px solid #1a2030}
+  .footer p{font-size:12px;color:#334455}
+  .footer .quote{font-size:18px;font-weight:500;color:#3a5a7a;margin-bottom:8px;font-style:italic}
+  @media print{
+    body{background:#fff;color:#111}
+    .cover{background:#0a0a14!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .section{break-inside:avoid}
+  }
+</style>
+
+<div class="doc">
+
+<div class="cover">
+  <div class="badge">Game Design Document — Versión Definitiva</div>
+  <h1>Antesala <span>Zombies 2032</span></h1>
+  <div class="subtitle">Documento completo de diseño, viabilidad y estrategia de desarrollo</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><label>Tipo</label><span>2D Top-Down Survival</span></div>
+    <div class="cover-meta-item"><label>Engine</label><span>Godot 4 (recomendado)</span></div>
+    <div class="cover-meta-item"><label>Alcance v1.0</label><span>Capítulo 1 + Demo</span></div>
+    <div class="cover-meta-item"><label>Versión doc</label><span>1.0 — Mayo 2025</span></div>
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Índice de contenidos</h2>
+  <ul class="toc-list">
+    <li><span class="toc-num">01</span><span class="toc-title">Visión general y propuesta de valor</span></li>
+    <li><span class="toc-num">02</span><span class="toc-title">Narrativa, lore y universo</span></li>
+    <li><span class="toc-num">03</span><span class="toc-title">Diseño de mecánicas y gameplay</span></li>
+    <li><span class="toc-num">04</span><span class="toc-title">Sistema de IA y comportamiento de infectados</span></li>
+    <li><span class="toc-num">05</span><span class="toc-title">Diseño de mundo y zonas</span></li>
+    <li><span class="toc-num">06</span><span class="toc-title">Sistema de evidencia y finales</span></li>
+    <li><span class="toc-num">07</span><span class="toc-title">Identidad visual y audio</span></li>
+    <li><span class="toc-num">08</span><span class="toc-title">Análisis de viabilidad completo</span></li>
+    <li><span class="toc-num">09</span><span class="toc-title">Estrategia de desarrollo por fases</span></li>
+    <li><span class="toc-num">10</span><span class="toc-title">Estrategia de contenido y marketing</span></li>
+    <li><span class="toc-num">11</span><span class="toc-title">Monetización y publicación</span></li>
+    <li><span class="toc-num">12</span><span class="toc-title">Riesgos, soluciones y veredicto final</span></li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2>Visión general y propuesta de valor</h2>
+  </div>
+  <p><strong>Antesala Zombies 2032</strong> es un videojuego 2D top-down de supervivencia y horror narrativo ambientado en una base de investigación ártica. Su propósito es triple: entregar una experiencia de juego completa, establecer el canon de un universo mayor, y fortalecer las habilidades del desarrollador con un proyecto real y publicado.</p>
+  <h3>Diferenciadores clave</h3>
+  <div class="grid3">
+    <div class="card"><h4>Horror científico</h4><p>El patógeno tiene lógica interna coherente. No es fantasía genérica — tiene base en virología, parasitología y neurociencia simplificada.</p></div>
+    <div class="card"><h4>Infectados vivos</h4><p>No son muertos vivientes. Son humanos con conducta alterada, lo que abre posibilidades de comportamiento más complejo e impredecible.</p></div>
+    <div class="card"><h4>Narrativa emergente</h4><p>El jugador entiende qué pasó, pero solo si explora activamente. La historia no se entrega — se descubre.</p></div>
+  </div>
+  <div class="callout info">
+    <strong>Posicionamiento en mercado</strong>
+    <p>El juego apunta al nicho de horror atmosférico con narrativa (Soma, SIGNALIS, Alien Isolation en escala indie) — no al arcade de zombies genérico. Este posicionamiento es deliberado y correcto.</p>
+  </div>
+  <h3>Frase de posicionamiento</h3>
+  <div class="callout">
+    <p style="font-size:15px;color:#aaccaa;font-style:italic;font-weight:500">"El mundo aún no lo sabe… pero ya empezó." — Una historia de supervivencia donde la verdad es más aterradora que los infectados.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2>Narrativa, lore y universo</h2>
+  </div>
+  <h3>Contexto del mundo</h3>
+  <p>Año 2032. El calentamiento global ha acelerado el deshielo ártico, liberando microorganismos prehistóricos sellados por cientos de miles de años. Una organización privada de investigación — cuyo nombre y naturaleza exacta se revelan progresivamente — descubre uno de estos agentes y lo traslada a una base de investigación aislada en el Ártico noruego.</p>
+  <p>El error no fue investigarlo. El error fue recrear las condiciones ambientales que lo activan — temperaturas, presión atmosférica y composición de gases específicos — sin saber que varios investigadores ya estaban expuestos en estado latente.</p>
+  <h3>El patógeno — clasificación interna: Agente Boreal-0</h3>
+  <div class="grid2">
+    <div class="card"><h4>Naturaleza</h4><p>Microorganismo antiguo con características mixtas: actúa como virus al replicarse, como hongo al sobrevivir en superficies, y como parásito al alterar el sistema nervioso del huésped.</p></div>
+    <div class="card"><h4>Mecanismo</h4><p>Ataca directamente el sistema nervioso central. Altera la producción de dopamina y adrenalina, suprime el miedo, amplifica la agresividad y mantiene al huésped con vida como vector activo.</p></div>
+  </div>
+  <h3>Capas narrativas del juego</h3>
+  <table>
+    <thead><tr><th>Capa</th><th>Qué es</th><th>Cómo se entrega</th></tr></thead>
+    <tbody>
+      <tr><td>Historia directa</td><td>Sobrevivir y escapar de la base</td><td>Objetivos, ambiente, presión del juego</td></tr>
+      <tr><td>Historia emergente</td><td>La verdad del brote y la organización</td><td>Documentos, audios, registros, terminales</td></tr>
+      <tr><td>Historia implícita</td><td>El mundo antes del desastre</td><td>Decoración, fotos personales, objetos cotidianos</td></tr>
+      <tr><td>Universo mayor</td><td>Antesala del AAA imaginario</td><td>Referencias crípticas, terminología, nombres propios</td></tr>
+    </tbody>
+  </table>
+  <h3>Estructura por capítulos</h3>
+  <div class="phase">
+    <div class="phase-step"><div class="num">1</div><div class="name">Normalidad</div><div class="desc">Base funcional. Presentación del entorno y personajes.</div></div>
+    <div class="phase-step"><div class="num">2</div><div class="name">Anomalía</div><div class="desc">Primeras señales. Comportamientos extraños sin explicación.</div></div>
+    <div class="phase-step"><div class="num">3</div><div class="name">Activación</div><div class="desc">El brote inicia. El jugador comprende lo que ocurre.</div></div>
+    <div class="phase-step"><div class="num">4</div><div class="name">Colapso</div><div class="desc">La base se desintegra. Máxima presión y caos.</div></div>
+    <div class="phase-step"><div class="num">5</div><div class="name">Escape</div><div class="desc">Intento de huida. Final determinado por evidencia.</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2>Diseño de mecánicas y gameplay</h2>
+  </div>
+  <h3>Core gameplay loop</h3>
+  <div class="loop">
+    <div class="loop-item">Explorar</div><div class="loop-arrow">→</div>
+    <div class="loop-item">Recolectar evidencia</div><div class="loop-arrow">→</div>
+    <div class="loop-item">Generar riesgo</div><div class="loop-arrow">→</div>
+    <div class="loop-item">Evitar infectados</div><div class="loop-arrow">→</div>
+    <div class="loop-item">Decidir</div><div class="loop-arrow">→</div>
+    <div class="loop-item">Escapar o morir</div>
+  </div>
+  <div class="callout info">
+    <strong>Por qué este loop funciona</strong>
+    <p>La evidencia cumple una doble función: es el motor narrativo Y el generador de tensión mecánica. El jugador nunca está seguro en un lugar — explorar es necesario pero peligroso. Esta es una decisión de diseño excelente que debe protegerse durante el desarrollo.</p>
+  </div>
+  <h3>Mecánicas del jugador</h3>
+  <table>
+    <thead><tr><th>Mecánica</th><th>Descripción</th><th>Prioridad</th></tr></thead>
+    <tbody>
+      <tr><td>Movimiento top-down</td><td>8 direcciones, velocidad base + agacharse (sigiloso/lento)</td><td><span class="tag green">Core v1</span></td></tr>
+      <tr><td>Interacción con objetos</td><td>Recoger evidencia, abrir puertas, activar terminales</td><td><span class="tag green">Core v1</span></td></tr>
+      <tr><td>Sigilo</td><td>Radio de detección reducido al agacharse, ruido al correr</td><td><span class="tag green">Core v1</span></td></tr>
+      <tr><td>Sistema de ruido</td><td>Acciones del jugador generan ruido que atrae infectados</td><td><span class="tag green">Core v1</span></td></tr>
+      <tr><td>Inventario limitado</td><td>Capacidad reducida de evidencia — obliga a priorizar</td><td><span class="tag yellow">v1.1</span></td></tr>
+      <tr><td>Distracción</td><td>Lanzar objetos para desviar infectados</td><td><span class="tag yellow">v1.1</span></td></tr>
+      <tr><td>Combate mínimo</td><td>Solo empujar/bloquear — no es un shooter</td><td><span class="tag red">Opcional</span></td></tr>
+    </tbody>
+  </table>
+  <h3>Sistema de presión dinámica</h3>
+  <p>La dificultad aumenta orgánicamente a lo largo del juego mediante tres vectores simultáneos:</p>
+  <div class="grid3">
+    <div class="card"><h4>Densidad enemiga</h4><p>Los infectados aumentan en número conforme avanza el relato. El jugador nunca puede eliminarlos — solo evitarlos.</p></div>
+    <div class="card"><h4>Deterioro del entorno</h4><p>Fallos eléctricos, zonas bloqueadas, filtraciones. El mapa cambia y las rutas conocidas dejan de ser seguras.</p></div>
+    <div class="card"><h4>Velocidad y eficiencia</h4><p>Los infectados en fase avanzada son más rápidos y tienen rangos de detección mayores.</p></div>
+  </div>
+  <h3>Modo Survival — diseño independiente</h3>
+  <p>Modo arcade desconectado de la historia principal. Arena con oleadas infinitas de infectados, dificultad escalable, y sistema de puntuación basado en tiempo de supervivencia. Tiene alto valor de retención y es ideal para generar clips y contenido en redes sociales. Su implementación es simple una vez que la IA de enemigos está funcionando.</p>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2>Sistema de IA y comportamiento de infectados</h2>
+  </div>
+  <p>Este es el componente técnico más crítico del juego. La credibilidad del horror depende directamente de que los infectados se comporten de manera convincente. Se recomienda implementar por fases para no bloquear el desarrollo.</p>
+  <h3>Fases de infección — comportamiento por estado</h3>
+  <table>
+    <thead><tr><th>Fase</th><th>Estado</th><th>Velocidad</th><th>Detección</th><th>Comportamiento</th></tr></thead>
+    <tbody>
+      <tr><td>Fase 1 — Alteración</td><td>Confuso</td><td>Lenta, errática</td><td>Baja</td><td>Deambula sin rumbo, se detiene, reacciona a ruidos fuertes solo</td></tr>
+      <tr><td>Fase 2 — Hostilidad</td><td>Agresivo</td><td>Normal</td><td>Media</td><td>Persigue al jugador activamente, patrulla zonas</td></tr>
+      <tr><td>Fase 3 — Adaptación</td><td>Eficiente</td><td>Alta</td><td>Alta</td><td>Rodea al jugador, no se distrae fácilmente, recuerda última posición</td></tr>
+    </tbody>
+  </table>
+  <h3>Arquitectura de IA recomendada</h3>
+  <div class="callout info">
+    <strong>Enfoque técnico</strong>
+    <p>Implementar como máquina de estados finitos (FSM) con estados: Idle → Patrolling → Alerted → Chasing → Searching → Returning. Esta arquitectura es suficiente para el nivel de complejidad requerido y es manejable para un solo desarrollador. Usar NavigationAgent2D de Godot 4 para pathfinding A* nativo.</p>
+  </div>
+  <h3>Prioridad de implementación</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-left"><div class="phase-label">Prioridad 1</div><div class="duration">Prototipo</div></div>
+      <div class="timeline-right"><h4>IA básica de persecución</h4><p>El infectado detecta al jugador en un radio, lo persigue usando pathfinding, y vuelve a su posición si lo pierde. Solo Fase 2. Suficiente para el prototipo jugable.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-left"><div class="phase-label">Prioridad 2</div><div class="duration">Capítulo 1</div></div>
+      <div class="timeline-right"><h4>Detección por ruido + patrullaje</h4><p>Radio de detección visual vs. radio de detección por ruido. Rutas de patrullaje básicas con waypoints. Estado de búsqueda cuando pierde al jugador.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-left"><div class="phase-label">Prioridad 3</div><div class="duration">Post-demo</div></div>
+      <div class="timeline-right"><h4>Fases 1 y 3 completas</h4><p>Comportamiento errático de Fase 1 (movimiento irregular, reacción retardada). Comportamiento eficiente de Fase 3 (rodear, memoria de posición). Transiciones visuales entre fases.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2>Diseño de mundo y zonas</h2>
+  </div>
+  <p>La base ártica está dividida en zonas con propósito narrativo y mecánico diferenciado. Cada zona tiene su propia atmósfera, densidad de infectados, y cantidad de evidencia disponible.</p>
+  <table>
+    <thead><tr><th>Zona</th><th>Atmósfera</th><th>Riesgo</th><th>Evidencia</th><th>Mecánica especial</th></tr></thead>
+    <tbody>
+      <tr><td>Laboratorio principal</td><td>Clínica, fría, ordenada</td><td>Alto</td><td>Máxima</td><td>Terminales interactivas, muestras del patógeno</td></tr>
+      <tr><td>Dormitorios</td><td>Personal, íntima</td><td>Medio</td><td>Alta</td><td>Fotos, diarios, objetos personales</td></tr>
+      <tr><td>Sala de control</td><td>Técnica, pantallas</td><td>Alto</td><td>Alta</td><td>Acceso a cámaras, desbloquear zonas</td></tr>
+      <tr><td>Almacenes</td><td>Oscura, industrial</td><td>Muy alto</td><td>Baja</td><td>Objetos de distracción, rutas alternativas</td></tr>
+      <tr><td>Exterior ártico</td><td>Vacía, helada, final</td><td>Máximo</td><td>Ninguna</td><td>Zona de escape — secuencia final</td></tr>
+    </tbody>
+  </table>
+  <h3>Diseño de niveles — principios</h3>
+  <div class="grid2">
+    <div class="card"><h4>Múltiples rutas</h4><p>Cada zona debe tener al menos dos caminos posibles: el directo (más rápido, más peligroso) y el alternativo (más lento, más seguro). Esto da sensación de agencia real.</p></div>
+    <div class="card"><h4>Entorno que narra</h4><p>El estado visual de cada zona debe contar parte de la historia. El laboratorio se ve prístino al inicio; en capítulos posteriores, el mismo espacio debe verse en colapso.</p></div>
+    <div class="card"><h4>Dinamismo progresivo</h4><p>Las zonas cambian entre capítulos: puertas que antes estaban abiertas ahora están bloqueadas, rutas nuevas se abren, la iluminación se deteriora.</p></div>
+    <div class="card"><h4>Densidad de contenido</h4><p>El laboratorio y los dormitorios concentran la mayor parte de la evidencia. El jugador debe decidir si arriesga entrar a las zonas más peligrosas por más información.</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2>Sistema de evidencia y finales</h2>
+  </div>
+  <p>La evidencia es el núcleo del diseño. No es coleccionable decorativo — es el mecanismo que conecta el riesgo mecánico con la recompensa narrativa.</p>
+  <h3>Tipos de evidencia</h3>
+  <div class="grid4">
+    <div class="card"><h4>Documentos</h4><p>Informes científicos, protocolos, memos internos. Revelan la motivación de la organización.</p></div>
+    <div class="card"><h4>Audios</h4><p>Grabaciones de voz, llamadas internas. Añaden dimensión emocional y humanidad a personajes no vistos.</p></div>
+    <div class="card"><h4>Registros</h4><p>Logs de terminales, datos de sensores. Dan contexto técnico sobre la progresión del brote.</p></div>
+    <div class="card"><h4>Objetos</h4><p>Fotos personales, medicamentos, notas escritas a mano. Historia implícita de las víctimas.</p></div>
+  </div>
+  <h3>Sistema de finales — diseño eficiente</h3>
+  <div class="callout warn">
+    <strong>Recomendación crítica de scope</strong>
+    <p>No diseñes finales completamente distintos — diseña un epílogo variable. El 90% del juego es idéntico. Solo la secuencia final y las pantallas de cierre cambian según el nivel de evidencia acumulado. Esto reduce el trabajo un 60% manteniendo el 100% del impacto percibido.</p>
+  </div>
+  <table>
+    <thead><tr><th>Final</th><th>Condición</th><th>Tono</th><th>Qué cambia</th></tr></thead>
+    <tbody>
+      <tr><td>Final A — Testigo</td><td>0–30% de evidencia</td><td>Incompleto, perturbador</td><td>El jugador escapa pero no entiende qué pasó. Epilogo mínimo.</td></tr>
+      <tr><td>Final B — Sobreviviente</td><td>31–70% de evidencia</td><td>Ambiguo, tenso</td><td>Entiende el origen pero no los responsables. Decisión de reportar o no.</td></tr>
+      <tr><td>Final C — La verdad</td><td>71–100% de evidencia</td><td>Revelador, perturbador</td><td>Conoce la organización, sus motivos, y la escala real del problema. Gancho hacia el universo mayor.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2>Identidad visual y audio</h2>
+  </div>
+  <h3>Paleta y estética visual</h3>
+  <div class="grid2">
+    <div class="card"><h4>Colores base</h4><p>Azules fríos (#0a1628 a #1a3a5a), grises árticos (#8899aa), negro profundo (#070d14). Acentos de color solo para peligro: rojo desaturado, amarillo de advertencia.</p></div>
+    <div class="card"><h4>Iluminación</h4><p>Juega un rol mecánico. Luces de emergencia rojas indican peligro. Zonas oscuras son más peligrosas. El deterioro de la iluminación acompaña la escalada de tensión narrativa.</p></div>
+    <div class="card"><h4>Arte de personajes</h4><p>Sprites top-down claros y legibles. Los infectados en Fase 1 deben parecer casi normales — solo en Fase 2 y 3 el cambio visual es obvio. Esto amplifica el horror.</p></div>
+    <div class="card"><h4>UI minimalista</h4><p>Sin HUD invasivo. Solo indicadores sutiles: nivel de ruido generado, evidencia recogida, proximidad de peligro. La inmersión es prioridad.</p></div>
+  </div>
+  <h3>Diseño de audio — guía de dirección</h3>
+  <table>
+    <thead><tr><th>Elemento</th><th>Descripción</th><th>Herramienta recomendada</th></tr></thead>
+    <tbody>
+      <tr><td>Música ambiental</td><td>Drones fríos, texturas industriales. Sin melodías obvias. Tensión constante de fondo.</td><td>Epidemic Sound / composición propia en LMMS</td></tr>
+      <tr><td>Diseño de sonido</td><td>Pasos en hielo, respiración del jugador, sonidos de los infectados. El audio es el sistema de alarma principal.</td><td>Freesound + procesado en Audacity</td></tr>
+      <tr><td>Audio de evidencia</td><td>Las grabaciones de voz deben sonar levemente degradadas. Añade humanidad y credibilidad al lore.</td><td>Grabación propia + filtros</td></tr>
+      <tr><td>Música de tensión</td><td>Se activa cuando un infectado está cerca. Debe ser sutil — no un stinger obvio.</td><td>Capas procedurales simples</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2>Análisis de viabilidad completo</h2>
+  </div>
+  <h3>Evaluación por dimensiones</h3>
+  <div style="margin:20px 0">
+    <div class="score-row"><div class="score-label">Concepto narrativo y diferenciación</div><div class="score-bar"><div class="score-fill" style="width:92%;background:#3a7a3a"></div></div><div class="score-val">9.2</div></div>
+    <div class="score-row"><div class="score-label">Viabilidad técnica (scope controlado)</div><div class="score-bar"><div class="score-fill" style="width:80%;background:#3a6aaa"></div></div><div class="score-val">8.0</div></div>
+    <div class="score-row"><div class="score-label">Potencial de mercado indie</div><div class="score-bar"><div class="score-fill" style="width:68%;background:#7a7a3a"></div></div><div class="score-val">6.8</div></div>
+    <div class="score-row"><div class="score-label">Estrategia de contenido / marketing</div><div class="score-bar"><div class="score-fill" style="width:85%;background:#3a7a3a"></div></div><div class="score-val">8.5</div></div>
+    <div class="score-row"><div class="score-label">Riesgo de no terminarse (invertido)</div><div class="score-bar"><div class="score-fill" style="width:55%;background:#8a4a3a"></div></div><div class="score-val">5.5</div></div>
+    <div class="score-row"><div class="score-label">Potencial como base de universo</div><div class="score-bar"><div class="score-fill" style="width:95%;background:#3a7a3a"></div></div><div class="score-val">9.5</div></div>
+  </div>
+  <h3>Análisis FODA</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4 style="color:#4a8a4a">Fortalezas</h4>
+      <p>Concepto diferenciador con coherencia interna. Scope manejable para desarrollador solo. Gameplay loop con tensión natural. Estrategia de universo inteligente. Modo Survival como valor adicional gratuito.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:#8a4a4a">Debilidades</h4>
+      <p>GDD técnico incompleto (aún no define medidas, números exactos). Riesgo de expansión indefinida del scope. Dependencia de un solo desarrollador sin red de seguridad.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:#4a7aaa">Oportunidades</h4>
+      <p>Nicho de horror científico poco explotado en indie 2D. Comunidad activa en devlogs de horror y survival. El universo imaginario es un gancho de marketing orgánico potente. Steam Next Fest como plataforma de visibilidad gratuita.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:#8a7a3a">Amenazas</h4>
+      <p>Saturación de juegos de zombies en Steam. Abandono del proyecto por burnout. Mala comunicación del diferenciador (verse como otro zombie game genérico). Tiempo de desarrollo prolongado sin ingresos.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2>Estrategia de desarrollo por fases</h2>
+  </div>
+  <div class="callout info">
+    <strong>Principio rector</strong>
+    <p>Terminar algo pequeño y publicarlo vale más que cinco proyectos abandonados. Cada fase termina con un entregable público real — no con código en un disco duro.</p>
+  </div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-left"><div class="phase-label">Fase 0</div><div class="duration">2–4 semanas</div></div>
+      <div class="timeline-right"><h4>Fundamentos y decisiones previas</h4><p>Elegir engine definitivo (Godot 4 recomendado). Completar este GDD con medidas, números y decisiones técnicas. Definir scope mínimo del Capítulo 1. Crear repositorio y estructura de proyecto. Definir paleta de colores y primeros sprites.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-left"><div class="phase-label">Fase 1</div><div class="duration">1–3 meses</div></div>
+      <div class="timeline-right"><h4>Prototipo jugable — loop completo</h4><p>Un nivel pequeño con el gameplay loop funcionando: movimiento del jugador, 2-3 infectados con IA básica de persecución, 1 pieza de evidencia recogible, zona de escape funcional. No importa la apariencia — importa que el loop se sienta bien. Primer devlog público.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-left"><div class="phase-label">Fase 2</div><div class="duration">3–6 meses</div></div>
+      <div class="timeline-right"><h4>Demo pública — Capítulo 1 completo</h4><p>Laboratorio y dormitorios completos. IA con detección por ruido y Fases 1-2. Sistema de evidencia con 5-8 piezas de contenido. Audio ambiental. Arte definitivo del jugador y 2 tipos de infectados. Lanzamiento en itch.io y Steam (Next Fest si el calendario lo permite).</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-left"><div class="phase-label">Fase 3</div><div class="duration">Post-demo</div></div>
+      <div class="timeline-right"><h4>Juego completo v1.0</h4><p>Capítulos 2 al 5 usando feedback de la demo. Sala de control, almacenes y exterior ártico. Tres finales implementados. Fase 3 de infectados. Modo Survival. Optimización y pulido. Lanzamiento en Steam con precio entre $4.99 y $7.99 USD.</p></div>
+    </div>
+  </div>
+  <h3>Herramientas recomendadas por categoría</h3>
+  <table>
+    <thead><tr><th>Categoría</th><th>Herramienta</th><th>Costo</th><th>Razón</th></tr></thead>
+    <tbody>
+      <tr><td>Engine</td><td>Godot 4</td><td>Gratuito</td><td>Open source, excelente para 2D top-down, sin royalties</td></tr>
+      <tr><td>Arte 2D</td><td>Aseprite</td><td>~$20 único</td><td>Estándar de la industria indie para pixel art</td></tr>
+      <tr><td>Audio</td><td>Audacity + LMMS</td><td>Gratuito</td><td>Suficiente para prototipo y demo</td></tr>
+      <tr><td>Gestión</td><td>Trello o Notion</td><td>Gratuito</td><td>Tablero kanban para hitos y tareas</td></tr>
+      <tr><td>Control de versiones</td><td>Git + GitHub</td><td>Gratuito</td><td>Backup y portafolio público</td></tr>
+      <tr><td>Música final</td><td>Epidemic Sound</td><td>Suscripción</td><td>Para lanzamiento comercial en Steam</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2>Estrategia de contenido y marketing</h2>
+  </div>
+  <p>Para un proyecto indie sin presupuesto de marketing, el contenido orgánico es el único canal efectivo. La ventaja de este proyecto es que tiene dos narrativas simultáneas que generar contenido: el juego en sí, y la historia del desarrollador construyendo el universo.</p>
+  <h3>Tipos de contenido por plataforma</h3>
+  <div class="grid3">
+    <div class="card"><h4>TikTok / Reels</h4><p>Clips de gameplay de 15-30 segundos. "Cosas raras que encontré programando IA de zombies". Revelaciones de lore del universo. El formato vertical encaja perfecto con top-down.</p></div>
+    <div class="card"><h4>YouTube / Devlogs</h4><p>Devlogs quincenales de 5-10 minutos. Decisiones de diseño explicadas. Comparativas "antes vs después". El formato largo construye comunidad profunda.</p></div>
+    <div class="card"><h4>Twitter/X</h4><p>GIFs de mecánicas nuevas. Preguntas al comunidad sobre decisiones de diseño. Referencias crípticas al universo mayor. Conversación directa con otros devs indie.</p></div>
+  </div>
+  <h3>El universo AAA imaginario como herramienta de marketing</h3>
+  <div class="callout">
+    <strong>Estrategia de misterio</strong>
+    <p>Habla del universo mayor como algo real pero lejano. "Este juego es la antesala de algo más grande." No importa que el AAA no exista aún — el misterio comunica ambición y visión. Los jugadores se enganchan a universos con historia, no solo a juegos sueltos. Cada pieza de lore que publiques en redes es un ladrillo de ese universo.</p>
+  </div>
+  <h3>Calendario de hitos públicos recomendado</h3>
+  <table>
+    <thead><tr><th>Hito</th><th>Cuándo publicar</th><th>Qué mostrar</th></tr></thead>
+    <tbody>
+      <tr><td>Anuncio del proyecto</td><td>Semana 1</td><td>Concepto, arte conceptual básico, la frase clave</td></tr>
+      <tr><td>Primer gameplay</td><td>Mes 1-2</td><td>Movimiento del jugador, primer infectado funcional</td></tr>
+      <tr><td>Demo de sistemas</td><td>Mes 3</td><td>IA en acción, sistema de evidencia, un momento de tensión</td></tr>
+      <tr><td>Lanzamiento demo</td><td>Mes 5-7</td><td>itch.io gratis, Steam si está listo para Next Fest</td></tr>
+      <tr><td>Post-demo update</td><td>Mes 8</td><td>Respuesta al feedback, cambios implementados</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2>Monetización y publicación</h2>
+  </div>
+  <h3>Estrategia de precio — por etapas</h3>
+  <div class="grid3">
+    <div class="card"><div class="value">$0</div><div class="label">Demo (Capítulo 1)</div><p style="margin-top:8px">En itch.io y Steam. El objetivo no es ingreso — es audiencia, feedback y wishlist en Steam.</p></div>
+    <div class="card"><div class="value">$5–8</div><div class="label">Juego completo v1.0</div><p style="margin-top:8px">Precio bajo para indie desconocido. El objetivo es penetración de mercado y reseñas.</p></div>
+    <div class="card"><div class="value">$10–15</div><div class="label">Post-éxito / edición especial</div><p style="margin-top:8px">Si el juego genera reseñas positivas, precio puede subir con contenido adicional (artbook, soundtrack).</p></div>
+  </div>
+  <h3>Plataformas de publicación</h3>
+  <table>
+    <thead><tr><th>Plataforma</th><th>Cuándo</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td>itch.io</td><td>Con prototipo o demo</td><td>Sin costo, comunidad indie receptiva, feedback rápido</td></tr>
+      <tr><td>Steam</td><td>Con demo completa o juego</td><td>Mayor alcance, sistema de wishlists, Next Fest</td></tr>
+      <tr><td>GameJolt</td><td>Opcional, con demo</td><td>Comunidad de horror indie activa</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <strong>Steam — consideraciones prácticas</strong>
+    <p>La cuota de Steam Direct es $100 USD por juego publicado. Planifica este gasto. El proceso de aprobación toma entre 3 y 5 días hábiles. Publica la página de Steam lo antes posible para comenzar a acumular wishlists antes del lanzamiento.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2>Riesgos, soluciones y veredicto final</h2>
+  </div>
+  <h3>Riesgos críticos y sus soluciones</h3>
+  <table>
+    <thead><tr><th>Riesgo</th><th>Probabilidad</th><th>Solución concreta</th></tr></thead>
+    <tbody>
+      <tr><td>Scope creep — el juego nunca termina</td><td><span class="tag red">Alta</span></td><td>Definir scope del Capítulo 1 en papel hoy. Publicarlo como demo. El compromiso público es el antídoto.</td></tr>
+      <tr><td>IA de enemigos insatisfactoria</td><td><span class="tag yellow">Media</span></td><td>Empezar con IA básica (Fase 2 solo). Testear con jugadores reales antes de añadir complejidad.</td></tr>
+      <tr><td>Burnout del desarrollador solitario</td><td><span class="tag yellow">Media</span></td><td>Hitos pequeños frecuentes. Devlogs quincenales crean responsabilidad externa positiva.</td></tr>
+      <tr><td>Perderse en el mercado de zombies</td><td><span class="tag yellow">Media</span></td><td>Comunicar el diferenciador desde el primer día: "No son muertos vivientes. Son humanos."</td></tr>
+      <tr><td>Falta de comunidad al lanzar</td><td><span class="tag red">Alta sin acción</span></td><td>Publicar contenido desde el prototipo. La comunidad se construye meses antes del lanzamiento.</td></tr>
+    </tbody>
+  </table>
+  <h3>Lo que más importa ahora mismo</h3>
+  <div class="callout">
+    <strong>Próximos 3 pasos concretos</strong>
+    <p><strong>1.</strong> Decide el engine esta semana (Godot 4 si no tienes razón para otra cosa). <strong>2.</strong> Define en papel el scope exacto del Capítulo 1: cuántas zonas, cuántos enemigos, cuántas piezas de evidencia, cuánto tiempo de juego. <strong>3.</strong> Crea una cuenta en TikTok o Twitter como dev de este juego y publica el primer post esta semana — aunque sea solo el concepto y la frase clave.</p>
+  </div>
+  <div class="verdict">
+    <div class="big">VIABLE</div>
+    <div class="desc">El proyecto es sólido, diferenciado y con scope manejable para un desarrollador solo.<br>El mayor riesgo no es técnico ni comercial — es no terminar y no publicar.</div>
+  </div>
+  <h3>Resumen ejecutivo de evaluación</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4 style="color:#4a8a4a">Lo que tienes bien</h4>
+      <p>Concepto diferenciador con coherencia interna. Loop de gameplay con tensión natural. Estrategia de universo expandido inteligente. Scope manejable si se controla. Modo Survival como bono de retención y marketing.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:#8a7a3a">Lo que necesitas resolver ya</h4>
+      <p>GDD técnico con números concretos (no solo descripción). Decisión de engine definitiva. Scope del Capítulo 1 escrito y cerrado. Presencia pública activa desde hoy. Sistema de hitos públicos para no abandonar.</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="quote">"El mundo aún no lo sabe… pero ya empezó."</div>
+  <p>Antesala Zombies 2032 — Documento de Diseño Definitivo v1.0 — Uso privado del desarrollador</p>
+</div>
+
+</div>
