@@ -1,101 +1,114 @@
-# AGENT.md — Antesala Zombies 2032
+# AGENTS.md
 
-## 1. Identidad del Proyecto
+# PROJECT-FROST
 
-**Nombre:** Antesala Zombies 2032
-
-**Tipo:** Videojuego 2D Top-Down Survival Horror
-
-**Motor Principal:** Godot 4
-
-**Objetivo:**
-
-Construir un videojuego completo, publicable y técnicamente sólido.
-
-El proyecto prioriza:
-
-* Finalización del juego.
-* Calidad de la experiencia.
-* Arquitectura mantenible.
-* Desarrollo sostenible para un desarrollador independiente.
+### AI Development Constitution
 
 ---
 
-# 2. Rol del Agente
+# 1. Project Overview
 
-Actúa como:
+## Project Name
 
-* Arquitecto de Software Senior.
-* Game Developer Senior especializado en Godot y GDScript
-* Technical Designer.
-* Revisor de Calidad.
-* Asistente de Producción.
+PROJECT-FROST
 
-Tu función principal es ayudar a construir el proyecto de forma ordenada, escalable y profesional.
+## Description
 
-Eres un colaborador técnico que analiza antes de implementar.
+PROJECT-FROST (Antesala Zombies 2032) es un videojuego Survival Horror 2D Top-Down para dispositivos Android desarrollado con Godot Engine.
 
----
+El objetivo es construir un juego profesional, modular, escalable y mantenible mediante una colaboración entre el desarrollador humano y agentes de IA.
 
-# 3. Filosofía de Desarrollo
-
-Siempre seguir este orden:
-
-1. Entender el problema.
-2. Diseñar la solución.
-3. Validar el diseño.
-4. Implementar.
-5. Probar.
-6. Documentar.
-
-Si existe ambigüedad:
-
-Preguntar o proponer alternativas.
-
-Nunca asumir comportamientos críticos.
-
-#
+La calidad del código, la arquitectura y la documentación tienen la misma prioridad que las funcionalidades.
 
 ---
 
-# 5. Stack Tecnológico
+# 2. Technology Stack
 
-## Engine
+Engine
 
-Godot 4.x
+* Godot Engine 4.6 (Stable)
 
-## Lenguaje
+Language
 
-GDScript
+* GDScript
 
-## Control de Versiones
+Version Control
 
-Git
+* Git
+* GitHub
 
-## Documentación
+IDE
 
-Markdown (.md)
+* Cursor AI
 
-## Diseño
+Platform
 
-HTML + Markdown para dashboards y documentación visual
+* Android
+
+Documentation
+
+* Markdown
+* HTML (GDD,LORE,DEV_DASHBOARD,etc)
 
 ---
 
-# 6. Convenciones de Código
+# 3. Project Structure
 
-## Principios
+Describe brevemente el propósito de cada carpeta.
 
-* Código legible sobre código inteligente.
-* Simplicidad sobre optimización prematura.
-* Modularidad sobre duplicación.
+Ejemplo:
 
-## Nombres
+project-frost/docs
+Documentación técnica, GDD, arquitectura y especificaciones.
+
+project-frost/assets
+Sprites, audio, fuentes , recursos , texturas etc.
+
+
+project-frost/juego-zombies-2d: Ecosistema GODOT:
+
+juego-zombies-2d/scenes
+Escenas de Godot.
+
+juego-zombies-2d/scripts
+Lógica del juego 
+
+project-frost/src
+Otros utiles, codigo "bruto"
+
+Nunca crear archivos fuera de la estructura establecida sin justificación.
+
+---
+
+# 4. Development Workflow
+
+Seguir siempre este orden:
+
+1. Analizar el problema.
+2. Comprender el contexto.
+3. Consultar documentación relevante.
+4. Proponer una solución.
+5. Esperar aprobación si el cambio es grande.
+6. Implementar.
+7. Explicar los cambios.
+8. Verificar funcionamiento.
+
+Nunca modificar múltiples sistemas simultáneamente.
+
+---
+
+# 5. Coding Standards
+
+Todo código debe cumplir:
+
+* Clean Code
+* SOLID cuando sea aplicable
+* Principio KISS
+* Principio DRY
+* Modularidad
+* Alta legibilidad
 
 Variables:
-snake_case
-
-Funciones:
 snake_case
 
 Clases:
@@ -104,116 +117,131 @@ PascalCase
 Constantes:
 UPPER_CASE
 
-## Comentarios
-
-Comentar SIEMPRE
-
-## Tipado
-
-Utilizar tipado estático siempre que sea posible.
+Funciones pequeñas y con una única responsabilidad.
 
 ---
 
-# 7. Arquitectura del Proyecto
+# 6. Architecture Principles
 
-Seguir arquitectura modular.
+Priorizar:
 
-Cada sistema debe estar desacoplado.
+Composición sobre herencia.
 
-La comunicación entre sistemas debe realizarse mediante:
+Bajo acoplamiento.
 
-* Signals
-* Eventos
-* Interfaces claras
+Alta cohesión.
 
-Evitar dependencias circulares.
+Escalabilidad.
 
----
+Reutilización.
 
-#
+Evitar duplicación de lógica.
 
----
-
-# 8. Flujo de Trabajo Obligatorio
-
-Antes de generar código:
-
-## Paso 1
-
-Explicar el problema.
-
-## Paso 2
-
-Proponer arquitectura.
-
-## Paso 3
-
-Mostrar plan de implementación.
-
-## Paso 4
-
-Esperar validación si el cambio es grande.
-
-## Paso 5
-
-Implementar.
-
-## Paso 6
-
-Explicar el resultado.
+Cada sistema debe poder evolucionar independientemente.
 
 ---
 
-# 9. Testing
+# 7. AI Responsibilities
 
-Todo sistema nuevo debe incluir:
+Antes de escribir código el agente debe:
 
-* Casos normales.
-* Casos límite.
-* Casos de error.
+Analizar.
+Detectar riesgos.
+Identificar dependencias.
+Explicar el plan.
 
-Verificar:
+Después:
 
-* Funcionamiento.
-* Rendimiento.
-* Integración.
-
-No asumir que algo funciona porque compila.
-
----
-
-# 10. Documentación
-
-Cuando se tome una decisión importante:
-
-Actualizar:
-
-dev_log.md
-
-Formato:
-
-Fecha
-Sistema
-Decisión
-Motivo
+Explicar cada cambio realizado.
+Justificar decisiones técnicas.
+Indicar posibles mejoras futuras.
 
 ---
 
-# 11. Restricciones
+# 8. Forbidden Actions
 
-Nunca:
+El agente NO debe:
 
-* Romper arquitectura existente.
-* Reescribir sistemas completos sin justificación.
-* Añadir dependencias innecesarias.
-* Duplicar lógica.
-* Crear código experimental en producción.
-* Guardar secretos o claves en texto plano.
+-Modificar arquitectura sin autorización ni permiso.
 
-Evitar:
+-Eliminar archivos existentes sin permiso.
 
-* Sobreingeniería.
-* Optimización prematura.
-* Features fuera del alcance actual.
+-Cambiar nombres públicos sin justificación.
+
+-Duplicar lógica.
+
+-Crear código innecesariamente complejo.
+
+-Inventar APIs.
+
+-Inventar nodos inexistentes.
+
+-Ignorar errores del compilador.
+
+-Modificar documentación sin indicar el motivo.
+
+---
+
+# 9. Documentation Rules
+
+Cada nueva funcionalidad importante debe reflejarse en:
+
+* Documentación técnica
+
+* Comentarios cuando aporten valor
+
+* DEV_LOG.MD
+
+No comentar código obvio.
+Documentar decisiones de arquitectura SIEMPRE.
+
+---
 
 
+# 10. Decision Hierarchy
+
+En caso de conflicto seguir este orden:
+
+1. GDD
+2. AGENTS.md
+3. Especificaciones del usuario  
+5. Buenas prácticas de Godot
+6. Convenciones del lenguaje
+(Si tienes que modificar  alguna regla , practica, arquitectura o lo que fuera 
+del agents.md QUE SEA SOLO SI EL USUARIO LO DICE)
+---
+
+
+# 11. Quality Checklist
+
+Antes de finalizar cualquier tarea verificar:
+
+✓ Compila correctamente.
+
+✓ No rompe funcionalidades existentes.
+
+✓ Sigue la arquitectura.
+
+✓ Código legible.
+
+✓ Modular.
+
+✓ Escalable.
+
+✓ Explicado.
+
+✓ Sin duplicación.
+
+✓ Compatible con Godot 4.
+
+---
+
+# 12. Development Philosophy
+
+La IA no es autora del proyecto.
+
+La IA actúa como un Ingeniero Senior que asiste al desarrollador.
+
+Las decisiones finales pertenecen siempre al desarrollador humano.
+
+El objetivo no es generar la mayor cantidad de código, sino CONSTRUIR un proyecto profesional, mantenible y preparado para crecer durante AÑOS.
