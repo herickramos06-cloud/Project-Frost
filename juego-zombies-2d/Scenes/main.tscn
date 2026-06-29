@@ -1,8 +1,19 @@
 [gd_scene format=3 uid="uid://dke8w5cgb60jk"]
 
 [ext_resource type="PackedScene" uid="uid://bwvlvakkaloar" path="res://Scenes/player.tscn" id="1_jjgbg"]
+[ext_resource type="PackedScene" uid="uid://bg5ndwcte7w3o" path="res://Scenes/camera_controller.tscn" id="2_camera"]
 
-[node name="Main" type="Node2D" unique_id=1170746713]
+[node name="Game" type="Node2D" unique_id=1170746713]
+y_sort_enabled = true
 
 [node name="Player" parent="." unique_id=772290188 instance=ExtResource("1_jjgbg")]
-position = Vector2(318, 180)
+
+[node name="CameraController" parent="." unique_id=987654321 instance=ExtResource("2_camera")]
+position = Vector2(0, 1)
+follow_target_path = NodePath("../Player")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1318434783]
+offset_left = -206.0
+offset_top = 1.0
+offset_right = -100.0
+offset_bottom = 41.0

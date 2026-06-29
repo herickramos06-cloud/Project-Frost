@@ -4,19 +4,15 @@
 [ext_resource type="Texture2D" uid="uid://6emdoe3axy7l" path="res://icon.svg" id="2_v0iea"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_f60y1"]
+radius = 63.0
+height = 126.0
 
 [node name="Player" type="CharacterBody2D" unique_id=772290188]
-motion_mode = 1
 script = ExtResource("1_player")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2046203504]
 shape = SubResource("CapsuleShape2D_f60y1")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1891386436]
+position = Vector2(2, 0)
 texture = ExtResource("2_v0iea")
-
-[node name="Camera2D" type="Camera2D" parent="." unique_id=677218499]
-process_callback = 0
-limit_smoothed = true
-position_smoothing_enabled = true
-position_smoothing_speed = 12.0

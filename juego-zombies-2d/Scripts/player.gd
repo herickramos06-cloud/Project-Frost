@@ -2,7 +2,7 @@ extends CharacterBody2D
 ## Controla el movimiento top-down del jugador en 8 direcciones.
 
 ## Velocidad en píxeles por segundo. Editable desde el inspector.
-@export var speed: float = 200.0
+@export var speed: float = 500.0
 
 
 func _physics_process(_delta: float) -> void:
