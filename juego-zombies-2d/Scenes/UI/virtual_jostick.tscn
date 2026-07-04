@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://bq8iw6llktuxp"]
+
+[ext_resource type="Script" uid="uid://bi7mk38elclty" path="res://Scripts/UI/virtual_jostick.gd" id="1_sj3ma"]
+[ext_resource type="Texture2D" uid="uid://bdou0neohkeuu" path="res://Assets/Placeholders/Base_Placeholder.jpeg" id="2_ya5wu"]
+
+[node name="VirtualJostick" type="CanvasLayer" unique_id=1660514881]
+
+[node name="Jostick" type="Control" parent="." unique_id=848269395]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("1_sj3ma")
+
+[node name="Base" type="TextureRect" parent="Jostick" unique_id=2025283569]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 15.798
+anchor_top = 8.312
+anchor_right = 15.798
+anchor_bottom = 8.312
+offset_left = -1050.92
+offset_top = -742.48
+offset_right = -690.92004
+offset_bottom = -382.48
+texture = ExtResource("2_ya5wu")
+
+[node name="Stick" type="TextureRect" parent="Jostick" unique_id=1366557720]
+layout_mode = 0
+offset_left = 972.0
+offset_top = 446.0
+offset_right = 1092.0
+offset_bottom = 580.0
