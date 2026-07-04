@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://bq8iw6llktuxp"]
 
-[ext_resource type="Script" uid="uid://bi7mk38elclty" path="res://Scripts/UI/virtual_jostick.gd" id="1_sj3ma"]
-[ext_resource type="Texture2D" uid="uid://bdou0neohkeuu" path="res://Assets/Placeholders/Base_Placeholder.jpeg" id="2_ya5wu"]
+[ext_resource type="Texture2D" uid="uid://d3sefsxwuqotn" path="res://Assets/Placeholders/Base_Placeholder.jpeg" id="2_ya5wu"]
 
 [node name="VirtualJostick" type="CanvasLayer" unique_id=1660514881]
 
@@ -17,7 +16,6 @@ offset_left = -40.0
 offset_top = -40.0
 grow_horizontal = 0
 grow_vertical = 0
-script = ExtResource("1_sj3ma")
 
 [node name="Base" type="TextureRect" parent="Jostick" unique_id=2025283569]
 layout_mode = 1

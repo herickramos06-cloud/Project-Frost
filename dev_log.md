@@ -58,6 +58,18 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
   4. Se corrigió el script en ambas escenas de `virtual_jostick.tscn` a `res://Scripts/UI/virtual_jostick.gd`.
   5. Se re-enlazó la textura `base_placeholder.jpeg` en `Scenes/UI/virtual_jostick.tscn` a la ubicación correcta en `res://Assets/Placeholders/Base_Placeholder.jpeg`.
 
+## 2026-08-04
+
+### Joystick Virtual (Etapa 1: Estructura e Interacción Base)
+* **Sistema:** Interfaz de Usuario / Controles Táctiles (Android)
+* **Decisión:** Implementar detección de toque y arrastre del Stick usando `_gui_input` nativo en el script de control, acoplado al área del nodo.
+* **Motivo:** Evita cálculos redundantes de colisiones o posiciones globales al delegar la detección al propio árbol de UI (Control), dejando listo el sistema para control multitáctil independiente en fases posteriores.
+* **Archivos:** [virtual_jostick.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/UI/virtual_jostick.gd) | [virtual_jostick.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/virtual_jostick.tscn) | [project.godot](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/project.godot)
+* **Correcciones Realizadas:**
+  1. **Anclas y offsets de UI:** Se corrigieron valores corruptos en `virtual_jostick.tscn` que enviaban el joystick fuera de la pantalla. Se restablecieron a la esquina inferior izquierda.
+  2. **Emulación táctil:** Habilitada la opción `pointing/emulate_touch_from_mouse` para simular toques de Android con el ratón de PC.
+  3. **Error de RefCounted:** Corregido el error de herencia nativa provocado por el archivo `virtual_jostick.gd` vacío, inicializando el script correctamente con `extends Control`.
+
 ---
 
 ## Convenciones de Arquitectura
@@ -76,5 +88,5 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 - [ ] Implementar Screen Shake dinámico al recibir daño o disparar.
 - [ ] Configurar límites de pantalla de la cámara usando un TileMap.
-- [ ] Desarrollar sistema de Joystick Virtual para Android.
+- [  ] [/] Fase 2: Desarrollar sistema de Joystick Virtual para Android (Etapa 1: Detección y Seguimiento completados).
 - [ ] Crear IA de persecución para el primer infectado.
