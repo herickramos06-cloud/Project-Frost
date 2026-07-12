@@ -58,7 +58,7 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
   4. Se corrigió el script en ambas escenas de `virtual_jostick.tscn` a `res://Scripts/UI/virtual_jostick.gd`.
   5. Se re-enlazó la textura `base_placeholder.jpeg` en `Scenes/UI/virtual_jostick.tscn` a la ubicación correcta en `res://Assets/Placeholders/Base_Placeholder.jpeg`.
 
-## 2026-08-04
+## 2026-07-04
 
 ### Joystick Virtual (Etapa 1: Estructura e Interacción Base)
 * **Sistema:** Interfaz de Usuario / Controles Táctiles (Android)

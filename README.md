@@ -9,7 +9,7 @@ They are still human.
 IN PRODUCCION
 
 ## Engine
-Godot 4
+Godot 4.6
 
 ## Core Pillars
 - Psychological tension
