@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dke8w5cgb60jk"]
 
-[ext_resource type="PackedScene" uid="uid://bwvlvakkaloar" path="res://Scenes/Player/player.tscn" id="1_jjgbg"]
+[ext_resource type="PackedScene" uid="uid://d22htl1m4xerm" path="res://Scenes/Player/player.tscn" id="1_jjgbg"]
 [ext_resource type="PackedScene" uid="uid://bg5ndwcte7w3o" path="res://Scenes/Player/camera_controller.tscn" id="2_camera"]
-[ext_resource type="PackedScene" uid="uid://bq8iw6llktuxp" path="res://Scenes/UI/virtual_jostick.tscn" id="3_8gbba"]
+[ext_resource type="PackedScene" uid="uid://btsd7s4gnf81f" path="res://Scenes/UI/virtual_jostick.tscn" id="3_8gbba"]
 
 [node name="Game" type="Node2D" unique_id=1170746713]
 y_sort_enabled = true

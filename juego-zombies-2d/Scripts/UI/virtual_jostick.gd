@@ -92,6 +92,9 @@ func _update_stick(global_touch_pos: Vector2) -> void:
 	# Normalize to a -1..1 vector and apply the deadzone.
 	var raw: Vector2 = clamped_offset / max_radius
 	_output = raw if raw.length() >= deadzone else Vector2.ZERO
+	
+	# Inyectar la dirección al InputManager (Autoload global)
+	InputManager.set_joystick_vector(_output)
 
 
 func _release() -> void:
@@ -101,6 +104,9 @@ func _release() -> void:
 	_touch_index = -1
 	_output = Vector2.ZERO
 	_reset_stick_position()
+	
+	# Limpiar la dirección en el InputManager (Autoload global)
+	InputManager.set_joystick_vector(Vector2.ZERO)
 
 
 func _reset_stick_position() -> void:

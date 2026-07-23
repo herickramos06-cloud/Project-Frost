@@ -15,6 +15,10 @@ run/main_scene="uid://dke8w5cgb60jk"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+InputManager="*res://Scripts/Core/input_manager.gd"
+
 [display]
 
 window/size/viewport_width=1280

@@ -70,6 +70,28 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
   2. **Emulación táctil:** Habilitada la opción `pointing/emulate_touch_from_mouse` para simular toques de Android con el ratón de PC.
   3. **Error de RefCounted:** Corregido el error de herencia nativa provocado por el archivo `virtual_jostick.gd` vacío, inicializando el script correctamente con `extends Control`.
 
+## 2026-07-22
+
+### Joystick Virtual (Etapa 2: Límite Radial y Consolidación de Escenas)
+* **Sistema:** Interfaz de Usuario / Controles Táctiles (Android)
+* **Decisión:** 
+  1. Implementar restricción de movimiento del Stick para mantenerlo dentro del radio del joystick usando `Vector2.limit_length()`.
+  2. Exponer un parámetro exportable `@export_range` (`max_radius_ratio`) para ajustar el rango máximo de desplazamiento.
+  3. Consolidar el árbol de escenas eliminando los duplicados obsoletos de la raíz de `Scenes/` y migrando las dependencias de `main.tscn` a las subcarpetas correctas (`Scenes/Player/` y `Scenes/UI/`).
+* **Motivo:** Lograr una sensación de control táctil profesional evitando que el stick salga de la base visual. Resolver la ambigüedad y confusión de desarrollo provocada por las escenas huérfanas/duplicadas en la estructura de archivos.
+* **Archivos:** [virtual_jostick.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/UI/virtual_jostick.gd) | [main.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/main.tscn) | [player.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Player/player.tscn) | [virtual_jostick.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/UI/virtual_jostick.tscn)
+
+---
+
+### Joystick Virtual (Etapa 3: Integración y Desacoplamiento de Controles)
+* **Sistema:** Entrada de Usuario / Arquitectura
+* **Decisión:** Implementar un Autoload `InputManager` como intermediario neutro entre el emisor (`VirtualJoystick`) y el consumidor (`Player`).
+* **Motivo:** Desacoplar la física del jugador de la interfaz gráfica y los métodos de captura específicos. Cumple con los principios de Responsabilidad Única (SRP) y Abierto/Cerrado (OCP).
+* **Archivos:** [input_manager.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Core/input_manager.gd) | [player.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Player/player.gd) | [virtual_jostick.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/UI/virtual_jostick.gd)
+* **Detalles y Correcciones:**
+  1. **Simplificación Móvil (YAGNI):** Se removió el soporte de teclado redundante del InputManager, haciendo que responda estrictamente al joystick, confiando en la emulación de clic/toque en PC.
+  2. **Resolución de Referencia a Autoload:** Se corrigió un bug donde el joystick verificaba la existencia del Autoload mediante `Engine.has_singleton("InputManager")`. Como los Autoloads no son singletons nativos de C++ sino nodos del árbol de escena, se removió la verificación para llamar al manager directamente, resolviendo el fallo de transmisión de datos.
+
 ---
 
 ## Convenciones de Arquitectura
@@ -88,5 +110,5 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 - [ ] Implementar Screen Shake dinámico al recibir daño o disparar.
 - [ ] Configurar límites de pantalla de la cámara usando un TileMap.
-- [  ] [/] Fase 2: Desarrollar sistema de Joystick Virtual para Android (Etapa 1: Detección y Seguimiento completados).
+- [x] Desarrollar sistema de Joystick Virtual para Android (Completado: Etapas 1, 2 y 3).
 - [ ] Crear IA de persecución para el primer infectado.

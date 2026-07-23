@@ -9,8 +9,8 @@ class_name CameraController
 # Speed of Camera2D's native smoothing. High values = follows almost
 # instantáneo, valores bajos = más "lag" cinematográfico.
 # instantly, low values = more cinematic "lag".
-@export_range(1.0, 30.0, 0.5) var follow_speed: float = 8.0
 
+@export_range(1.0, 30.0, 0.5) var follow_speed: float = 8.0
 var _follow_target: Node2D
 
 

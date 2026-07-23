@@ -6,8 +6,8 @@ extends CharacterBody2D
 
 
 func _physics_process(_delta: float) -> void:
-	# Lee el Input Map y normaliza automáticamente en diagonales.
-	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	# Lee el vector unificado de movimiento a través del InputManager global
+	var direction := InputManager.get_move_direction()
 
 	velocity = direction * speed
 	move_and_slide()
