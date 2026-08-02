@@ -3,22 +3,20 @@
 [ext_resource type="PackedScene" uid="uid://d22htl1m4xerm" path="res://Scenes/Player/player.tscn" id="1_jjgbg"]
 [ext_resource type="PackedScene" uid="uid://bg5ndwcte7w3o" path="res://Scenes/Player/camera_controller.tscn" id="2_camera"]
 [ext_resource type="PackedScene" uid="uid://btsd7s4gnf81f" path="res://Scenes/UI/virtual_jostick.tscn" id="3_8gbba"]
+[ext_resource type="PackedScene" uid="uid://dk1kmxrw3u35l" path="res://Scenes/World/world.tscn" id="4_jjvhh"]
 
 [node name="Game" type="Node2D" unique_id=1170746713]
 y_sort_enabled = true
 
 [node name="Player" parent="." unique_id=772290188 instance=ExtResource("1_jjgbg")]
 position = Vector2(362, 179)
+speed = 400.0
 
 [node name="CameraController" parent="." unique_id=987654321 instance=ExtResource("2_camera")]
 position = Vector2(639, 360)
 position_smoothing_enabled = true
 follow_target_path = NodePath("../Player")
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1318434783]
-offset_left = 484.0
-offset_top = 343.0
-offset_right = 590.0
-offset_bottom = 383.0
-
 [node name="VirtualJostick" parent="." unique_id=1660514881 instance=ExtResource("3_8gbba")]
+
+[node name="World" parent="." unique_id=1650684174 instance=ExtResource("4_jjvhh")]

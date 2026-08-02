@@ -13,7 +13,6 @@ config_version=5
 config/name="JUEGO_ZOMBIES_2D"
 run/main_scene="uid://dke8w5cgb60jk"
 config/features=PackedStringArray("4.6", "GL Compatibility")
-config/icon="res://icon.svg"
 
 [autoload]
 
@@ -61,6 +60,7 @@ pointing/emulate_touch_from_mouse=true
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
