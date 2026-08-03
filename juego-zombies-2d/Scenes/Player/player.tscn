@@ -4,8 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://c8306ul5ihghm" path="res://Assets/Placeholders/player_1.png" id="2_a3d8c"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_f60y1"]
-radius = 50.0
-height = 100.0
+radius = 26.0
+height = 88.0
 
 [node name="Player" type="CharacterBody2D" unique_id=772290188]
 script = ExtResource("1_player")
