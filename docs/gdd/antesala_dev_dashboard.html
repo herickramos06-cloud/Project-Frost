@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antesala Zombies 2032 — Dev Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #05080f;
+  --bg2:       #080d18;
+  --bg3:       #0c1222;
+  --border:    #131e33;
+  --border2:   #1e2e48;
+  --text:      #c8d8e8;
+  --muted:     #4a6070;
+  --dim:       #2a3a4a;
+  --accent:    #2a7bff;
+  --accent2:   #0a3a8a;
+  --danger:    #cc3333;
+  --warn:      #aa7700;
+  --success:   #2a8a4a;
+  --purple:    #6a3aaa;
+  --teal:      #1a7a7a;
+  --white:     #f0f4f8;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'Syne', sans-serif;
+  --serif:     'Crimson Pro', Georgia, serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* LAYOUT */
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* NAV */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5,8,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 52px;
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-right: auto;
+  opacity: 0.8;
+}
+.nav-links {
+  display: flex;
+  gap: 0;
+  list-style: none;
+}
+.nav-links a {
+  display: block;
+  padding: 0 14px;
+  height: 52px;
+  line-height: 52px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  border-right: 1px solid var(--border);
+  transition: color 0.2s, background 0.2s;
+}
+.nav-links a:first-child { border-left: 1px solid var(--border); }
+.nav-links a:hover { color: var(--accent); background: rgba(42,123,255,0.05); }
+
+/* HERO */
+.hero {
+  padding: 80px 0 60px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0; right: -24px;
+  width: 400px; height: 400px;
+  background: radial-gradient(ellipse at top right, rgba(42,123,255,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.7;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-tag::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+.hero h1 {
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 12px;
+}
+.hero h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+.hero-sub {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  font-style: italic;
+}
+.hero-meta {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.meta-item label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.meta-item span {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+.meta-item span.ok { color: var(--success); }
+.meta-item span.warn { color: var(--warn); }
+
+/* SECTION HEADERS */
+.sec-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 24px;
+  padding-top: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sec-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.sec-heading {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.8px;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.sec-lead {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 640px;
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+
+/* CARDS */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+.card p {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: #6a7a8a;
+  line-height: 1.7;
+}
+
+/* GRIDS */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+/* ===================== SECTION 1: MENTALIDAD ===================== */
+.mindset-banner {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.mindset-banner .icon {
+  font-family: var(--mono);
+  font-size: 28px;
+  color: var(--accent);
+  opacity: 0.6;
+  line-height: 1;
+  min-width: 32px;
+}
+.mindset-banner h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.mindset-banner p {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.formula-block {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.formula {
+  font-family: var(--mono);
+  font-size: 22px;
+  color: var(--white);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.formula span.op { color: var(--muted); }
+.formula span.hi { color: var(--accent); }
+.formula span.res { color: var(--success); }
+.formula-note {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ===================== SECTION 2: CICLO DE TRABAJO ===================== */
+.pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 32px;
+}
+.pipe-step {
+  display: grid;
+  grid-template-columns: 80px 1px 1fr;
+  gap: 0 24px;
+  position: relative;
+}
+.pipe-num {
+  text-align: right;
+  padding-top: 2px;
+}
+.pipe-num .n {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  opacity: 0.6;
+}
+.pipe-num .tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dim);
+  display: block;
+  margin-top: 2px;
+}
+.pipe-line {
+  background: var(--border);
+  position: relative;
+}
+.pipe-line::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
+}
+.pipe-content {
+  padding: 0 0 36px 0;
+}
+.pipe-content h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+.pipe-content p {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: #5a7080;
+  line-height: 1.7;
+  max-width: 560px;
+}
+.pipe-content .applied {
+  margin-top: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+.pipe-content .applied-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 6px;
+}
+.pipe-content .applied p {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #4a7070;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===================== SECTION 3: SPECS ===================== */
+.spec-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.spec-head {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.spec-head .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.spec-head .dot.g { background: var(--success); }
+.spec-head .dot.y { background: var(--warn); }
+.spec-head .dot.r { background: var(--danger); }
+.spec-head span {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+}
+.spec-body {
+  padding: 20px;
+}
+.spec-line {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #5a7080;
+  line-height: 2;
+  padding: 1px 0;
+}
+.spec-line .k { color: #4a80aa; }
+.spec-line .s { color: #5aaa7a; }
+.spec-line .n { color: #aa8a4a; }
+.spec-line .c { color: var(--dim); }
+
+/* ===================== SECTION 4: FASES ===================== */
+.phase-track {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.phase-seg {
+  flex: 1;
+  padding: 14px 12px;
+  border-right: 1px solid var(--border);
+  background: var(--bg2);
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+.phase-seg:last-child { border-right: none; }
+.phase-seg.active { background: var(--bg3); }
+.phase-seg.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+.phase-seg .p-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.phase-seg .p-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 2px;
+}
+.phase-seg .p-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+.phase-detail {
+  display: none;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px;
+}
+.phase-detail.active { display: block; }
+.phase-detail h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 12px;
+  letter-spacing: -0.4px;
+}
+.phase-detail .desc {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.task-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.task-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #5a7080;
+  line-height: 1.5;
+}
+.task-list li::before {
+  content: '—';
+  color: var(--accent);
+  opacity: 0.4;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.prompt-box {
+  margin-top: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 16px 20px;
+}
+.prompt-box .prompt-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+.prompt-box pre {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #5a8080;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.prompt-box pre .ph { color: #3a6aaa; }
+.prompt-box pre .val { color: #5aaa7a; }
+.prompt-box pre .com { color: var(--dim); }
+
+/* ===================== SECTION 5: ROL ===================== */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.role-cell {
+  background: var(--bg2);
+  padding: 24px 20px;
+}
+.role-cell .r-icon {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.role-cell h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.role-cell p {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: #4a6070;
+  line-height: 1.6;
+}
+
+/* ===================== SECTION 6: STACK ===================== */
+.stack-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.stack-table thead tr {
+  border-bottom: 1px solid var(--border2);
+}
+.stack-table thead th {
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-weight: 400;
+}
+.stack-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.stack-table tbody tr:hover { background: var(--bg3); }
+.stack-table tbody td {
+  padding: 12px 16px;
+  color: #4a6070;
+  vertical-align: middle;
+}
+.stack-table tbody td:first-child { color: var(--text); font-weight: 500; }
+.stack-table tbody td:last-child { color: #3a5060; font-size: 11px; }
+.badge {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+.badge.core { background: rgba(42,138,74,0.15); color: #4aaa6a; border: 1px solid rgba(42,138,74,0.2); }
+.badge.ai   { background: rgba(42,123,255,0.12); color: #4a8aff; border: 1px solid rgba(42,123,255,0.2); }
+.badge.ops  { background: rgba(170,119,0,0.15); color: #cc9a30; border: 1px solid rgba(170,119,0,0.2); }
+.badge.opt  { background: rgba(30,30,30,0.5); color: var(--muted); border: 1px solid var(--border2); }
+
+/* ===================== SECTION 7: VERDAD INCÓMODA ===================== */
+.truth-block {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.truth-head {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.truth-head.danger { color: var(--danger); }
+.truth-head.warn   { color: var(--warn); }
+.truth-head.ok     { color: var(--success); }
+.truth-body {
+  padding: 16px 20px;
+}
+.truth-body p {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: #5a7080;
+  line-height: 1.7;
+}
+
+/* ===================== SECTION 8: PRODUCCIÓN ===================== */
+.ops-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.ops-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.ops-card .ops-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(42,123,255,0.08);
+  border: 1px solid rgba(42,123,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--accent);
+  opacity: 0.7;
+  margin-bottom: 14px;
+}
+.ops-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.ops-card p {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: #4a6070;
+  line-height: 1.7;
+}
+
+/* ===================== CIERRE ===================== */
+.closing {
+  padding: 60px 0 0;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+}
+.closing-quote {
+  font-family: var(--serif);
+  font-size: clamp(20px, 3vw, 32px);
+  color: var(--white);
+  font-style: italic;
+  line-height: 1.4;
+  max-width: 700px;
+  margin-bottom: 20px;
+  letter-spacing: -0.3px;
+}
+.closing-quote em {
+  font-style: normal;
+  color: var(--accent);
+}
+.closing-attr {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+
+/* DIVIDER */
+.div { height: 1px; background: var(--border); margin: 0; }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .g2, .g3, .g4, .role-grid { grid-template-columns: 1fr; }
+  .phase-track { flex-direction: column; }
+  .hero h1 { font-size: 36px; }
+  nav { padding: 0 16px; }
+  .nav-links a { padding: 0 10px; font-size: 9px; }
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero, .shell > section { animation: fadeUp 0.5s ease both; }
+.shell > section:nth-child(2) { animation-delay: 0.05s; }
+.shell > section:nth-child(3) { animation-delay: 0.1s; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">AZ-2032 // Dev</span>
+  <ul class="nav-links">
+    <li><a href="#mentalidad">Mentalidad</a></li>
+    <li><a href="#ciclo">Ciclo</a></li>
+    <li><a href="#specs">Specs</a></li>
+    <li><a href="#fases">Fases</a></li>
+    <li><a href="#stack">Stack</a></li>
+    <li><a href="#produccion">Producción</a></li>
+  </ul>
+</nav>
+
+<div class="shell">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Game Dev con IA — Panorama completo</div>
+  <h1>Cómo construir<br><em>Antesala Zombies</em><br>con IA en 2026</h1>
+  <p class="hero-sub">Todo lo que necesitas saber para llevar este proyecto desde la idea hasta Steam. No más, no menos.</p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <label>Engine</label>
+      <span>Godot 4</span>
+    </div>
+    <div class="meta-item">
+      <label>Estado</label>
+      <span class="ok">Viable</span>
+    </div>
+    <div class="meta-item">
+      <label>Alcance v1</label>
+      <span>Capítulo 1 + Demo</span>
+    </div>
+    <div class="meta-item">
+      <label>Riesgo principal</label>
+      <span class="warn">No terminar</span>
+    </div>
+    <div class="meta-item">
+      <label>Diferenciador</label>
+      <span>Horror científico</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 1. MENTALIDAD ===================== -->
+<section id="mentalidad">
+  <div class="sec-title">01 — Antes de tocar código</div>
+  <h2 class="sec-heading">El cambio de mentalidad que lo cambia todo</h2>
+  <p class="sec-lead">Hay una manera antigua de hacer juegos y una manera moderna. La diferencia no está en las herramientas — está en el orden de las cosas.</p>
+
+  <div class="formula-block">
+    <div class="formula">
+      <span class="hi">Tu criterio</span>
+      <span class="op"> × </span>
+      <span>IA</span>
+      <span class="op"> = </span>
+      <span class="res">Juego real</span>
+    </div>
+    <div class="formula-note">Si tu criterio es bueno, la IA te hace volar. Si tu criterio es vago, la IA te da caos ordenado.</div>
+  </div>
+
+  <div class="g2">
+    <div class="mindset-banner" style="margin-bottom:0">
+      <div class="icon">✗</div>
+      <div>
+        <h3>La manera antigua</h3>
+        <p>Abres el editor, empiezas a escribir código, te pierdes en detalles técnicos, a las dos semanas tienes un cuadrado que se mueve y no sabes hacia dónde va el proyecto.</p>
+      </div>
+    </div>
+    <div class="mindset-banner" style="margin-bottom:0; border-left-color: var(--success)">
+      <div class="icon" style="color:var(--success)">✓</div>
+      <div>
+        <h3>La manera moderna</h3>
+        <p>Defines qué construyes en papel, le das instrucciones precisas a la IA, revisas lo que genera, y supervisas el sistema completo. Tú diseñas. La IA construye.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 12px;" class="g3">
+    <div class="card">
+      <div class="card-head">Tú pones</div>
+      <h3>El criterio</h3>
+      <p>Sabes qué hace el horror científico diferente. Sabes cómo debe sentirse el sigilo. Sabes cuándo algo no está bien. Eso no lo reemplaza la IA.</p>
+    </div>
+    <div class="card">
+      <div class="card-head">La IA pone</div>
+      <h3>La velocidad</h3>
+      <p>Genera el código base, sugiere arquitecturas, escribe tests, crea variaciones. Hace en horas lo que antes tardaba días.</p>
+    </div>
+    <div class="card">
+      <div class="card-head">Juntos hacen</div>
+      <h3>Un juego terminado</h3>
+      <p>Que es exactamente lo que importa. No el código más elegante del mundo. Un juego que la gente puede descargar y jugar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 2. CICLO DE TRABAJO ===================== -->
+<section id="ciclo">
+  <div class="sec-title">02 — El método</div>
+  <h2 class="sec-heading">El ciclo real de trabajo</h2>
+  <p class="sec-lead">Cada sistema del juego — jugador, infectados, evidencia, sonido — pasa por el mismo ciclo. Siempre en este orden.</p>
+
+  <div class="pipeline">
+
+    <div class="pipe-step">
+      <div class="pipe-num"><span class="n">01</span><span class="tag">Pensar</span></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-content">
+        <h3>Definir en papel antes de abrir el editor</h3>
+        <p>¿Qué hace exactamente este sistema? ¿Qué entra, qué sale, qué reglas tiene? Si no puedes explicarlo en dos párrafos sin código, no estás listo para construirlo.</p>
+        <div class="applied">
+          <div class="applied-label">Aplicado a tu juego</div>
+          <p>"El infectado en Fase 1 patrulla su zona. Tiene un radio de escucha de 3 tiles. Si escucha ruido mayor que 2 (el jugador corriendo), cambia a estado alerta y busca durante 5 segundos. Si no encuentra nada, vuelve a patrullar."</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipe-step">
+      <div class="pipe-num"><span class="n">02</span><span class="tag">Spec</span></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-content">
+        <h3>Escribir la spec como si le hablaras a un dev junior</h3>
+        <p>La spec es el documento que le das a la IA. Tiene que ser clara, concreta y sin ambigüedad. Si la spec es vaga, el resultado es vago. Esta es la habilidad más importante del dev moderno.</p>
+        <div class="applied">
+          <div class="applied-label">Regla práctica</div>
+          <p>Incluye siempre: nombres exactos de los módulos, comportamientos con números (velocidad: 120 px/s, no "rápido"), casos de error ("si el jugador está fuera del mapa, vuelve al último punto válido"), y el formato de salida que esperas.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipe-step">
+      <div class="pipe-num"><span class="n">03</span><span class="tag">Construir</span></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-content">
+        <h3>La IA construye — tú revisas el plan primero</h3>
+        <p>Antes de que la IA escriba una sola línea, pídele que te muestre su plan. Si el plan tiene sentido, avanzas. Si no, corriges antes de que construya en la dirección equivocada.</p>
+        <div class="applied">
+          <div class="applied-label">Prompt base para Godot 4</div>
+          <p>Actúa como desarrollador experto en Godot 4 con GDScript. Primero muéstrame el PLAN de implementación (nombres de nodos, scripts, señales), sin código aún. Luego implementa paso a paso.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipe-step">
+      <div class="pipe-num"><span class="n">04</span><span class="tag">Verificar</span></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-content">
+        <h3>Probar que hace lo que debe hacer</h3>
+        <p>No asumas que funciona porque corre. Prueba cada caso concreto. El infectado detecta al jugador en rango. El infectado NO detecta cuando el jugador está agachado. La vida baja exactamente en X por contacto.</p>
+        <div class="applied">
+          <div class="applied-label">Lista de verificación mínima por sistema</div>
+          <p>Caso base funciona → Casos límite no rompen → No afecta el rendimiento → Se integra sin conflicto con los otros sistemas existentes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipe-step">
+      <div class="pipe-num"><span class="n">05</span><span class="tag">Iterar</span></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-content">
+        <h3>Ajustar hasta que se sienta bien</h3>
+        <p>La primera versión que genera la IA es un punto de partida, no el resultado final. Los números van a estar mal. La velocidad va a sentirse extraña. La detección va a ser frustrante o demasiado fácil. Iteras con la IA hasta que funciona como diseñaste.</p>
+        <div class="applied">
+          <div class="applied-label">Aplicado a la IA de infectados</div>
+          <p>Primera versión: el infectado te detecta aunque estés agachado. Corriges la spec. Segunda versión: el radio de detección no cambia con el tiempo. Añades la variable de progresión. Tercera versión: funciona.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipe-step" style="position:relative">
+      <div class="pipe-num"><span class="n">06</span><span class="tag">Documentar</span></div>
+      <div class="pipe-line" style="background: transparent;"></div>
+      <div class="pipe-content">
+        <h3>Guardar las decisiones tomadas</h3>
+        <p>Mantén un archivo <code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;color:#4a8a70">dev_log.md</code> con las decisiones importantes: por qué elegiste ese número, por qué ese enfoque y no otro. Cuando vuelvas al proyecto después de dos semanas, o cuando le pidas ayuda a la IA, este archivo vale oro.</p>
+        <div class="applied">
+          <div class="applied-label">Formato sugerido</div>
+          <p>Fecha — Sistema — Decisión — Por qué. Ejemplo: "2026-06 — IA Infectados — Velocidad base: 90px/s — Más rápido se sentía injusto, más lento eliminaba la tensión."</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== 3. SPECS ===================== -->
+<section id="specs">
+  <div class="sec-title">03 — El arte de comunicarle a la IA</div>
+  <h2 class="sec-heading">Escribir specs que funcionan</h2>
+  <p class="sec-lead">Un prompt mal escrito produce código que corre pero no hace lo que querías. Un prompt bien escrito produce exactamente lo que diseñaste.</p>
+
+  <div class="g2">
+    <div>
+      <div class="spec-block">
+        <div class="spec-head">
+          <div class="dot r"></div>
+          <div class="dot y"></div>
+          <div class="dot g"></div>
+          <span>prompt_malo.txt</span>
+        </div>
+        <div class="spec-body">
+          <div class="spec-line"><span class="c">// Lo que NO funciona</span></div>
+          <div class="spec-line"><span class="s">"hazme la IA de los zombies"</span></div>
+          <div class="spec-line" style="margin-top:8px"><span class="c">// Resultado: algo que corre</span></div>
+          <div class="spec-line"><span class="c">// pero no respeta tu diseño</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="spec-block">
+        <div class="spec-head">
+          <div class="dot r"></div>
+          <div class="dot y"></div>
+          <div class="dot g"></div>
+          <span>prompt_pro.txt</span>
+        </div>
+        <div class="spec-body">
+          <div class="spec-line"><span class="k">Actúa como</span> <span class="s">dev experto en Godot 4</span></div>
+          <div class="spec-line"><span class="k">Contexto:</span> <span class="n">Antesala Zombies 2032</span></div>
+          <div class="spec-line"><span class="c">  — 2D top-down, GDScript</span></div>
+          <div class="spec-line"><span class="c">  — infectados no son zombies</span></div>
+          <div class="spec-line"><span class="k">Sistema:</span> <span class="n">IA del infectado Fase 1</span></div>
+          <div class="spec-line"><span class="k">Estados:</span> patrullar / alerta / perseguir</div>
+          <div class="spec-line"><span class="k">Radio escucha:</span> <span class="n">3 tiles</span></div>
+          <div class="spec-line"><span class="k">Umbral activación:</span> <span class="n">ruido &gt; 2</span></div>
+          <div class="spec-line"><span class="k">Tiempo alerta:</span> <span class="n">5 segundos</span></div>
+          <div class="spec-line"><span class="k">Salida:</span> script enemy_ai.gd modular</div>
+          <div class="spec-line"><span class="k">Modo:</span> plan primero, luego código</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 12px;" class="g3">
+    <div class="card">
+      <div class="card-head">Regla 1</div>
+      <h3>Nombres exactos</h3>
+      <p>Llama a las cosas como las llamas tú. "infectado", no "zombie". "evidencia", no "item". "Fase 1, 2, 3", como en tu GDD. La IA usará tus nombres y el código será tuyo.</p>
+    </div>
+    <div class="card">
+      <div class="card-head">Regla 2</div>
+      <h3>Números concretos</h3>
+      <p>Velocidad: 90px/s. Radio: 3 tiles. Tiempo: 5 segundos. No "rápido", "cerca" o "un rato". Los números se pueden ajustar. Los conceptos vagos generan código vago.</p>
+    </div>
+    <div class="card">
+      <div class="card-head">Regla 3</div>
+      <h3>Formato de salida</h3>
+      <p>Dile qué archivo quieres, cómo se llama y qué estructura debe tener. En Godot: "un script GDScript que extiende CharacterBody2D, con estas señales, sin lógica de UI adentro".</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 4. FASES ===================== -->
+<section id="fases">
+  <div class="sec-title">04 — La hoja de ruta</div>
+  <h2 class="sec-heading">De la nada a Steam, por fases</h2>
+  <p class="sec-lead">Cada fase termina con algo que existe en el mundo real. No código en un disco duro — algo que alguien puede ver, jugar o descargar.</p>
+
+  <div class="phase-track" id="phaseTrack">
+    <div class="phase-seg active" onclick="showPhase(0)">
+      <div class="p-num">Fase 0</div>
+      <div class="p-name">Fundamentos</div>
+      <div class="p-time">2–4 semanas</div>
+    </div>
+    <div class="phase-seg" onclick="showPhase(1)">
+      <div class="p-num">Fase 1</div>
+      <div class="p-name">Prototipo</div>
+      <div class="p-time">1–3 meses</div>
+    </div>
+    <div class="phase-seg" onclick="showPhase(2)">
+      <div class="p-num">Fase 2</div>
+      <div class="p-name">Demo pública</div>
+      <div class="p-time">3–6 meses</div>
+    </div>
+    <div class="phase-seg" onclick="showPhase(3)">
+      <div class="p-num">Fase 3</div>
+      <div class="p-name">Juego completo</div>
+      <div class="p-time">Post-demo</div>
+    </div>
+  </div>
+
+  <div id="phase-0" class="phase-detail active">
+    <h3>Fase 0 — Decisiones que no puedes posponer</h3>
+    <p class="desc">Antes de escribir código existe una lista de decisiones que, si no las tomas ahora, te van a detener en el peor momento. Esta fase no produce código — produce claridad.</p>
+    <ul class="task-list">
+      <li>Confirmar Godot 4 como engine definitivo (está en tu GDD, ciérralo)</li>
+      <li>Definir en papel el scope exacto del Capítulo 1: número de habitaciones, infectados, piezas de evidencia, tiempo estimado de juego</li>
+      <li>Decidir paleta de colores base y hacer los primeros sprites del jugador (aunque sean placeholder)</li>
+      <li>Crear repositorio en GitHub con estructura de carpetas del proyecto</li>
+      <li>Escribir el agent.md: las reglas de cómo trabajará la IA contigo en este proyecto</li>
+      <li>Crear cuenta pública como dev y publicar el primer post — hoy, esta semana</li>
+    </ul>
+    <div class="prompt-box">
+      <div class="prompt-label">Contenido de tu agent.md</div>
+      <pre>
+<span class="ph"># Reglas del proyecto — Antesala Zombies 2032</span>
+
+<span class="ph">## Engine</span>
+<span class="val">Godot 4 — GDScript — sin C#</span>
+
+<span class="ph">## Arquitectura</span>
+<span class="val">player.gd       → movimiento, ruido, vida
+infected.gd     → IA, estados, detección
+evidence.gd     → recolección, inventario
+game_manager.gd → lógica global, finales
+sound_manager.gd → audio dinámico</span>
+
+<span class="ph">## Reglas de código</span>
+<span class="com">- Scripts modulares, uno por entidad
+- Nombres en inglés (archivos), español (comentarios)
+- Señales para comunicación entre nodos
+- Sin lógica de UI dentro de scripts de gameplay
+- Cada función: máximo 30 líneas</span>
+
+<span class="ph">## Terminología del proyecto</span>
+<span class="com">"infectados" no "zombies" / "evidencia" no "items"
+"Agente Boreal-0" / "la organización" / "base ártica"</span></pre>
+    </div>
+  </div>
+
+  <div id="phase-1" class="phase-detail">
+    <h3>Fase 1 — El prototipo que importa</h3>
+    <p class="desc">Una habitación. El jugador se mueve. Hay dos infectados con IA básica. Hay una pieza de evidencia que se puede recoger. Hay una salida. El loop completo funciona. No importa el arte — importa la sensación.</p>
+    <ul class="task-list">
+      <li>Movimiento del jugador: 8 direcciones, correr vs caminar, con generación de ruido</li>
+      <li>Sistema de ruido: cada acción genera un valor, los infectados lo detectan</li>
+      <li>IA de infectado Fase 1: patrullar → alerta → perseguir → perder rastro</li>
+      <li>Sistema de vida del jugador: barra, daño por contacto, game over</li>
+      <li>Un objeto de evidencia recogible con texto o audio</li>
+      <li>Zona de escape funcional que muestra el tiempo sobrevivido</li>
+      <li>Primer devlog público mostrando el gameplay aunque sea feo</li>
+    </ul>
+    <div class="prompt-box">
+      <div class="prompt-label">Prompt para el sistema de movimiento del jugador</div>
+      <pre>
+<span class="ph">Actúa como dev experto en Godot 4 con GDScript.</span>
+
+<span class="com">Contexto: Antesala Zombies 2032</span>
+<span class="com">2D top-down, perspectiva cenital, horror atmosférico</span>
+
+<span class="ph">Sistema a implementar: player.gd</span>
+
+<span class="val">Requisitos:
+- Movimiento en 8 direcciones con WASD
+- Velocidad caminar: 120 px/s
+- Velocidad correr (Shift): 220 px/s  
+- Velocidad agacharse (Ctrl): 60 px/s, sin ruido
+- Ruido generado: andar=1, correr=3, agacharse=0
+- Señal "noise_generated(value)" cuando el ruido cambia
+- Vida: 100 HP, señal "health_changed(current, max)"
+- Sin lógica de cámara ni UI aquí
+
+Modo: muéstrame primero la estructura de nodos
+y señales, sin código todavía.</span></pre>
+    </div>
+  </div>
+
+  <div id="phase-2" class="phase-detail">
+    <h3>Fase 2 — La demo que la gente puede descargar</h3>
+    <p class="desc">El Capítulo 1 completo. Arte definitivo o casi definitivo. Audio. La IA de infectados en Fases 1 y 2. Sistema de evidencia con contenido real. Los tres finales basados en evidencia recolectada. Se publica en itch.io.</p>
+    <ul class="task-list">
+      <li>Laboratorio y dormitorios: dos zonas completas con arte definitivo</li>
+      <li>IA de infectados Fase 1 y 2: detección por ruido y visual, cambio de comportamiento</li>
+      <li>5–8 piezas de evidencia con texto o audio grabado</li>
+      <li>Sistema de evidencia: inventario limitado, porcentaje de recolección</li>
+      <li>Tres finales implementados según % de evidencia</li>
+      <li>Audio ambiental: drones fríos, pasos, respiración del jugador</li>
+      <li>HUD mínimo: indicador de ruido y evidencia, sin barra de vida obvia</li>
+      <li>Publicación en itch.io y página en Steam para wishlists</li>
+    </ul>
+    <div class="prompt-box">
+      <div class="prompt-label">Prompt para el sistema de finales</div>
+      <pre>
+<span class="ph">Actúa como dev experto en Godot 4 con GDScript.</span>
+
+<span class="com">Sistema: game_manager.gd — lógica de finales</span>
+
+<span class="val">Reglas del sistema:
+- evidence_collected: int (0–8 piezas)
+- evidence_total: int (8 piezas en el mundo)
+- Porcentaje = evidence_collected / evidence_total
+
+Finales:
+- 0–30%  → Final A "Testigo" → escena ending_a.tscn
+- 31–70% → Final B "Sobreviviente" → ending_b.tscn
+- 71–100%→ Final C "La verdad" → ending_c.tscn
+
+Señales necesarias:
+- "evidence_picked_up(id: String)"
+- "game_ending_triggered(ending: String)"
+
+Sin lógica de escenas aquí — solo cálculo y señales.</span></pre>
+    </div>
+  </div>
+
+  <div id="phase-3" class="phase-detail">
+    <h3>Fase 3 — El juego completo en Steam</h3>
+    <p class="desc">Basado en el feedback real de la demo. Los Capítulos 2–5. La IA de infectados en Fase 3. El exterior ártico. El modo Survival. Precio: $4.99–$7.99 en Steam.</p>
+    <ul class="task-list">
+      <li>Sala de control, almacenes, exterior ártico: las zonas restantes</li>
+      <li>IA en Fase 3: infectados coordinados, comportamiento de grupo</li>
+      <li>Modo Survival: oleadas cronometradas, tabla de clasificación local</li>
+      <li>Todos los finales pulidos con cinemáticas o texto atmosférico</li>
+      <li>Optimización: menos de 16ms de frame time en hardware medio</li>
+      <li>Steam achievements, guardado de progreso entre sesiones</li>
+      <li>Lanzamiento con campaña de contenido: devlogs, clips de gameplay, teasers de lore</li>
+    </ul>
+    <div class="prompt-box">
+      <div class="prompt-label">Lo que más importa en esta fase</div>
+      <pre>
+<span class="com"># Lección principal de los devs indie exitosos:</span>
+
+<span class="ph">No añadas features que no estaban en la spec de la demo.</span>
+
+<span class="val">El feedback de los jugadores te va a decir qué mejorar.
+Escúchalo. La mayoría te dirá "más historia" y "mejor IA".
+Eso ya está en tu diseño.
+
+Lo que NO te dirán: "agrega multijugador", "haz un open world",
+"necesita crafting". Ignora eso.</span>
+
+<span class="com"># El riesgo real de esta fase: scope creep.
+# El antídoto: tu GDD cerrado y tu compromiso público.</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 5. STACK ===================== -->
+<section id="stack">
+  <div class="sec-title">05 — Las herramientas</div>
+  <h2 class="sec-heading">Tu stack completo</h2>
+  <p class="sec-lead">No necesitas el mejor stack del mundo. Necesitas un stack que conozcas bien y que no te ponga obstáculos entre la idea y el juego funcionando.</p>
+
+  <table class="stack-table">
+    <thead>
+      <tr>
+        <th>Herramienta</th>
+        <th>Para qué</th>
+        <th>Tipo</th>
+        <th>Por qué esta y no otra</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Godot 4</td>
+        <td>Engine principal, el corazón del proyecto</td>
+        <td><span class="badge core">Core</span></td>
+        <td>Gratuito, open source, excelente para 2D top-down. Sin royalties en Steam.</td>
+      </tr>
+      <tr>
+        <td>Cursor / Claude Code</td>
+        <td>Tu agente de IA para código</td>
+        <td><span class="badge ai">IA</span></td>
+        <td>Lee tu proyecto directamente, aplica cambios, autocorrige errores. El salto más grande.</td>
+      </tr>
+      <tr>
+        <td>Claude / ChatGPT</td>
+        <td>Diseño, specs, decisiones difíciles</td>
+        <td><span class="badge ai">IA</span></td>
+        <td>Para cuando necesitas pensar algo complejo antes de construirlo. No para generar código directo.</td>
+      </tr>
+      <tr>
+        <td>Aseprite</td>
+        <td>Arte pixel, sprites de jugador e infectados</td>
+        <td><span class="badge core">Core</span></td>
+        <td>Estándar de la industria indie. ~$20 único. Vale cada centavo.</td>
+      </tr>
+      <tr>
+        <td>Git + GitHub</td>
+        <td>Control de versiones, backup, portafolio</td>
+        <td><span class="badge core">Core</span></td>
+        <td>Si el disco duro muere, el juego no muere. Y el repo público es tu portafolio.</td>
+      </tr>
+      <tr>
+        <td>Audacity + Freesound</td>
+        <td>Audio ambiental, sonidos de infectados</td>
+        <td><span class="badge core">Core</span></td>
+        <td>Gratuito. Con procesado básico en Audacity se consigue el efecto ártico degradado que buscas.</td>
+      </tr>
+      <tr>
+        <td>Notion / Trello</td>
+        <td>Hitos, tareas, seguimiento de bugs</td>
+        <td><span class="badge core">Core</span></td>
+        <td>Necesitas ver qué sigue. El dev.log.md en el repo para decisiones técnicas.</td>
+      </tr>
+      <tr>
+        <td>Epidemic Sound</td>
+        <td>Música para el lanzamiento en Steam</td>
+        <td><span class="badge ops">Producción</span></td>
+        <td>Para la demo usa Freesound. Para Steam, necesitas licencias limpias.</td>
+      </tr>
+      <tr>
+        <td>GitHub Actions</td>
+        <td>Tests automáticos al subir código</td>
+        <td><span class="badge ops">Producción</span></td>
+        <td>Gratis con GitHub. Cuando el proyecto crezca, evita que un cambio rompa el build sin que te des cuenta.</td>
+      </tr>
+      <tr>
+        <td>OBS Studio</td>
+        <td>Grabación de gameplay para devlogs</td>
+        <td><span class="badge opt">Opcional</span></td>
+        <td>Gratuito. Tu contenido es tu marketing. Graba desde el primer día.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===================== 6. ROL ===================== -->
+<section>
+  <div class="sec-title">06 — Tu posición en todo esto</div>
+  <h2 class="sec-heading">Lo que eres ahora</h2>
+  <p class="sec-lead">La IA no te reemplaza. Te eleva. Pero solo si sabes qué rol ocupas tú en el sistema.</p>
+
+  <div class="role-grid">
+    <div class="role-cell">
+      <div class="r-icon">Diseñador</div>
+      <h3>El que decide qué se construye</h3>
+      <p>La IA no sabe que los infectados son humanos vivos, no muertos. No sabe que el horror tiene que ser científico. No sabe que la evidencia es el motor narrativo. Eso lo pones tú.</p>
+    </div>
+    <div class="role-cell">
+      <div class="r-icon">Director</div>
+      <h3>El que le da instrucciones claras</h3>
+      <p>Le explicas el contexto, le das la spec, le defines las reglas del proyecto. Cuanto más clara sea tu comunicación, mejor será lo que produce. La claridad es una habilidad técnica.</p>
+    </div>
+    <div class="role-cell">
+      <div class="r-icon">Validador</div>
+      <h3>El que verifica que funciona bien</h3>
+      <p>La IA puede generar código que corre y que aún así no hace lo que diseñaste. Tú lo pruebas, lo juegas, lo rompes. Si algo se siente mal, lo corriges. El criterio es tuyo.</p>
+    </div>
+    <div class="role-cell">
+      <div class="r-icon">Responsable</div>
+      <h3>El que responde cuando falla</h3>
+      <p>El juego tiene un bug en Steam. Un sistema se comporta mal. La IA generó algo incorrecto y no lo viste. La responsabilidad final es tuya. Por eso no puedes dejar de entender lo que construyes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 7. PRODUCCIÓN ===================== -->
+<section id="produccion">
+  <div class="sec-title">07 — Lo que no se ve pero importa</div>
+  <h2 class="sec-heading">Operar el proyecto correctamente</h2>
+  <p class="sec-lead">Esto es lo que separa un proyecto hobby de un proyecto profesional. No es glamoroso, pero sin esto los problemas llegan en el peor momento.</p>
+
+  <div class="ops-grid">
+    <div class="ops-card">
+      <div class="ops-icon">G</div>
+      <h3>Control de versiones estricto</h3>
+      <p>Cada sistema nuevo va en una rama separada. Nada llega al main sin que hayas probado que funciona. Si algo rompe el build, lo detectas antes de que se mezcle con el resto. Git es tu red de seguridad.</p>
+    </div>
+    <div class="ops-card">
+      <div class="ops-icon">T</div>
+      <h3>Tests mínimos por sistema</h3>
+      <p>No necesitas tests perfectos. Necesitas confirmar que el jugador toma daño al contacto, que la evidencia aumenta el contador, que los infectados no traspasan paredes. Una lista de verificación manual funciona para proyectos solos.</p>
+    </div>
+    <div class="ops-card">
+      <div class="ops-icon">D</div>
+      <h3>Dev log actualizado</h3>
+      <p>Cada decisión importante anotada con fecha, sistema y razonamiento. Cuando la IA te ayude en el futuro, le das este archivo y tiene el contexto completo del proyecto. Cuando vuelvas después de un descanso, sabes exactamente dónde estabas.</p>
+    </div>
+    <div class="ops-card">
+      <div class="ops-icon">R</div>
+      <h3>Hitos públicos que no puedes ignorar</h3>
+      <p>Publicar en redes que "esta semana termino el sistema de ruido" crea una responsabilidad externa que el trabajo en privado no tiene. El burnout del desarrollador solitario se combate con comunidad y compromisos pequeños y frecuentes.</p>
+    </div>
+    <div class="ops-card">
+      <div class="ops-icon">S</div>
+      <h3>Scope cerrado y escrito</h3>
+      <p>El Capítulo 1 tiene un número exacto de habitaciones, infectados y evidencias. Eso no cambia porque se te ocurra algo nuevo. Lo nuevo va a una lista de "para después". El scope abierto es el modo más común de no terminar un juego.</p>
+    </div>
+    <div class="ops-card">
+      <div class="ops-icon">P</div>
+      <h3>Backup fuera del disco</h3>
+      <p>GitHub es tu backup principal. Si tu computadora se rompe hoy, ¿cuánto trabajo pierdes? Si la respuesta es más de una semana, algo está mal. Commitea frecuente. El repositorio público también es tu portafolio.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px;" class="g3">
+    <div class="truth-block">
+      <div class="truth-head danger">Riesgo real #1</div>
+      <div class="truth-body"><p>El scope crece sin que te des cuenta. Añades una mecánica nueva. Luego otra. El Capítulo 1 que iba a tener 2 zonas ahora tiene 6. Nunca termina.</p></div>
+    </div>
+    <div class="truth-block">
+      <div class="truth-head warn">Riesgo real #2</div>
+      <div class="truth-body"><p>El burnout solitario. Trabajas meses sin feedback externo y sin nadie que vea el progreso. La energía se acaba. Por eso el contenido público es parte del sistema, no opcional.</p></div>
+    </div>
+    <div class="truth-block">
+      <div class="truth-head ok">La solución para ambos</div>
+      <div class="truth-body"><p>Hitos pequeños, públicos y frecuentes. Cada dos semanas hay algo que mostrar. Aunque sea un gif de 10 segundos. El compromiso público es el antídoto.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CIERRE -->
+<div class="closing">
+  <p class="closing-quote">"El mundo aún no lo sabe… pero ya <em>empezó</em>."</p>
+  <p class="closing-attr">Antesala Zombies 2032 — Dev Dashboard v1.0</p>
+</div>
+
+</div><!-- end shell -->
+
+<script>
+function showPhase(index) {
+  document.querySelectorAll('.phase-seg').forEach((seg, i) => {
+    seg.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.phase-detail').forEach((detail, i) => {
+    detail.classList.toggle('active', i === index);
+  });
+}
+</script>
+
+</body>
+</html>
