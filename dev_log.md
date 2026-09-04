@@ -111,6 +111,20 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-04
+
+### Color de Fondo del Mundo (y aplazamiento de los límites de cámara)
+* **Sistema:** Render / Cámara
+* **Decisión:** Definir `default_clear_color` en `#070d14` (el "negro profundo" de la paleta del GDD §07) **en lugar de** configurar los límites de cámara ahora.
+* **Motivo:** Al acercarse a cualquier muro, la cámara —que siempre se centra en el Player— encuadra zonas sin tiles pintados y mostraba el gris por defecto de Godot, con aspecto de error. Existían dos soluciones: limitar la cámara con `set_map_limits()`, o pintar el fondo. La habitación actual mide 1344 × 768 px contra un viewport de 1280 × 720, es decir **apenas 64 px de recorrido horizontal**: cualquier límite correcto dejaría la cámara prácticamente estática. Como el cuarto es provisional y el mapa del Capítulo 1 será mucho mayor, limitar hoy resolvería bien un problema que todavía no existe y a cambio congelaría la cámara. El color de fondo elimina el defecto visual **sin imponer ninguna restricción a la cámara** y sigue siendo válido cuando el mapa crezca.
+* **Archivos:** [project.godot](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/project.godot)
+* **Detalles:**
+  1. El área fuera del mapa deja de leerse como un fallo de render y pasa a leerse como oscuridad, coherente con el GDD §07 ("las zonas oscuras son más peligrosas") y con la ambientación de una base sin iluminar.
+  2. `set_map_limits()` sigue existiendo en `camera_controller.gd` sin llamador. Se aplicará cuando el mapa del Capítulo 1 exista; como el rectángulo se calcularía con `get_used_rect()`, el código servirá para cualquier tamaño sin ajustar números a mano.
+* **Verificación:** Godot 4.6.2 headless. `ProjectSettings` devuelve `#070d14` y `RenderingServer.get_default_clear_color()` confirma el mismo valor.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -130,7 +144,7 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 ## Próximos Pasos
 
 - [ ] Implementar Screen Shake dinámico al recibir daño o disparar.
-- [ ] Configurar límites de pantalla de la cámara usando un TileMap.
+- [ ] **Aplazado hasta el mapa del Capítulo 1:** configurar los límites de cámara con `set_map_limits()` a partir del `get_used_rect()` del TileMap. Con la habitación provisional actual (1344 × 768 px contra un viewport de 1280 × 720) cualquier límite dejaría la cámara casi estática. Mientras tanto, el fondo `#070d14` cubre el problema visual.
 - [x] Desarrollar sistema de Joystick Virtual para Android (Completado: Etapas 1, 2 y 3).
 - [x] Spawn dinámico del Player desde `World` mediante `PlayerSpawn` (Marker2D).
 - [ ] Crear IA de persecución para el primer infectado.
