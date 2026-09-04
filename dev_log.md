@@ -113,15 +113,19 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ## 2026-09-04
 
-### Color de Fondo del Mundo (y aplazamiento de los límites de cámara)
-* **Sistema:** Render / Cámara
-* **Decisión:** Definir `default_clear_color` en `#070d14` (el "negro profundo" de la paleta del GDD §07) **en lugar de** configurar los límites de cámara ahora.
-* **Motivo:** Al acercarse a cualquier muro, la cámara —que siempre se centra en el Player— encuadra zonas sin tiles pintados y mostraba el gris por defecto de Godot, con aspecto de error. Existían dos soluciones: limitar la cámara con `set_map_limits()`, o pintar el fondo. La habitación actual mide 1344 × 768 px contra un viewport de 1280 × 720, es decir **apenas 64 px de recorrido horizontal**: cualquier límite correcto dejaría la cámara prácticamente estática. Como el cuarto es provisional y el mapa del Capítulo 1 será mucho mayor, limitar hoy resolvería bien un problema que todavía no existe y a cambio congelaría la cámara. El color de fondo elimina el defecto visual **sin imponer ninguna restricción a la cámara** y sigue siendo válido cuando el mapa crezca.
-* **Archivos:** [project.godot](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/project.godot)
-* **Detalles:**
-  1. El área fuera del mapa deja de leerse como un fallo de render y pasa a leerse como oscuridad, coherente con el GDD §07 ("las zonas oscuras son más peligrosas") y con la ambientación de una base sin iluminar.
-  2. `set_map_limits()` sigue existiendo en `camera_controller.gd` sin llamador. Se aplicará cuando el mapa del Capítulo 1 exista; como el rectángulo se calcularía con `get_used_rect()`, el código servirá para cualquier tamaño sin ajustar números a mano.
-* **Verificación:** Godot 4.6.2 headless. `ProjectSettings` devuelve `#070d14` y `RenderingServer.get_default_clear_color()` confirma el mismo valor.
+### Fondo del Mundo y Respaldo de la Documentación
+* **Sistema:** Render / Cámara / Documentación
+* **Decisión:**
+  1. Definir `default_clear_color` en `#070d14` —el "negro profundo" de la paleta del GDD §07— para el área situada fuera del mapa.
+  2. **Aplazar** la configuración de los límites de cámara hasta que exista el mapa del Capítulo 1.
+  3. Incorporar al control de versiones la bitácora y el dev dashboard, que hasta ahora quedaban fuera del repositorio.
+* **Motivo:** La cámara siempre se centra en el Player, así que al acercarse a cualquier muro encuadraba zonas sin tiles pintados y mostraba el gris por defecto de Godot, con aspecto de error. Había dos soluciones posibles: limitar la cámara con `set_map_limits()` o pintar el fondo. La habitación actual mide 1344 × 768 px contra un viewport de 1280 × 720, es decir **apenas 64 px de recorrido horizontal**; cualquier límite correcto dejaría la cámara prácticamente estática. Como el cuarto es provisional y el mapa del Capítulo 1 será mucho mayor, limitar hoy resolvería bien un problema que todavía no existe y a cambio congelaría la cámara. El color de fondo elimina el defecto visual **sin imponer ninguna restricción a la cámara** y sigue siendo válido cuando el mapa crezca. En cuanto a la documentación, sólo el GDD estaba versionado: el dashboard permanecía sin rastrear y la bitácora vivía en la carpeta de descargas, de modo que un fallo de disco se habría llevado ambos.
+* **Archivos:** [project.godot](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/project.godot) | [bitacora.md](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/docs/bitacora.md) | [antesala_dev_dashboard.html](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/docs/gdd/antesala_dev_dashboard.html)
+* **Detalles y Correcciones:**
+  1. **Lectura del borde del mapa:** El área exterior deja de leerse como un fallo de render y pasa a leerse como oscuridad, coherente con el GDD §07 ("las zonas oscuras son más peligrosas") y con la ambientación de una base sin iluminar.
+  2. **`set_map_limits()` sigue sin llamador** en `camera_controller.gd`. Se aplicará cuando el mapa del Capítulo 1 exista; como el rectángulo se calcularía con `get_used_rect()`, el código servirá para cualquier tamaño sin ajustar números a mano.
+  3. **Ubicación de la documentación:** La bitácora se traslada a `docs/bitacora.md` y el dashboard pierde el sufijo de descarga duplicada de su nombre de archivo, ajustándose a la convención de minúsculas con guion bajo que ya usaba el GDD.
+* **Verificación:** Godot 4.6.2 headless: `ProjectSettings` devuelve `#070d14` y `RenderingServer.get_default_clear_color()` confirma el mismo valor. `git ls-files docs` lista los tres documentos rastreados.
 
 ---
 
