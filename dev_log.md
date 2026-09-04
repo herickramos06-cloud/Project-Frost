@@ -94,6 +94,23 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-03
+
+### Spawn Dinámico del Player (Instanciación desde World)
+* **Sistema:** World / Ciclo de Vida del Player
+* **Decisión:** Retirar el Player colocado a mano en `main.tscn` y hacer que `world.gd` lo instancie en `_ready()` a partir de `player.tscn`, posicionándolo sobre un `Marker2D` llamado `PlayerSpawn`.
+* **Motivo:** El mundo pasa a ser el dueño del ciclo de vida del Player. El punto de aparición se vuelve un dato editable visualmente en el editor en lugar de una posición fija incrustada en la escena principal, lo que permite escalar a nuevos mundos y habitaciones sin duplicar el Player en cada escena.
+* **Archivos:** [world.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/world.gd) | [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn) | [main.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/main.tscn)
+* **Detalles y Correcciones:**
+  1. **Nueva carpeta `Scripts/World/`:** Creada para alojar `world.gd`, siguiendo la convención temática ya establecida (`Scripts/Player/`, `Scripts/UI/`, `Scripts/Core/`).
+  2. **Posicionamiento con `global_position`:** El Player se coloca *después* de `add_child()` y usando `global_position` (no `position`), para que el spawn siga siendo correcto aunque `World` o `PlayerSpawn` reciban su propia transformación en el futuro.
+  3. **Repunte del target de cámara:** Al mover el Player dentro de `World`, la ruta `follow_target_path` de `CameraController` pasó de `"../Player"` a `"../World/Player"`.
+  4. **Orden de nodos en `main.tscn`:** `World` se movió al primer lugar, por delante de `CameraController`. Godot ejecuta `_ready()` de los hijos en orden de árbol, así que `World` debe crear al Player *antes* de que la cámara resuelva su `NodePath`; de lo contrario `get_node()` falla y deja la cámara sin objetivo.
+  5. **Cambio de velocidad heredado:** El nodo manual sobrescribía `speed = 400.0`. Al instanciarse desde `player.tscn`, el Player ahora usa el valor por defecto de `player.gd` (`450.0`). Aceptado; el parámetro sigue siendo editable desde el script o el inspector.
+* **Verificación:** Ejecutado en Godot 4.6.2 headless. Player creado en `World/Player` sobre las coordenadas exactas de `PlayerSpawn` (comprobado tanto en la posición heredada `(362, 179)` como tras reubicar el marcador a `(78, 701)` desde el editor); movimiento vía `InputManager` funcional; colisiones confirmadas (empujado 3s contra los muros norte y oeste, se detuvo con `is_on_wall: true` en lugar de atravesarlos); cámara con distancia `0.0` al Player; sin errores en consola.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -104,6 +121,10 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
    * Las cámaras de seguimiento dinámico deben ser hermanas del objetivo (nunca hijas) para evitar bucles de transformaciones.
    * Usar siempre el suavizado nativo del motor (`position_smoothing`) en lugar de interpolaciones por código que entren en conflicto con el motor.
 
+3. **Instanciación del Player:**
+   * El Player nunca se coloca a mano en una escena de mundo. Cada mundo lo instancia desde `player.tscn` en su `_ready()` y lo posiciona sobre su `Marker2D` `PlayerSpawn`.
+   * En `main.tscn`, `World` debe permanecer **antes** de `CameraController` en el árbol. Los nodos nuevos que se agreguen al final no rompen esta regla.
+
 ---
 
 ## Próximos Pasos
@@ -111,4 +132,6 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [ ] Implementar Screen Shake dinámico al recibir daño o disparar.
 - [ ] Configurar límites de pantalla de la cámara usando un TileMap.
 - [x] Desarrollar sistema de Joystick Virtual para Android (Completado: Etapas 1, 2 y 3).
+- [x] Spawn dinámico del Player desde `World` mediante `PlayerSpawn` (Marker2D).
 - [ ] Crear IA de persecución para el primer infectado.
+- [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).
