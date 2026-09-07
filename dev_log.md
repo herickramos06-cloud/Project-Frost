@@ -129,6 +129,22 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-06
+
+### Limpieza del Suelo bajo los Muros (preparación para la navegación)
+* **Sistema:** Mundo / Navegación
+* **Decisión:** Borrar de la capa `Ground` las 123 celdas que quedaban pintadas debajo de los muros, de modo que la capa pase a significar "dónde se puede estar" y no "dónde pinté suelo".
+* **Motivo:** En Godot la colisión y la navegación son **dos sistemas independientes que no se validan entre sí**. El navmesh se genera a partir de los tiles marcados como pisables, así que al añadir el polígono de navegación al tile de suelo la zona caminable habría cubierto también el área bajo los muros. La colisión seguiría intacta, de forma que el infectado no atravesaría la pared: calcularía una ruta que pasa por dentro del muro, caminaría hacia allí y se quedaría restregándose contra él. Es un fallo caro de diagnosticar porque la IA, la colisión y el mapa parecen correctos por separado. Con el suelo limpio el navmesh queda correcto por construcción, sin sistemas paralelos que mantener sincronizados.
+* **Archivos:** [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn)
+* **Detalles y Correcciones:**
+  1. **Sin impacto visual:** Se comprobó que el tile de muro `(1,0)` es totalmente opaco —1024 de 1024 píxeles—, así que ese suelo nunca fue visible. La colisión no se tocó: vive en la capa `Walls`.
+  2. **Edición quirúrgica:** Se sustituyó únicamente la línea `tile_map_data` del nodo `Ground`, dejando el resto del archivo byte a byte idéntico. No se volvió a guardar la escena completa, para no alterar los `unique_id` ni el resto de propiedades.
+  3. **Regla de dibujo para el mapa del Capítulo 1:** no pintar suelo bajo un muro **sólido y opaco**. Las rejas, cristales o paredes rotas sí lo necesitan, porque se ve a través de ellas.
+  4. **Ventaja secundaria:** ocultar la capa `Walls` en el editor muestra ahora la zona caminable como una silueta, con los muros como agujeros. Es una vista de depuración gratuita para cualquier fallo de navegación futuro.
+* **Verificación:** Godot 4.6.2 headless. `Ground` pasa de 2697 a 2574 celdas (123 borradas, aritmética cuadrada) y quedan **0 muros con suelo debajo**. Integridad de la escena confirmada: script en la raíz, `PlayerSpawn` en `(78, 701)`, ambos TileSet enlazados, 3 hijos. Regresión completa del juego: el Player aparece sobre el spawn, la cámara lo sigue y los muros siguen bloqueando con valores idénticos a los previos al cambio (izquierda 32,5 px frente a 32,46; abajo 18,0 frente a 18,01).
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -139,7 +155,11 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
    * Las cámaras de seguimiento dinámico deben ser hermanas del objetivo (nunca hijas) para evitar bucles de transformaciones.
    * Usar siempre el suavizado nativo del motor (`position_smoothing`) en lugar de interpolaciones por código que entren en conflicto con el motor.
 
-3. **Instanciación del Player:**
+3. **Suelo y navegación:**
+   * La capa `Ground` define el espacio caminable, no sólo el aspecto. No se pinta suelo bajo un muro sólido y opaco.
+   * Colisión y navegación son sistemas independientes en Godot: nada garantiza que coincidan salvo que el mapa se dibuje de forma que coincidan.
+
+4. **Instanciación del Player:**
    * El Player nunca se coloca a mano en una escena de mundo. Cada mundo lo instancia desde `player.tscn` en su `_ready()` y lo posiciona sobre su `Marker2D` `PlayerSpawn`.
    * En `main.tscn`, `World` debe permanecer **antes** de `CameraController` en el árbol. Los nodos nuevos que se agreguen al final no rompen esta regla.
 
