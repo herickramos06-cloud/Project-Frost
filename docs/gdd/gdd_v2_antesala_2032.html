@@ -1,0 +1,915 @@
+<title>GDD Antesala 2032 v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root{
+    --ground:#070d14; --panel:#0a1628; --panel-2:#0e1e35;
+    --line:#1a3a5a; --line-soft:#14293f;
+    --text:#e3edf6; --text-2:#a9bccd; --muted:#8899aa; --ice:#cfe1f0;
+    --danger:#c8574d; --danger-bg:#2c1614;
+    --warn:#c9a227; --warn-bg:#2a2311;
+    --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+    --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--ground);color:var(--text);font-family:var(--f-body);font-size:15.5px;line-height:1.68;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1060px;margin:0 auto;padding:44px 26px 100px;}
+
+  .doc-head{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel) 0%,#081221 100%);padding:28px 30px 24px;}
+  .eyebrow{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0;}
+  h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5.6vw,52px);line-height:1.03;letter-spacing:-.015em;margin:12px 0 8px;text-wrap:balance;color:var(--ice);}
+  .subtitle{color:var(--text-2);max-width:66ch;margin:0;font-size:16px;}
+  .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:24px;}
+  .meta div{background:var(--panel);padding:11px 13px;}
+  .meta dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 3px;}
+  .meta dd{margin:0;font-family:var(--f-mono);font-size:13.5px;color:var(--ice);}
+
+  .toc{margin-top:34px;border:1px solid var(--line-soft);background:var(--panel);padding:22px 26px;}
+  .toc h4{margin:0 0 12px;}
+  .toc ol{margin:0;padding-left:20px;columns:2;column-gap:38px;font-size:14px;color:var(--text-2);}
+  .toc li{margin-bottom:5px;break-inside:avoid;}
+  .toc a{color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--line);}
+  .toc a:hover,.toc a:focus{color:var(--ice);border-bottom-color:var(--ice);}
+
+  .part{margin-top:66px;border-top:2px solid var(--line);padding-top:16px;}
+  .part-label{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--warn);}
+  .part h2{font-family:var(--f-display);font-weight:700;font-size:30px;margin:4px 0 0;color:var(--ice);}
+
+  section{margin-top:48px;scroll-margin-top:20px;}
+  .sec-num{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  h3{font-family:var(--f-display);font-weight:600;font-size:24px;margin:0 0 8px;color:var(--ice);text-wrap:balance;}
+  h4{font-family:var(--f-display);font-weight:600;font-size:17px;margin:26px 0 8px;color:var(--ice);}
+  p{max-width:72ch;}
+  .lead{color:var(--muted);max-width:72ch;margin:0 0 20px;font-size:14.5px;}
+  code{font-family:var(--f-mono);font-size:.9em;color:var(--ice);background:var(--panel-2);border:1px solid var(--line-soft);padding:1px 5px;}
+  strong{color:var(--text);}
+  blockquote{margin:20px 0;border-left:2px solid var(--ice);padding:2px 0 2px 20px;color:var(--ice);font-size:16px;max-width:66ch;}
+
+  .scroller{overflow-x:auto;border:1px solid var(--line-soft);margin-top:14px;}
+  table{border-collapse:collapse;width:100%;min-width:580px;font-size:14px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  thead th{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--panel);border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:0;}
+  td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ice);white-space:nowrap;}
+  td.t{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  td.t.bad{color:var(--danger);} td.t.mid{color:var(--warn);} td.t.good{color:var(--ice);}
+
+  .flag{margin-top:18px;border:1px solid var(--warn);border-left-width:3px;background:var(--warn-bg);padding:14px 18px;}
+  .flag.crit{border-color:var(--danger);background:var(--danger-bg);}
+  .flag .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:6px;}
+  .flag.crit .lbl{color:var(--danger);}
+  .flag p{margin:0 0 9px;font-size:14.5px;color:var(--text);max-width:74ch;}
+  .flag p:last-child{margin-bottom:0;}
+
+  .note{margin-top:18px;border:1px solid var(--line-soft);background:var(--panel);padding:14px 18px;}
+  .note .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+  .note p{margin:0 0 9px;color:var(--text-2);font-size:14.5px;max-width:74ch;}
+  .note p:last-child{margin-bottom:0;}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line);margin-top:18px;}
+  .card{background:var(--panel);padding:19px 21px;}
+  .card .n{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:7px;}
+  .card h4{margin:0 0 6px;font-size:17px;}
+  .card p{margin:0;font-size:14px;color:var(--text-2);}
+
+  ol.steps{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:11px;}
+  ol.steps li{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:start;}
+  .sid{font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:var(--muted);background:var(--panel-2);border:1px solid var(--line-soft);text-align:center;padding:2px 0;line-height:1.6;}
+  .sbody{color:var(--text-2);}
+
+  .flow{margin-top:18px;border:1px solid var(--line);background:var(--panel);padding:20px 22px;overflow-x:auto;}
+  .flow pre{margin:0;font-family:var(--f-mono);font-size:12.5px;line-height:1.85;color:var(--ice);white-space:pre;}
+
+  footer{margin-top:70px;padding-top:24px;border-top:1px solid var(--line-soft);font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+
+  @media (max-width:720px){ .toc ol{columns:1;} }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+<header class="doc-head">
+  <p class="eyebrow">Project Frost · Game Design Document</p>
+  <h1>Antesala Zombies 2032</h1>
+  <p class="subtitle">Versión 2. Documento completo de diseño, arquitectura, viabilidad y publicación. Reemplaza al v1 de mayo de 2025 sin borrarlo: aquel sigue siendo el documento fundacional del universo.</p>
+  <dl class="meta">
+    <div><dt>Versión</dt><dd>2.0 · 7 sep 2026</dd></div>
+    <div><dt>Motor</dt><dd>Godot 4.6.2</dd></div>
+    <div><dt>Plataforma</dt><dd>Android</dd></div>
+    <div><dt>Equipo</dt><dd>1 persona</dd></div>
+    <div><dt>Estado</dt><dd>Prototipo temprano</dd></div>
+    <div><dt>Alcance v1.0</dt><dd>Sin cerrar</dd></div>
+  </dl>
+</header>
+
+<div class="toc">
+  <h4>Contenido</h4>
+  <ol>
+    <li><a href="#s1">Qué cambia respecto al v1</a></li>
+    <li><a href="#s2">Visión y propuesta de valor</a></li>
+    <li><a href="#s3">Narrativa, lore y universo</a></li>
+    <li><a href="#s4">Bucle de juego y mecánicas</a></li>
+    <li><a href="#s5">Sistema de infectados</a></li>
+    <li><a href="#s6">Mundo y zonas</a></li>
+    <li><a href="#s7">Evidencia y finales</a></li>
+    <li><a href="#s8">Identidad visual y audio</a></li>
+    <li><a href="#s9">Arquitectura técnica</a></li>
+    <li><a href="#s10">Estado real del proyecto</a></li>
+    <li><a href="#s11">Restricciones de Android</a></li>
+    <li><a href="#s12">La decisión de plataforma</a></li>
+    <li><a href="#s13">Análisis de mercado</a></li>
+    <li><a href="#s14">Competencia</a></li>
+    <li><a href="#s15">Monetización y precio</a></li>
+    <li><a href="#s16">Audiencia y lanzamiento</a></li>
+    <li><a href="#s17">Presupuesto económico</a></li>
+    <li><a href="#s18">Obligaciones legales y de plataforma</a></li>
+    <li><a href="#s19">Hoja de ruta</a></li>
+    <li><a href="#s20">Riesgos</a></li>
+    <li><a href="#s21">Decisiones abiertas</a></li>
+    <li><a href="#s22">Gobierno del documento</a></li>
+  </ol>
+</div>
+
+<div class="part"><span class="part-label">Parte I</span><h2>Punto de partida</h2></div>
+
+<section id="s1">
+  <span class="sec-num">01</span>
+  <h3>Qué cambia respecto al v1</h3>
+  <p class="lead">El GDD v1 se escribió en mayo de 2025, antes de que existiera una sola línea de código. Acertó en lo que importaba —la identidad— y quedó obsoleto en todo lo demás.</p>
+
+  <div class="scroller"><table>
+    <thead><tr><th>Tema</th><th>v1 (mayo 2025)</th><th>v2 (sep 2026)</th></tr></thead>
+    <tbody>
+      <tr><td>Plataforma</td><td>Steam, PC</td><td><strong>Android</strong>. Steam queda como puerta abierta con condiciones</td></tr>
+      <tr><td>Monetización</td><td>Precio fijo 4,99–7,99 USD</td><td>Sin cerrar. La vía recomendada ya no es la app de pago clásica</td></tr>
+      <tr><td>Motor</td><td>«Godot 4 recomendado»</td><td>Godot 4.6.2, decidido y en uso</td></tr>
+      <tr><td>Marketing</td><td>Wishlists, Next Fest, itch.io</td><td>Nada de eso existe en Google Play. Sección rehecha</td></tr>
+      <tr><td>IA de infectados</td><td>FSM + 3 fases, descritas con adjetivos</td><td>Dos capas separadas, círculo de 4 estados, medidor de agitación</td></tr>
+      <tr><td>Arquitectura técnica</td><td>No existía</td><td>Sección propia con el estado medido</td></tr>
+      <tr><td>Identidad y lore</td><td>Completo y sólido</td><td><strong>Se conserva íntegro</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note">
+    <span class="lbl">Sobre el documento v1</span>
+    <p>No se borra ni se corrige. El v1 es el documento fundacional del universo y está escrito desde el corazón del proyecto; este v2 es el documento de trabajo. Cuando ambos discrepen en algo técnico o comercial, manda el v2. Cuando discrepen en identidad, lore o tono, manda el v1.</p>
+  </div>
+</section>
+
+<section id="s2">
+  <span class="sec-num">02</span>
+  <h3>Visión y propuesta de valor</h3>
+
+  <blockquote>«El mundo aún no lo sabe… pero ya empezó.» Una historia de supervivencia donde la verdad es más aterradora que los infectados.</blockquote>
+
+  <p><strong>Antesala Zombies 2032</strong> es un survival horror 2D top-down narrativo ambientado en una base de investigación ártica. Su propósito es triple: entregar una experiencia completa, establecer el canon de un universo mayor, y formar al desarrollador con un proyecto real y publicado.</p>
+
+  <div class="cards">
+    <div class="card"><span class="n">Diferenciador 1</span><h4>Horror científico</h4><p>El patógeno tiene lógica interna coherente. Base en virología, parasitología y neurociencia simplificada, no fantasía genérica.</p></div>
+    <div class="card"><span class="n">Diferenciador 2</span><h4>Infectados vivos</h4><p>No son muertos vivientes. Son humanos con la conducta alterada, lo que abre comportamiento más complejo e impredecible.</p></div>
+    <div class="card"><span class="n">Diferenciador 3</span><h4>Narrativa emergente</h4><p>El jugador entiende qué pasó, pero sólo si explora. La historia no se entrega: se descubre.</p></div>
+    <div class="card"><span class="n">Diferenciador 4</span><h4>Sigilo como núcleo</h4><p>No hay combate real. Evitar, no eliminar. Es el pilar mecánico y ningún competidor verificado en móvil lo usa así.</p></div>
+  </div>
+
+  <p>El posicionamiento apunta al nicho del horror atmosférico con narrativa —Soma, SIGNALIS, Alien Isolation a escala indie— y no al arcade de zombies genérico. Ese posicionamiento es deliberado y sigue siendo correcto.</p>
+
+  <div class="flag">
+    <span class="lbl">Tensión no resuelta entre marca y diseño</span>
+    <p>El título contiene la palabra «Zombies», que es la palabra clave más saturada de Google Play y la que ocupan los free-to-play con millones de descargas — mientras el primer pilar de diseño afirma que <em>no son zombies</em>. Marketing y diseño se contradicen en el primer punto de contacto con el jugador.</p>
+    <p>Es una decisión abierta de la sección 21, y hay dos salidas legítimas: renombrar, o abrazar la palabra como gancho de descubrimiento y desmentirla dentro del juego. Lo que no es viable es dejarlo sin decidir hasta la ficha de tienda.</p>
+  </div>
+</section>
+
+<section id="s3">
+  <span class="sec-num">03</span>
+  <h3>Narrativa, lore y universo</h3>
+  <p class="lead">Esta sección se conserva del v1 prácticamente intacta. Es el activo más sólido del proyecto.</p>
+
+  <h4>Contexto</h4>
+  <p>Año 2032. El calentamiento global ha acelerado el deshielo ártico, liberando microorganismos prehistóricos sellados durante cientos de miles de años. Una organización privada de investigación descubre uno de estos agentes y lo traslada a una base aislada en el Ártico noruego.</p>
+  <p>El error no fue investigarlo. <strong>El error fue recrear las condiciones ambientales que lo activan</strong> —temperatura, presión atmosférica y composición de gases— sin saber que varios investigadores ya estaban expuestos en estado latente.</p>
+
+  <h4>Agente Boreal-0</h4>
+  <div class="cards">
+    <div class="card"><span class="n">Naturaleza</span><h4>Híbrido antiguo</h4><p>Actúa como virus al replicarse, como hongo al sobrevivir en superficies, y como parásito al alterar el sistema nervioso del huésped.</p></div>
+    <div class="card"><span class="n">Mecanismo</span><h4>Sistema nervioso central</h4><p>Altera la producción de dopamina y adrenalina, suprime el miedo, amplifica la agresividad y mantiene al huésped vivo como vector activo.</p></div>
+  </div>
+
+  <div class="note">
+    <span class="lbl">Ampliación del v2: qué le hace a los sentidos</span>
+    <p>El patógeno ataca el sistema nervioso, <strong>no los ojos</strong>. La luz sigue entrando y la retina responde; lo que se degrada es el procesamiento. Sobrevive la detección de movimiento, que es una función visual primitiva y no depende de la corteza visual.</p>
+    <p><strong>Consecuencia jugable:</strong> un infectado no te ve, detecta que algo se mueve. Quedarse inmóvil dentro de su campo de visión puede salvarte.</p>
+    <p><strong>Consecuencia visual:</strong> la adrenalina disparada dilata la pupila. Eso da el cambio de aspecto obvio de las fases avanzadas sin necesidad de heridas ni podredumbre —basta la mirada mal— y explica que prefieran la oscuridad: con la pupila dilatada, la luz molesta. «Las zonas oscuras son más peligrosas» deja de ser convención de género y pasa a tener causa biológica.</p>
+  </div>
+
+  <h4>Capas narrativas</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>Capa</th><th>Qué es</th><th>Cómo se entrega</th></tr></thead>
+    <tbody>
+      <tr><td>Historia directa</td><td>Sobrevivir y escapar de la base</td><td>Objetivos, ambiente, presión</td></tr>
+      <tr><td>Historia emergente</td><td>La verdad del brote y la organización</td><td>Documentos, audios, registros, terminales</td></tr>
+      <tr><td>Historia implícita</td><td>El mundo antes del desastre</td><td>Decoración, fotos personales, objetos cotidianos</td></tr>
+      <tr><td>Universo mayor</td><td>La antesala del AAA imaginario</td><td>Referencias crípticas, terminología, nombres propios</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Estructura por capítulos</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>#</th><th>Capítulo</th><th>Qué ocurre</th><th>Población de infectados</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>Normalidad</td><td>Base funcional. Presentación del entorno</td><td>Casi todos Alteración</td></tr>
+      <tr><td class="n">2</td><td>Anomalía</td><td>Primeras señales, comportamientos extraños</td><td>Alteración dominante</td></tr>
+      <tr><td class="n">3</td><td>Activación</td><td>El brote inicia. El jugador comprende</td><td>Mezcla de Alteración y Hostilidad</td></tr>
+      <tr><td class="n">4</td><td>Colapso</td><td>La base se desintegra. Máxima presión</td><td>Hostilidad dominante</td></tr>
+      <tr><td class="n">5</td><td>Escape</td><td>Huida. Final según evidencia</td><td>Mayoría Adaptación</td></tr>
+    </tbody>
+  </table></div>
+  <p>La última columna es una aportación del v2: <strong>la dificultad escala cambiando qué tipo de infectado aparece, no tocando código.</strong> Ver sección 5.</p>
+</section>
+
+<div class="part"><span class="part-label">Parte II</span><h2>Diseño</h2></div>
+
+<section id="s4">
+  <span class="sec-num">04</span>
+  <h3>Bucle de juego y mecánicas</h3>
+
+  <div class="flow"><pre>Explorar → Recoger evidencia → Generar riesgo → Evitar infectados → Decidir → Escapar o morir</pre></div>
+
+  <p>La evidencia cumple doble función: es el motor narrativo <em>y</em> el generador de tensión mecánica. El jugador nunca está seguro en un sitio; explorar es necesario pero peligroso. Es la mejor decisión de diseño del proyecto y debe protegerse.</p>
+
+  <h4>Mecánicas del jugador</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>Mecánica</th><th>Descripción</th><th>Prioridad</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td>Movimiento top-down</td><td>8 direcciones, velocidad analógica por joystick</td><td>Core v1</td><td class="t good">Funcionando</td></tr>
+      <tr><td>Caminar / correr / agacharse</td><td>Tres velocidades con distinto ruido generado</td><td>Core v1</td><td class="t bad">Sin empezar</td></tr>
+      <tr><td>Sistema de ruido</td><td>Cada acción genera un valor que los infectados detectan</td><td>Core v1</td><td class="t bad">Sin empezar</td></tr>
+      <tr><td>Quedarse inmóvil</td><td>Defensa pasiva: sin movimiento no te registran</td><td>Core v1</td><td class="t bad">Sin empezar</td></tr>
+      <tr><td>Interacción con objetos</td><td>Recoger evidencia, abrir puertas, activar terminales</td><td>Core v1</td><td class="t bad">Sin empezar</td></tr>
+      <tr><td>Vida y daño por contacto</td><td>100 HP, daño con recarga, muerte y reaparición</td><td>Core v1</td><td class="t bad">Sin empezar</td></tr>
+      <tr><td>Inventario limitado</td><td>Capacidad reducida: obliga a priorizar</td><td>v1.1</td><td class="t bad">Sin empezar</td></tr>
+      <tr><td>Distracción</td><td>Lanzar objetos para desviar infectados</td><td>v1.1</td><td class="t bad">Sin empezar</td></tr>
+      <tr><td>Combate mínimo</td><td>Sólo empujar o bloquear</td><td class="t mid">Sin decidir</td><td class="t bad">Sin empezar</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="flag">
+    <span class="lbl">«Opcional» no es una decisión</span>
+    <p>El v1 marcaba el combate como «opcional». Eso no es una prioridad, es un aplazamiento. Si existe combate, cambian la IA, los controles táctiles, el equilibrio y la promesa al jugador. Si no existe, el sigilo carga con todo el peso y hay que perfeccionarlo. Va a la sección 21.</p>
+  </div>
+
+  <h4>Velocidades base</h4>
+  <p>El mundo mide 32 píxeles por tile y el jugador ocupa 52 × 88 px, es decir <strong>más de tile y medio de ancho</strong>. La sensación de velocidad no la da el número de píxeles sino cuántas veces avanzas tu propio cuerpo por segundo, así que un personaje grande necesita más px/s para no sentirse pesado. Las cifras del v1 se escribieron antes de que existieran los tiles.</p>
+  <div class="scroller"><table>
+    <thead><tr><th>Acción</th><th>v1</th><th>Propuesta v2</th><th>Ruido</th><th>Cruzar la pantalla</th></tr></thead>
+    <tbody>
+      <tr><td>Agacharse</td><td class="n">60 px/s</td><td class="n">90 px/s</td><td class="n">0</td><td class="n">14,2 s</td></tr>
+      <tr><td>Caminar</td><td class="n">120 px/s</td><td class="n">180 px/s</td><td class="n">1</td><td class="n">7,1 s</td></tr>
+      <tr><td>Correr</td><td class="n">220 px/s</td><td class="n">320 px/s</td><td class="n">3</td><td class="n">4,0 s</td></tr>
+      <tr><td>Infectado Hostilidad</td><td>—</td><td class="n">220 px/s</td><td>—</td><td class="n">5,8 s</td></tr>
+    </tbody>
+  </table></div>
+  <p>Las proporciones del v1 se conservan; sólo sube la escala en torno a 1,5×. El infectado cae deliberadamente <strong>entre caminar y correr</strong>: caminando no escapas, corriendo sí, pero correr hace ruido y atrae a los demás. Esa es la tensión que sostiene el sigilo.</p>
+  <p>El valor actual en el código es <code>450 px/s</code>, más del doble de la velocidad de correr propuesta. Pendiente de fijar tras probarlo en un teléfono real.</p>
+
+  <h4>Sistema de presión dinámica</h4>
+  <p>La dificultad crece por tres vectores simultáneos, heredados del v1: <strong>densidad enemiga</strong> creciente, <strong>deterioro del entorno</strong> que cambia las rutas conocidas, y <strong>fases más avanzadas</strong> de infectados conforme avanza el relato.</p>
+</section>
+
+<section id="s5">
+  <span class="sec-num">05</span>
+  <h3>Sistema de infectados</h3>
+  <p class="lead">Resumen del blueprint técnico. Es el componente más crítico del juego: la credibilidad del horror depende de que se comporten de forma convincente.</p>
+
+  <h4>Dos capas superpuestas</h4>
+  <p>El v1 describía dos cosas en la misma sección y era fácil leerlas como una: las fases de infección y una máquina de estados. <strong>No compiten.</strong> Un infectado <em>es</em> de Fase 2 y <em>está</em> persiguiendo, igual que una persona es adulta y está corriendo.</p>
+
+  <div class="cards">
+    <div class="card"><span class="n">Capa 1 · qué es</span><h4>Fase de infección</h4><p>Alteración, Hostilidad o Adaptación. Se fija al aparecer y <strong>no cambia nunca</strong> en ese individuo. La decide el capítulo.</p></div>
+    <div class="card"><span class="n">Capa 2 · qué hace</span><h4>Percepción</h4><p>Vista y oído, siempre activos. Alimentan el medidor.</p></div>
+    <div class="card"><span class="n">Capa 2 · qué hace</span><h4>Agitación</h4><p>Sube con los estímulos del jugador, decae sola. Es el motor del sistema.</p></div>
+    <div class="card"><span class="n">Capa 2 · qué hace</span><h4>Estado</h4><p>Rutina, Alerta, Persecución o Búsqueda. Una sola a la vez.</p></div>
+  </div>
+
+  <h4>Lo que cada fase desbloquea</h4>
+  <p>La fase no es sólo «más rápido»: decide <strong>cuánta conducta tiene disponible</strong> ese infectado. Sale de la tabla del propio v1.</p>
+  <div class="scroller"><table>
+    <thead><tr><th>Fase</th><th>Hasta dónde llega</th><th>Vista</th><th>Qué se siente al encontrarlo</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Alteración</td><td>Rutina y Alerta. <strong>Nunca persigue</strong></td><td>Sólo movimiento amplio y cercano</td><td>Ambiente inquietante. Investiga y se va</td></tr>
+      <tr><td>2 · Hostilidad</td><td>El círculo completo</td><td>Movimiento con fiabilidad</td><td>La amenaza estándar</td></tr>
+      <tr><td>3 · Adaptación</td><td>El círculo completo, y le cuesta salir</td><td>Registra movimiento leve</td><td>Insiste, recuerda dónde estabas</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>El círculo de estados</h4>
+  <div class="flow"><pre>Rutina  →  Alerta  →  Persecución  →  Búsqueda  →  Rutina
+  ▲          oye        se enciende     te pierde       │
+  │          algo                                       │
+  └───────────────── se rinde donde esté ───────────────┘
+
+Detectar movimiento salta a Persecución desde cualquier posición.
+Desde Búsqueda se vuelve a Persecución si te vuelve a detectar.</pre></div>
+
+  <p><strong>El estímulo escala por la derecha; el decaimiento devuelve por la izquierda.</strong> La máquina de estados es el círculo; el medidor de agitación es la fuerza que mueve por él.</p>
+
+  <p>Idle y Patrulla son la misma posición —la rutina— y cuál se ejecuta lo decide la fase. <strong>Regreso no es un estado:</strong> volver a la rutina desde donde sea es lo que hace Rutina cuando estás fuera de tu ruta. Un infectado que siempre vuelve al mismo punto es un mueble con patas; sin ese estado, los infectados van derivando por el mapa y vuelves a zonas que creías despejadas.</p>
+
+  <h4>Números de la IA</h4>
+  <p>El v1 describía las fases con adjetivos. Estos son los valores propuestos, todos <strong>pendientes de ajustar en dispositivo</strong>:</p>
+  <div class="scroller"><table>
+    <thead><tr><th>Parámetro</th><th>Alteración</th><th>Hostilidad</th><th>Adaptación</th></tr></thead>
+    <tbody>
+      <tr><td>Velocidad</td><td class="n">110 px/s</td><td class="n">220 px/s</td><td class="n">280 px/s</td></tr>
+      <tr><td>Radio de visión</td><td class="n">128 px · 4 tiles</td><td class="n">224 px · 7 tiles</td><td class="n">320 px · 10 tiles</td></tr>
+      <tr><td>Ángulo del cono</td><td class="n">90°</td><td class="n">120°</td><td class="n">140°</td></tr>
+      <tr><td>Radio 360° cercano</td><td class="n">48 px</td><td class="n">64 px</td><td class="n">80 px</td></tr>
+      <tr><td>Radio de escucha</td><td class="n">64 px · 2 tiles</td><td class="n">96 px · 3 tiles</td><td class="n">160 px · 5 tiles</td></tr>
+      <tr><td>Umbral de ruido</td><td class="n">3 · sólo correr</td><td class="n">1</td><td class="n">1</td></tr>
+      <tr><td>Estado máximo alcanzable</td><td>Alerta</td><td>Persecución</td><td>Persecución</td></tr>
+      <tr><td>Memoria de última posición</td><td class="n">3 s</td><td class="n">8 s</td><td class="n">20 s</td></tr>
+      <tr><td>Decaimiento de agitación</td><td>Rápido</td><td>Medio</td><td>Lento</td></tr>
+      <tr><td>Recálculo de ruta</td><td colspan="3" class="n">cada 0,25 s, con desfase propio por infectado</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="flag">
+    <span class="lbl">Dos reglas que el medidor no puede saltarse</span>
+    <p><strong>Tiene que decaer.</strong> Si la agitación sólo sube, todos acaban a tope y el juego es caos permanente. La velocidad de bajada es la perilla que decide cuánto pesa cada error del jugador.</p>
+    <p><strong>No es lo mismo que el estado.</strong> Un infectado puede estar a tope de agitación y aun así estar buscando, porque te perdió.</p>
+  </div>
+
+  <h4>Densidad objetivo</h4>
+  <p>De <strong>4 a 10 infectados</strong> simultáneos en juego normal, con picos puntuales de <strong>15 a 20</strong> en tramos de acción como la secuencia final de escape. Los picos son viables si se escalonan los recálculos de ruta y sólo los cinco o seis más cercanos usan navegación completa; el resto puede moverse con dirección simple sin que el jugador note la diferencia.</p>
+
+  <div class="flag">
+    <span class="lbl">Aviso de diseño sobre las oleadas</span>
+    <p>Si el jugador nunca puede eliminar infectados, una escena con veinte encima <strong>sólo puede funcionar como huida</strong>. Es perfecta para el clímax; planteada como enfrentamiento se sentirá injusta.</p>
+  </div>
+</section>
+
+<section id="s6">
+  <span class="sec-num">06</span>
+  <h3>Mundo y zonas</h3>
+  <div class="scroller"><table>
+    <thead><tr><th>Zona</th><th>Atmósfera</th><th>Riesgo</th><th>Evidencia</th><th>Mecánica especial</th></tr></thead>
+    <tbody>
+      <tr><td>Laboratorio principal</td><td>Clínica, fría, ordenada</td><td>Alto</td><td>Máxima</td><td>Terminales, muestras del patógeno</td></tr>
+      <tr><td>Dormitorios</td><td>Personal, íntima</td><td>Medio</td><td>Alta</td><td>Fotos, diarios, objetos personales</td></tr>
+      <tr><td>Sala de control</td><td>Técnica, pantallas</td><td>Alto</td><td>Alta</td><td>Cámaras, desbloquear zonas</td></tr>
+      <tr><td>Almacenes</td><td>Oscura, industrial</td><td>Muy alto</td><td>Baja</td><td>Objetos de distracción, rutas alternativas</td></tr>
+      <tr><td>Exterior ártico</td><td>Vacía, helada, final</td><td>Máximo</td><td>Ninguna</td><td>Zona de escape</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Principios de diseño de niveles</h4>
+  <ol class="steps">
+    <li><span class="sid">01</span><span class="sbody"><strong>Múltiples rutas.</strong> Cada zona con al menos dos caminos: el directo y peligroso, y el lento y seguro. Da agencia real.</span></li>
+    <li><span class="sid">02</span><span class="sbody"><strong>El entorno narra.</strong> El laboratorio se ve prístino al inicio y en colapso después. El mismo espacio cuenta el paso del tiempo.</span></li>
+    <li><span class="sid">03</span><span class="sbody"><strong>Dinamismo progresivo.</strong> Puertas que se bloquean, rutas nuevas, iluminación que se deteriora.</span></li>
+    <li><span class="sid">04</span><span class="sbody"><strong>Densidad de contenido.</strong> Laboratorio y dormitorios concentran la evidencia. El jugador decide si arriesga.</span></li>
+  </ol>
+
+  <div class="note">
+    <span class="lbl">Regla de dibujo obligatoria, nueva en el v2</span>
+    <p><strong>No pintar suelo bajo un muro sólido y opaco.</strong> En Godot la colisión y la navegación son sistemas independientes que nadie valida entre sí: el navmesh se genera de los tiles marcados como pisables, así que suelo bajo un muro produce rutas que atraviesan la pared y el infectado se queda restregándose contra ella.</p>
+    <p>La excepción son rejas, cristales y paredes rotas: ahí sí se ve a través, así que sí llevan suelo.</p>
+  </div>
+</section>
+
+<section id="s7">
+  <span class="sec-num">07</span>
+  <h3>Evidencia y finales</h3>
+  <p>La evidencia no es coleccionable decorativo: es el mecanismo que conecta el riesgo mecánico con la recompensa narrativa. Cuatro tipos: <strong>documentos</strong> (informes, protocolos, memos), <strong>audios</strong> (grabaciones, llamadas internas), <strong>registros</strong> (logs de terminal, datos de sensores) y <strong>objetos</strong> (fotos, medicamentos, notas manuscritas).</p>
+
+  <h4>Epílogo variable, no finales distintos</h4>
+  <p>El 90 % del juego es idéntico. Sólo cambian la secuencia final y las pantallas de cierre según la evidencia acumulada. Reduce el trabajo alrededor de un 60 % manteniendo el impacto percibido.</p>
+  <div class="scroller"><table>
+    <thead><tr><th>Final</th><th>Condición</th><th>Tono</th><th>Qué cambia</th></tr></thead>
+    <tbody>
+      <tr><td>A · Testigo</td><td class="n">0–30 %</td><td>Incompleto, perturbador</td><td>Escapa sin entender. Epílogo mínimo</td></tr>
+      <tr><td>B · Sobreviviente</td><td class="n">31–70 %</td><td>Ambiguo, tenso</td><td>Entiende el origen, no a los responsables</td></tr>
+      <tr><td>C · La verdad</td><td class="n">71–100 %</td><td>Revelador</td><td>Conoce la organización y la escala real. Gancho al universo mayor</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="flag">
+    <span class="lbl">Riesgo de plataforma sobre el vehículo narrativo</span>
+    <p>Cuatro capas de historia entregadas por documentos y audios es <strong>la interacción que peor rinde en móvil</strong>: leer textos largos en seis pulgadas, y escuchar audio en un dispositivo donde mucha gente juega en silencio.</p>
+    <p>Consecuencias obligatorias: subtítulos y transcripción de todos los audios, tipografía legible con tamaño ajustable, y textos escritos para pantalla pequeña —fragmentos cortos, no informes de página completa.</p>
+  </div>
+</section>
+
+<section id="s8">
+  <span class="sec-num">08</span>
+  <h3>Identidad visual y audio</h3>
+
+  <h4>Paleta</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>Uso</th><th>Color</th><th>Regla</th></tr></thead>
+    <tbody>
+      <tr><td>Negro profundo</td><td class="n">#070d14</td><td>Fondo. Ya aplicado como <code>default_clear_color</code></td></tr>
+      <tr><td>Azules fríos</td><td class="n">#0a1628 → #1a3a5a</td><td>Superficies y estructura</td></tr>
+      <tr><td>Grises árticos</td><td class="n">#8899aa</td><td>Elementos secundarios</td></tr>
+      <tr><td>Rojo desaturado</td><td class="n">peligro</td><td><strong>Sólo</strong> para peligro</td></tr>
+      <tr><td>Amarillo advertencia</td><td class="n">atención</td><td><strong>Sólo</strong> para advertencia</td></tr>
+    </tbody>
+  </table></div>
+  <p>El color con tono está reservado a peligro y advertencia. Todo lo demás se distingue por valor, no por matiz. Es una regla del v1 y se mantiene.</p>
+
+  <div class="flag crit">
+    <span class="lbl">Conflicto directo entre la estética y la plataforma</span>
+    <p>Un survival horror ártico vive de la oscuridad, del cono de linterna, de la nieve cayendo y del vaho del aliento. En Godot sobre Android, esas son <strong>exactamente las dos cosas que más castiga el hardware</strong>:</p>
+    <p><strong>Luces 2D.</strong> Se ha reportado que un solo <code>PointLight2D</code> baja de 60 a 42 FPS en un Adreno 612, con las sombras dinámicas consumiendo una parte grande del presupuesto de 16,6 ms por fotograma.</p>
+    <p><strong>Partículas.</strong> El renderizador Compatibility —el que hay que usar en móvil— no soporta compute shaders, así que <code>GPUParticles2D</code> falla <em>en silencio</em>, sin error ni aviso. Toda partícula tiene que ser <code>CPUParticles2D</code>.</p>
+    <p>Esto no es optimización para el final: es una restricción de diseño que hay que asumir <strong>antes de producir arte</strong>. La salida existe —sprites aditivos para la linterna, <code>CanvasModulate</code> para la oscuridad, <code>CPUParticles2D</code> para la nieve, y valorar bloquear a 30 FPS para comprar margen— pero hay que tomarla ahora.</p>
+  </div>
+
+  <h4>Dirección de audio</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>Elemento</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td>Música ambiental</td><td>Drones fríos, texturas industriales. Sin melodías obvias</td></tr>
+      <tr><td>Diseño de sonido</td><td>Pasos en hielo, respiración, sonidos de los infectados</td></tr>
+      <tr><td>Audio de evidencia</td><td>Grabaciones levemente degradadas. Añade humanidad y credibilidad</td></tr>
+      <tr><td>Música de tensión</td><td>Se activa con un infectado cerca. Sutil, no un golpe obvio</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="flag">
+    <span class="lbl">El pilar sensorial está en la plataforma que peor lo soporta</span>
+    <p>El v1 establece que «el audio es el sistema de alarma principal». En móvil se juega en silencio, en transporte, con notificaciones interrumpiendo.</p>
+    <p><strong>Obligatorio:</strong> redundancia visual completa para todo lo que hoy comunica el audio. Indicador de ruido generado, indicador de proximidad, y señales de estado del infectado legibles sin sonido.</p>
+  </div>
+
+  <div class="flag">
+    <span class="lbl">Licencias de audio: el v1 recomendaba mal</span>
+    <p>La suscripción estándar de Epidemic Sound cubre contenido audiovisual, <strong>no distribución dentro de un videojuego</strong>. Y Freesound mezcla CC0 con CC-BY y CC-BY-NC, donde NC prohíbe uso comercial y BY exige atribución nominal.</p>
+    <p>Hace falta un archivo de atribuciones desde el primer asset. Un solo recurso mal licenciado dentro del paquete puede provocar la retirada de la app, y en Android una retirada no se arregla con un parche.</p>
+  </div>
+</section>
+
+<div class="part"><span class="part-label">Parte III</span><h2>Técnico</h2></div>
+
+<section id="s9">
+  <span class="sec-num">09</span>
+  <h3>Arquitectura técnica</h3>
+  <p class="lead">Sección nueva. El v1 no tenía ninguna.</p>
+
+  <div class="flow"><pre>Game (main.tscn)
+├── World ......... dueño del mundo. Crea al Player en PlayerSpawn
+│   ├── Ground .... TileMapLayer · define el espacio caminable
+│   ├── Walls ..... TileMapLayer · colisión
+│   ├── PlayerSpawn
+│   └── Player .... creado en tiempo de ejecución
+├── CameraController .. sigue al Player por NodePath
+└── VirtualJostick .... CanvasLayer, alimenta al InputManager
+
+InputManager (autoload) ... único puente entre entrada y jugabilidad</pre></div>
+
+  <h4>Convenciones establecidas</h4>
+  <ol class="steps">
+    <li><span class="sid">01</span><span class="sbody"><strong>Estructura temática.</strong> Scripts y escenas en subcarpetas por dominio: <code>Player/</code>, <code>World/</code>, <code>UI/</code>, <code>Core/</code>.</span></li>
+    <li><span class="sid">02</span><span class="sbody"><strong>Cámara hermana, nunca hija.</strong> Evita bucles de transformación. Suavizado nativo del motor, no interpolación por código.</span></li>
+    <li><span class="sid">03</span><span class="sbody"><strong>El Player no se coloca a mano.</strong> Cada mundo lo instancia desde <code>player.tscn</code> sobre su marcador. Mismo patrón para los infectados.</span></li>
+    <li><span class="sid">04</span><span class="sbody"><strong><code>Ground</code> define el espacio caminable</strong>, no sólo el aspecto. Colisión y navegación son independientes en Godot: sólo coinciden si el mapa se dibuja para que coincidan.</span></li>
+    <li><span class="sid">05</span><span class="sbody"><strong>Entrada centralizada.</strong> Todo pasa por el <code>InputManager</code>. Ningún sistema lee el joystick directamente.</span></li>
+  </ol>
+
+  <h4>Sistemas que faltan por diseñar</h4>
+  <p>Ninguno existe todavía, y varios son prerrequisito de otros: gestor de escenas y transiciones entre zonas, máquina de estados de juego, <strong>bus de eventos por señales</strong> —hoy hay cero señales declaradas en todo el proyecto—, gestor de guardado, gestor de audio, sistema de interacción, inventario, gestor de evidencia y director de presión dinámica.</p>
+
+  <h4>Deudas técnicas conocidas</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>Deuda</th><th>Consecuencia</th><th>Cuándo hay que pagarla</th></tr></thead>
+    <tbody>
+      <tr><td><code>set_map_limits()</code> existe y nadie la llama</td><td>La cámara puede encuadrar fuera del mapa</td><td>Con el mapa del Capítulo 1</td></tr>
+      <tr><td>La cámara resuelve su objetivo una sola vez en <code>_ready()</code></td><td>Al reaparecer apunta a una referencia liberada</td><td class="t mid">Al implementar muerte y respawn</td></tr>
+      <tr><td>1694 celdas de <code>Ground</code> apuntan a tilesets inexistentes</td><td>Datos muertos en la escena. El cuarto jugable está intacto</td><td>Antes de ampliar el mapa</td></tr>
+      <tr><td>Acciones de teclado definidas y sin usar</td><td>Configuración muerta en <code>project.godot</code></td><td>Cuando se cierre si el juego es sólo táctil</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s10">
+  <span class="sec-num">10</span>
+  <h3>Estado real del proyecto</h3>
+  <p class="lead">Todo lo de esta sección está medido sobre el repositorio y el motor, no estimado.</p>
+
+  <div class="scroller"><table>
+    <thead><tr><th>Métrica</th><th>Valor medido</th></tr></thead>
+    <tbody>
+      <tr><td>Primer commit</td><td class="n">27 mayo 2026</td></tr>
+      <tr><td>Commits totales</td><td class="n">20 en 15 semanas</td></tr>
+      <tr><td>Líneas de GDScript</td><td class="n">190</td></tr>
+      <tr><td>Escenas</td><td class="n">5</td></tr>
+      <tr><td>Autoloads</td><td class="n">1 · InputManager</td></tr>
+      <tr><td>Señales declaradas</td><td class="n">0</td></tr>
+      <tr><td>Tamaño de tile</td><td class="n">32 × 32 px</td></tr>
+      <tr><td>Habitación jugable</td><td class="n">1344 × 768 px · 42 × 24 celdas</td></tr>
+      <tr><td>Jugador</td><td class="n">52 × 88 px</td></tr>
+      <tr><td>Assets de audio</td><td class="n">0 archivos</td></tr>
+      <tr><td>Assets de sprites</td><td class="n">0 archivos · sólo placeholders</td></tr>
+      <tr><td>Etiquetas de versión</td><td class="n">0</td></tr>
+      <tr><td><code>export_presets.cfg</code></td><td class="n">No existe</td></tr>
+      <tr><td>Archivo LICENSE</td><td class="n">No existe · repositorio público</td></tr>
+      <tr><td>Veces ejecutado en un teléfono</td><td class="n">0</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Progreso honesto</h4>
+  <p>La bitácora declaraba ≈40 %. Esa cifra mide la fundación, no el juego. Separada en dos:</p>
+  <div class="cards">
+    <div class="card"><span class="n">≈95 %</span><h4>Fundación</h4><p>Git, arquitectura, movimiento, cámara, InputManager, joystick, TileMap, colisiones, spawn. Por encima del promedio indie en solitario.</p></div>
+    <div class="card"><span class="n">≈5 %</span><h4>Bucle jugable</h4><p>De los seis pilares de la Fase 1, sólo el movimiento existe y a medias. Sin ruido, sin IA, sin vida, sin evidencia, sin salida.</p></div>
+    <div class="card"><span class="n">≈0 %</span><h4>Contenido entregable</h4><p>Medido contra 5 capítulos, 5 zonas, 3 finales, audio, UI y guardado.</p></div>
+  </div>
+
+  <div class="flag crit">
+    <span class="lbl">Verificado, y es el dato más importante del documento</span>
+    <p><strong>El juego nunca se ha ejecutado en un teléfono.</strong> Todas las verificaciones registradas son en PC sin ventana. Se lleva quince meses construyendo para Android sin un solo arranque en un dispositivo Android, sin <code>export_presets.cfg</code>, sin modo de estiramiento y sin orientación bloqueada.</p>
+    <p>El primer export no será un trámite: será el descubrimiento de una lista de problemas de interfaz, rendimiento y entrada que nadie ha presupuestado. Debería ocurrir <strong>cuanto antes</strong>, aunque el juego sólo sea un cuadrado moviéndose.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">Una alarma que resultó ser falsa</span>
+    <p>Se sospechó que el repositorio no reconstruía el proyecto, porque una escena referencia una textura importada dentro de <code>.godot/</code>, que está excluida del control de versiones. <strong>Se comprobó clonando el repositorio en limpio e importándolo:</strong> las dos texturas del joystick cargan correctamente. Godot regenera el archivo importado de forma determinista a partir del original y su <code>.import</code>, que sí están versionados. El respaldo es válido.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">Velocidad histórica</span>
+    <p>20 commits en 15 semanas, con meses de dos y tres commits, produciendo 190 líneas de GDScript. Ésa es la velocidad real verificable y es la única base honesta para proyectar lo que queda —que es el 95 % del trabajo.</p>
+    <p>No es una crítica: es un dato de planificación. Cualquier calendario que asuma una velocidad mayor sin explicar qué va a cambiar es un calendario de deseos.</p>
+  </div>
+</section>
+
+<section id="s11">
+  <span class="sec-num">11</span>
+  <h3>Restricciones de Android</h3>
+
+  <h4>Presupuesto de rendimiento</h4>
+  <p>Objetivo: gama media-baja, 720p, 2–3 GB de RAM.</p>
+  <div class="scroller"><table>
+    <thead><tr><th>Recurso</th><th>Presupuesto</th><th>Nota</th></tr></thead>
+    <tbody>
+      <tr><td>Tiempo de fotograma</td><td class="n">&lt; 16,6 ms</td><td>Valorar bloquear a 30 FPS para comprar margen</td></tr>
+      <tr><td>Draw calls</td><td class="n">&lt; 200</td><td>200–500 es el límite; por encima aparece throttling térmico</td></tr>
+      <tr><td>Nodos visibles</td><td class="n">&lt; 2000</td><td></td></tr>
+      <tr><td>Paso de física</td><td class="n">&lt; 4 ms</td><td>Incluye todos los infectados</td></tr>
+      <tr><td>Memoria residente</td><td class="n">&lt; 1 GB</td><td></td></tr>
+      <tr><td>Renderizador</td><td>Compatibility</td><td>Cubre prácticamente todo el parque de móviles</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note">
+    <span class="lbl">Un dato que nadie tiene</span>
+    <p>Cuántos <code>CharacterBody2D</code> con navegación aguanta un teléfono de gama media <strong>no tiene respuesta pública</strong>. Ni Godot ni la comunidad la han publicado, y cualquier número que aparezca sin medirlo está inventado.</p>
+    <p>La buena noticia es que el diseño probablemente no toca ese techo: de 4 a 10 infectados por zona queda muy lejos. Pero <strong>las oleadas de 15–20 hay que prototiparlas en el teléfono antes de diseñarlas.</strong></p>
+  </div>
+
+  <h4>Configuración pendiente de decidir</h4>
+  <p><code>project.godot</code> no define modo de estiramiento, relación de aspecto, orientación, icono ni pantalla de arranque. Sólo hay <code>1280 × 720</code>. Hace falta cerrar: orientación (presumiblemente apaisado bloqueado), <code>canvas_items</code> con <code>expand</code>, rango de aspectos soportados (18:9, 19,5:9, 20:9 y tablets), zonas seguras y muescas, y el comportamiento en el modo borde a borde forzado de Android 16.</p>
+
+  <h4>Controles táctiles</h4>
+  <p>Hoy sólo existe el joystick. El diseño pide agacharse, correr, interactuar, linterna, inventario y posiblemente lanzar objetos. Falta el esquema completo: cuántos botones, dónde, tamaño mínimo de 48 dp, qué ocupa el pulgar derecho, y <strong>qué porcentaje de pantalla tapan las manos en un juego cuya mecánica es ver poco</strong>. Faltan también opción para zurdos, joystick reposicionable y vibración háptica.</p>
+
+  <div class="flag">
+    <span class="lbl">El joystick invade la zona de gestos del sistema</span>
+    <p>Está anclado a 64 px del borde inferior izquierdo, donde Android coloca el gesto de retroceso. En un juego de sigilo, un retroceso accidental durante una persecución es una reseña de una estrella — y esas reseñas llegan justo entre las primeras cien, que son las que fijan el destino del juego.</p>
+  </div>
+</section>
+
+<div class="part"><span class="part-label">Parte IV</span><h2>Negocio</h2></div>
+
+<section id="s12">
+  <span class="sec-num">12</span>
+  <h3>La decisión de plataforma</h3>
+  <p class="lead">Es la decisión de producto más importante del proyecto y cambia más de lo que parece: precio, ingresos esperados, marketing, competencia y hasta el diseño de sesión.</p>
+
+  <div class="scroller"><table>
+    <thead><tr><th></th><th>Steam (v1)</th><th>Android (v2)</th></tr></thead>
+    <tbody>
+      <tr><td>Coste de entrada</td><td class="n">100 USD por juego</td><td class="n">25 USD una vez</td></tr>
+      <tr><td>Comisión</td><td class="n">30 %</td><td class="n">15 % bajo 1M USD/año</td></tr>
+      <tr><td>Descubrimiento gratuito</td><td class="t good">Wishlists, Next Fest, Popular Upcoming</td><td class="t bad">No existe equivalente</td></tr>
+      <tr><td>Acumular audiencia antes del lanzamiento</td><td class="t good">Página «Próximamente» meses antes</td><td class="t bad">Pre-registro, 90 días máximo</td></tr>
+      <tr><td>Mercado premium</td><td class="t good">Es la norma</td><td class="t bad">Marginal frente al gratuito</td></tr>
+      <tr><td>Prensa y curadores</td><td class="t good">Ecosistema establecido</td><td class="t bad">Prácticamente inexistente</td></tr>
+      <tr><td>Devoluciones</td><td>2 h jugadas / 14 días</td><td class="t mid">Automática sin preguntas en 2 h</td></tr>
+      <tr><td>Mantenimiento obligatorio</td><td class="t good">Ninguno</td><td class="t bad">Subir el target API cada año o desaparecer</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="flag crit">
+    <span class="lbl">Lectura honesta de la decisión</span>
+    <p>Android <strong>no facilita el proyecto: cambia la dificultad de sitio.</strong> Se pasa de «competir con decenas de miles de lanzamientos anuales en una tienda diseñada para juegos de pago» a «competir sin ninguna herramienta gratuita de acumulación de audiencia, en una tienda donde el modelo de pago es marginal».</p>
+    <p>La ventaja real de Android es otra y es legítima: <strong>el descubrimiento dentro de la tienda no depende de prensa ni de influencers.</strong> La mayor parte de las instalaciones de juegos vienen de buscar o navegar dentro de Play. Un desarrollador sin presupuesto no está excluido por no tener contactos — está sometido a un algoritmo opaco, que es distinto.</p>
+    <p>Y hay un filtro binario que importa más que cualquier otra cosa: <strong>la nota media.</strong> Cerca de la mitad de los usuarios no descarga nada por debajo de 4,0 estrellas. Eso significa que los controles táctiles, el rendimiento en gama baja y la compatibilidad de dispositivos son <em>comercialmente más importantes que el contenido narrativo</em>, porque las primeras reseñas fijan el destino del juego.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">Recomendación: abrir la página de Steam igualmente</span>
+    <p>Aunque el producto final sea Android, una página de Steam «Próximamente» es <strong>el único instrumento gratuito que permite medir interés antes de que el juego exista</strong>. Sin un destino donde convertir, un devlog no tiene llamada a la acción y las visitas son métricas vanidosas.</p>
+    <p>Cuesta 100 USD y su función principal no es vender: es medir y acumular. Decisión abierta en la sección 21.</p>
+  </div>
+</section>
+
+<section id="s13">
+  <span class="sec-num">13</span>
+  <h3>Análisis de mercado</h3>
+
+  <div class="flag crit">
+    <span class="lbl">Lee esto antes que las cifras</span>
+    <p>Se recopilaron <strong>114 afirmaciones con cifra</strong> sobre el mercado. Se sometieron 14 a verificación adversarial independiente. <strong>Ninguna sobrevivió intacta:</strong> 12 quedaron como dudosas y 2 fueron refutadas. Las otras 100 no se han comprobado.</p>
+    <p>Los motivos recurrentes: casi todos los datos de ventas que circulan son <strong>estimaciones de terceros</strong>, no cifras confirmadas por editores; muchas se atribuyen a medios que nunca las publicaron; varias son fotos parciales de mitad de año presentadas como cifras de año completo; y los tramos bajos son justo la salida menos fiable de los modelos de estimación.</p>
+    <p><strong>Conclusión operativa:</strong> la <em>dirección</em> es fiable porque varias fuentes independientes coinciden en ella. Los <em>números concretos</em> no deben usarse para ninguna proyección financiera sin volver a verificarlos.</p>
+  </div>
+
+  <h4>Lo que sí se puede afirmar</h4>
+  <ol class="steps">
+    <li><span class="sid">01</span><span class="sbody"><strong>La gran mayoría de los juegos indie gana muy poco.</strong> Varias fuentes independientes coinciden en que la mayor parte de los lanzamientos no recupera costes y que la distribución de ingresos es de ley de potencias: unos pocos títulos concentran casi todo. La «media» del mercado es una ficción estadística.</span></li>
+    <li><span class="sid">02</span><span class="sbody"><strong>El precio filtra el resultado.</strong> La mediana de ingresos sube de forma marcada al excluir los juegos más baratos. Poner el juego muy barato lo coloca en la cohorte de peores resultados.</span></li>
+    <li><span class="sid">03</span><span class="sbody"><strong>El terror es de los géneros con mejor tasa de éxito relativo</strong> para desarrolladores pequeños. Es la mejor noticia del análisis y es coherente entre fuentes.</span></li>
+    <li><span class="sid">04</span><span class="sbody"><strong>La saturación está empeorando.</strong> Los juegos publicados en los últimos años rinden peor que el catálogo histórico.</span></li>
+    <li><span class="sid">05</span><span class="sbody"><strong>El desarrollo tarda 2–3 veces más de lo estimado</strong> en proyectos en solitario. Y los proyectos que fracasan en convertir llevaban aproximadamente el doble de tiempo en desarrollo público que los que sí convirtieron: el tiempo largo correlaciona con peor resultado, no mejor.</span></li>
+  </ol>
+
+  <div class="note">
+    <span class="lbl">Una tesis pesimista que NO sobrevivió a la verificación</span>
+    <p>Se afirmó que los éxitos del terror indie reciente son casi todos cooperativos baratos y «streameables», y no terror narrativo en solitario — lo que sería demoledor para este proyecto. <strong>Fue refutada.</strong> Dos de los tres juegos citados como prueba ni siquiera son de terror, y existe al menos un contraejemplo directo: un indie de terror narrativo en solitario que superó el millón de copias en 2025.</p>
+    <p>El diseño de Antesala Zombies 2032 no está desmentido por los datos.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">Sobre el abandono de proyectos</span>
+    <p>La cifra de «el 70 % de los desarrolladores en solitario fracasa» que circula por internet <strong>no tiene metodología verificable y no debe usarse</strong>. Los datos sólidos son otros: alrededor del 12 % de los proyectos de videojuegos financiados en Kickstarter no entregan, y sólo una cuarta parte de los juegos en acceso anticipado de Steam llegan a versión completa.</p>
+  </div>
+</section>
+
+<section id="s14">
+  <span class="sec-num">14</span>
+  <h3>Competencia</h3>
+
+  <p>Se verificaron once referentes: Darkwood, SIGNALIS, Teleglitch, Lone Survivor, Uncanny Valley, Duskers, Barotrauma, Project Zomboid, Fears to Fathom, The Static Speaks My Name y Home Safety Hotline.</p>
+
+  <blockquote>Ninguno de los once está oficialmente en Android.</blockquote>
+
+  <p>El nicho exacto —survival horror 2D top-down con sigilo, narrativa por documentos y ambientación científica, en Android— <strong>está libre en Google Play</strong>. Pero libre no es lo mismo que virgen, y hay tres matices que cambian la tesis.</p>
+
+  <div class="cards">
+    <div class="card"><span class="n">Matiz 1</span><h4>El hueco está mal ocupado</h4><p><em>Delivery From the Pain</em> ya existe en Android: top-down zombie con narrativa RPG, más de 30 horas y varios finales. No es tan bueno —es el peor valorado de los premium verificados— pero tiene el género, la perspectiva y el bucle.</p></div>
+    <div class="card"><span class="n">Matiz 2</span><h4>Hay demanda sin oferta legítima</h4><p><em>Endoparasitic</em>, lo más cercano temáticamente, circula en Android sólo como port <strong>no oficial</strong>. Eso prueba que existe demanda que nadie está atendiendo legalmente.</p></div>
+    <div class="card"><span class="n">Matiz 3</span><h4>El nicho adyacente está saturado</h4><p>«Survival top-down zombie» en Android está lleno de free-to-play con millones de descargas que compiten por las mismas palabras clave de tienda.</p></div>
+  </div>
+
+  <div class="flag">
+    <span class="lbl">Tres actores con más recursos evaluaron Android y se retiraron</span>
+    <p>La lectura optimista es «nadie ocupa el hueco, adelante». La honesta es que hay señales de que el hueco puede estar vacío por una razón:</p>
+    <p>El estudio de <strong>Darkwood</strong>, tras vender más de un millón de copias, declaró públicamente que no hay forma de portarlo a móvil. El desarrollador en solitario de <strong>Fears to Fathom</strong> portó a iOS y no a Android. Y <strong>Bohemia Interactive</strong> retiró <em>Mini DAYZ</em> —2D top-down survival, millones de descargas— de Google Play con una nota inferior a 3,5 sobre 5.</p>
+    <p>Ninguno de los tres es un aficionado, y los tres evitaron o abandonaron exactamente este terreno.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">El diferenciador y su riesgo</span>
+    <p>El sigilo es el diferenciador más limpio frente a los once referentes — y es también <strong>el único sistema del proyecto sin ningún caso de éxito verificado en top-down móvil</strong>.</p>
+    <p>Consecuencia directa para la planificación: <strong>el sigilo hay que prototiparlo en un teléfono real antes que el arte, la narrativa o cualquier otra cosa.</strong> Si no se siente bien con controles táctiles, el diferenciador se cae y el juego pasa a competir de frente con lo que ya existe.</p>
+  </div>
+</section>
+
+<section id="s15">
+  <span class="sec-num">15</span>
+  <h3>Monetización y precio</h3>
+
+  <div class="flag crit">
+    <span class="lbl">La app de pago clásica no es el camino</span>
+    <p>Las apps de pago son una fracción mínima del catálogo de Google Play y la gran mayoría de los ingresos de la tienda vienen de aplicaciones gratuitas. La mayoría de los jugadores móviles declara preferir gratis con anuncios antes que pagar por adelantado.</p>
+    <p>Y hay un detalle que convierte la <strong>duración del juego en una decisión económica</strong>: Google reembolsa automáticamente y sin preguntas durante las dos primeras horas, con el coste a cargo del desarrollador. Un juego narrativo corto puede completarse dentro de la ventana de devolución.</p>
+  </div>
+
+  <h4>Dos vías recomendadas</h4>
+  <div class="cards">
+    <div class="card"><span class="n">Opción A</span><h4>Descarga gratuita con desbloqueo</h4><p>El primer acto completo jugable de forma gratuita, y el resto del juego tras una única compra dentro de la app. Elimina la fricción del muro de pago, da al algoritmo volumen de instalaciones como señal de ranking, y neutraliza la ventana de reembolso porque el jugador prueba antes de pagar.</p></div>
+    <div class="card"><span class="n">Opción B</span><h4>Prueba temporal oficial</h4><p>Google introdujo en 2026 pruebas gratuitas integradas en el paquete de la app, sin coste de desarrollo, junto a listas de deseos con notificación de descuento. Permite mantener el precio de venta sin perder a quien rechaza pagar a ciegas.</p></div>
+  </div>
+
+  <p>Ambas requieren decisiones técnicas que hoy no están tomadas: qué complemento de facturación existe y está mantenido para Godot 4.6, cómo se valida la compra, cómo se restaura al reinstalar, qué pasa si falla a mitad, y <strong>dónde va exactamente el muro de pago</strong> y qué progreso se conserva al cruzarlo.</p>
+
+  <div class="note">
+    <span class="lbl">Precio y realidad regional</span>
+    <p>El v1 citaba 4,99–7,99 USD sin tabla regional. En Google Play el precio psicológico de un indie premium está por debajo de eso, y los mercados hispanohablantes —los primeros que encontrarán el juego por idioma de ficha— tienen poder adquisitivo y medios de pago muy distintos. Falta decidir el precio por región.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">Expectativa honesta para la v1.0</span>
+    <p>El escenario base no es vivir del juego. Es <strong>construir base de jugadores y una nota superior a 4,0 estrellas</strong> para que el siguiente proyecto no empiece de cero. Cualquier plan financiero debería asumir por defecto un retorno cercano a cero y tratar cualquier cosa por encima como sorpresa.</p>
+  </div>
+</section>
+
+<section id="s16">
+  <span class="sec-num">16</span>
+  <h3>Audiencia y lanzamiento</h3>
+
+  <p>Toda la maquinaria gratuita de construcción de audiencia que documenta la literatura indie —listas de deseos, festivales de demos, páginas de «próximamente»— <strong>es infraestructura de Steam</strong>. Google Play no tiene equivalente funcional: el pre-registro dura como máximo 90 días y captura demanda existente en lugar de generarla.</p>
+
+  <h4>Qué funciona y qué no</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>Canal</th><th>Realidad</th></tr></thead>
+    <tbody>
+      <tr><td>Devlogs en YouTube</td><td class="t mid">Atraen sobre todo a otros desarrolladores, no a jugadores</td></tr>
+      <tr><td>Clips en TikTok</td><td class="t mid">El alcance orgánico de gaming se desplomó en 2025</td></tr>
+      <tr><td>Búsqueda dentro de Google Play</td><td class="t good">La mayor parte de las instalaciones. No depende de contactos</td></tr>
+      <tr><td>Nota media</td><td class="t good">El filtro más determinante de todos</td></tr>
+      <tr><td>Publicidad pagada</td><td class="t bad">El mercado móvil gasta miles de millones. Sin presupuesto no se compite</td></tr>
+      <tr><td>Página de Steam «Próximamente»</td><td class="t good">El único instrumento gratuito para medir interés antes de existir</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Los 12 testers: no es un trámite</h4>
+  <div class="flag">
+    <span class="lbl">Bloqueo logístico previo al lanzamiento</span>
+    <p>Una cuenta personal de desarrollador creada recientemente exige un <strong>test cerrado con 12 testers reales, inscritos de forma continua durante 14 días</strong>, antes de poder publicar en producción.</p>
+    <p>Para alguien sin comunidad ni presupuesto, conseguir 12 cuentas de Google distintas que se mantengan inscritas dos semanas es un problema social, no técnico. Es la clase de requisito que nadie planifica y que retrasa lanzamientos un mes entero.</p>
+    <p><strong>Hay que empezar a construir esa lista de 12 personas mucho antes de que el juego esté terminado</strong>, y contar la fecha de inicio hacia atrás desde la fecha de lanzamiento.</p>
+  </div>
+</section>
+
+<section id="s17">
+  <span class="sec-num">17</span>
+  <h3>Presupuesto económico</h3>
+  <p class="lead">El v1 no tenía ninguna cifra total de inversión. Esta es una primera línea de base, pendiente de confirmar precios actuales.</p>
+
+  <div class="scroller"><table>
+    <thead><tr><th>Concepto</th><th>Coste</th><th>Necesidad</th></tr></thead>
+    <tbody>
+      <tr><td>Cuenta de Google Play Console</td><td class="n">~25 USD una vez</td><td class="t bad">Ineludible</td></tr>
+      <tr><td>Teléfono real de gama baja para certificar</td><td class="n">~100–150 USD</td><td class="t bad">Ineludible</td></tr>
+      <tr><td>Dominio y hosting para la política de privacidad</td><td class="n">~15–40 USD/año</td><td class="t bad">Ineludible</td></tr>
+      <tr><td>Aseprite u otra herramienta de arte</td><td class="n">~20 USD una vez</td><td class="t mid">Alta</td></tr>
+      <tr><td>Licencias de audio</td><td class="n">Por determinar</td><td class="t mid">Alta</td></tr>
+      <tr><td>Herramientas de IA</td><td class="n">Suscripción</td><td class="t mid">Es el motor de velocidad declarado del proyecto</td></tr>
+      <tr><td>Steam Direct, si se mantiene esa vía</td><td class="n">100 USD</td><td class="t mid">Opcional</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>El teléfono real no es opcional y merece énfasis: <strong>es imposible certificar el rendimiento, los controles táctiles y la compatibilidad sin un dispositivo de gama baja en la mano</strong>, y son precisamente esas tres cosas las que deciden la nota media, que a su vez decide el destino comercial del juego.</p>
+
+  <h4>Fiscalidad y cobros</h4>
+  <p>Sin decidir: país de residencia fiscal, si Google actúa como responsable de la venta en ese mercado, retención de impuestos, umbral de pago mínimo, cuenta bancaria compatible, y si vender un juego genera obligación de declarar ingresos o de facturar. <strong>Conviene resolverlo antes de publicar, no después del primer pago.</strong></p>
+</section>
+
+<section id="s18">
+  <span class="sec-num">18</span>
+  <h3>Obligaciones legales y de plataforma</h3>
+
+  <div class="flag crit">
+    <span class="lbl">Fechas con plazo · verificar personalmente en Play Console</span>
+    <p>La investigación detectó plazos de Google Play que pueden afectar al proyecto de forma inmediata, incluidos requisitos de nivel de API objetivo y de verificación de identidad del desarrollador con fechas en el segundo semestre de 2026.</p>
+    <p><strong>Estos datos provienen de búsqueda web y no se han confirmado en la fuente oficial.</strong> Dada su naturaleza —trámites con fecha, que no se arreglan con código— la acción correcta es entrar en la documentación oficial de Google Play Console y confirmar los plazos vigentes. Es tarea de esta semana, no de la fase de lanzamiento.</p>
+  </div>
+
+  <h4>Lista de obligaciones</h4>
+  <ol class="steps">
+    <li><span class="sid">01</span><span class="sbody"><strong>Política de privacidad</strong> alojada en una URL pública. Implica dominio y hosting.</span></li>
+    <li><span class="sid">02</span><span class="sbody"><strong>Formulario de Seguridad de los Datos</strong> y cuestionario de clasificación de contenido. Un horror con cuerpo alterado y violencia probablemente quede en 16+ o 18+ en varias regiones.</span></li>
+    <li><span class="sid">03</span><span class="sbody"><strong>Verificación de identidad</strong> del desarrollador, con datos de contacto que la tienda publica en la ficha. Para quien desarrolla desde casa, eso puede significar exponer información personal.</span></li>
+    <li><span class="sid">04</span><span class="sbody"><strong>Perfil de pagos</strong> con datos fiscales.</span></li>
+    <li><span class="sid">05</span><span class="sbody"><strong>Formato de paquete y nivel de API objetivo</strong> vigentes, que cambian cada año.</span></li>
+    <li><span class="sid">06</span><span class="sbody"><strong>Archivo de licencias y atribuciones</strong> de todos los assets. No existe hoy, y no consta el origen de las texturas actuales.</span></li>
+    <li><span class="sid">07</span><span class="sbody"><strong>Licencia del repositorio.</strong> No hay archivo LICENSE y el repositorio es público con todo el código, los assets y los documentos de un producto que se pretende vender.</span></li>
+  </ol>
+
+  <div class="flag crit">
+    <span class="lbl">Tres datos irreversibles que hay que decidir antes de la primera subida</span>
+    <p><strong>El identificador de paquete.</strong> No se puede cambiar jamás después de publicar. Hoy el proyecto se llama internamente <code>JUEGO_ZOMBIES_2D</code>.</p>
+    <p><strong>La estrategia de firma.</strong> Perder el archivo de firma sin tener activada la firma gestionada por Play es el único fallo literalmente irreversible del proyecto: implica no poder actualizar nunca la app, republicar bajo otro identificador y perder todas las instalaciones y todas las reseñas — es decir, destruir el único activo que la estrategia declara estar construyendo.</p>
+    <p><strong>El nombre público de la cuenta de desarrollador.</strong></p>
+  </div>
+</section>
+
+<div class="part"><span class="part-label">Parte V</span><h2>Ejecución</h2></div>
+
+<section id="s19">
+  <span class="sec-num">19</span>
+  <h3>Hoja de ruta</h3>
+
+  <h4>Inmediato · lo que va antes que cualquier otra cosa</h4>
+  <ol class="steps">
+    <li><span class="sid">01</span><span class="sbody"><strong>Exportar a un teléfono real, aunque sea un cuadrado moviéndose.</strong> Quince meses sin un solo arranque en Android es el riesgo más grande y más barato de eliminar del proyecto.</span></li>
+    <li><span class="sid">02</span><span class="sbody"><strong>Confirmar los plazos vigentes de Google Play</strong> en la documentación oficial, y decidir el tipo de cuenta.</span></li>
+    <li><span class="sid">03</span><span class="sbody"><strong>Fijar la velocidad del jugador</strong> probándola en dispositivo. Todos los números de la IA se calibran contra ella.</span></li>
+    <li><span class="sid">04</span><span class="sbody"><strong>Añadir la capa de navegación al TileSet</strong> y comprobar con un agente de prueba que un cuadrado rodea un muro.</span></li>
+  </ol>
+
+  <h4>Fase A · Cerrar el bucle jugable</h4>
+  <p>Los ocho pasos del blueprint de infectados, en orden: terreno navegable, el cuerpo, movimiento, primer cerebro tosco, los ojos, el medidor de agitación, consecuencia (vida y daño), y las tres fases como datos. Después: ruido y sigilo, evidencia recogible y zona de escape.</p>
+  <p>Al terminar esta fase existe por primera vez el bucle completo del juego: explorar, recoger, arriesgar, evitar, escapar.</p>
+
+  <h4>Fase B · Un capítulo jugable de verdad</h4>
+  <p>El Capítulo 1 completo con arte, audio, interfaz, guardado y las pantallas de sistema. Es donde aparece la mayor parte del trabajo que hoy no está dimensionado.</p>
+
+  <h4>Fase C · Publicación</h4>
+  <p>Los 12 testers, el test cerrado, los trámites legales, la ficha de tienda y el lanzamiento.</p>
+
+  <div class="flag">
+    <span class="lbl">Lo que falta para poder poner fechas</span>
+    <p>No existe un inventario numérico del contenido a producir: cuántas habitaciones, cuántos sprites y cuántos fotogramas por sprite, cuántas piezas de evidencia, cuántas palabras de texto, cuántos minutos de audio. Sin ese inventario <strong>cualquier calendario es una invención</strong>, y con una velocidad histórica de 190 líneas de código en 15 semanas, la invención sería muy optimista.</p>
+    <p>Ese inventario es probablemente la tarea de planificación más útil que queda pendiente.</p>
+  </div>
+
+  <h4>Criterios de parada y orden de recorte</h4>
+  <p>El v1 no tenía ninguno. Si hay que recortar, el orden propuesto es: <strong>Modo Survival → finales B y C → capítulos 4 y 5 → zonas de almacenes y exterior</strong>. La versión mínima publicable irreducible es el Capítulo 1 completo con un final.</p>
+  <p>Y una señal objetiva de parada: <strong>si el prototipo de sigilo no resulta divertido tras tres iteraciones probadas con personas que no son el desarrollador</strong>, el pilar del diseño no funciona y hay que replantearlo en lugar de seguir construyendo encima.</p>
+</section>
+
+<section id="s20">
+  <span class="sec-num">20</span>
+  <h3>Riesgos</h3>
+
+  <div class="scroller"><table>
+    <thead><tr><th>Riesgo</th><th>Gravedad</th><th>Mitigación</th></tr></thead>
+    <tbody>
+      <tr><td>Nunca se ha ejecutado en un teléfono</td><td class="t bad">Crítico</td><td>Exportar esta semana, aunque el juego esté vacío</td></tr>
+      <tr><td>Pérdida del archivo de firma</td><td class="t bad">Crítico e irreversible</td><td>Activar la firma gestionada por Play desde la primera subida y respaldar el archivo fuera del equipo</td></tr>
+      <tr><td>El sigilo táctil no se siente bien</td><td class="t bad">Crítico</td><td>Prototipar en teléfono antes que arte y narrativa</td></tr>
+      <tr><td>La estética exige lo que el hardware castiga</td><td class="t bad">Alto</td><td>Decidir las alternativas antes de producir arte</td></tr>
+      <tr><td>El alcance crece sin control</td><td class="t bad">Alto</td><td>Inventario de contenido cerrado y orden de recorte escrito</td></tr>
+      <tr><td>Sustituir el desarrollo por la planificación</td><td class="t bad">Alto</td><td>Hay ~70 KB de documentos frente a 190 líneas de código. Este documento debería ser el último de planificación antes de volver al editor</td></tr>
+      <tr><td>Diseño dependiente del audio en una plataforma silenciosa</td><td class="t mid">Alto</td><td>Redundancia visual completa, no opcional</td></tr>
+      <tr><td>La app se pudre si se deja de mantener</td><td class="t mid">Alto</td><td>Publicar contrae una obligación anual indefinida. Asumirlo o no publicar</td></tr>
+      <tr><td>Calor y batería en sesiones largas</td><td class="t mid">Medio</td><td>Ningún presupuesto de fotograma lo captura. Medirlo en dispositivo</td></tr>
+      <tr><td>Assets sin procedencia registrada</td><td class="t mid">Medio</td><td>Archivo de atribuciones desde hoy. Una retirada en Android no se arregla con un parche</td></tr>
+      <tr><td>Revisión automatizada por temática de patógeno</td><td class="t mid">Medio</td><td>No está prohibido, pero puede generar falsos positivos y una apelación cuesta semanas</td></tr>
+      <tr><td>Sin plan B fuera de Google Play</td><td class="t mid">Medio</td><td>Valorar itch.io o una distribución alternativa como red de seguridad</td></tr>
+      <tr><td>Continuidad personal: una persona, una máquina</td><td class="t mid">Medio</td><td>El repositorio remoto cubre el código. No cubre enfermedad ni cambio de circunstancias</td></tr>
+      <tr><td>Los datos de mercado caducan sin aviso</td><td class="t mid">Medio</td><td>Ver sección 22</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s21">
+  <span class="sec-num">21</span>
+  <h3>Decisiones abiertas</h3>
+  <p class="lead">Ninguna de estas está cerrada. Cada una bloquea trabajo real, y aplazarlas tiene coste.</p>
+
+  <div class="scroller"><table>
+    <thead><tr><th>#</th><th>Decisión</th><th>Qué bloquea</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>Título definitivo y su relación con la palabra «zombies»</td><td>Ficha de tienda, identificador de paquete, marca</td></tr>
+      <tr><td class="n">2</td><td>Identificador de paquete definitivo</td><td class="t bad">Irreversible tras publicar</td></tr>
+      <tr><td class="n">3</td><td>Modelo de monetización y precio por región</td><td>Dónde va el muro de pago, duración del juego</td></tr>
+      <tr><td class="n">4</td><td>¿Existe combate, sí o no?</td><td>IA, controles táctiles, equilibrio, promesa al jugador</td></tr>
+      <tr><td class="n">5</td><td>Alcance de la v1.0: ¿qué capítulos y qué finales?</td><td>Todo el calendario</td></tr>
+      <tr><td class="n">6</td><td>¿El Modo Survival está en la v1.0 o se corta?</td><td>Alcance</td></tr>
+      <tr><td class="n">7</td><td>¿Se abre página de Steam como instrumento de medición?</td><td>Estrategia de audiencia, 100 USD</td></tr>
+      <tr><td class="n">8</td><td>Idioma base y idiomas de la ficha</td><td>Descubrimiento por país, volumen de traducción</td></tr>
+      <tr><td class="n">9</td><td>Origen del arte: propio, encargado, packs o generado</td><td>Calendario, presupuesto, coherencia visual</td></tr>
+      <tr><td class="n">10</td><td>Duración objetivo de la partida completa</td><td class="t mid">Es una decisión económica por la ventana de reembolso</td></tr>
+      <tr><td class="n">11</td><td>Orientación, aspectos soportados y esquema de control táctil</td><td>Toda la interfaz</td></tr>
+      <tr><td class="n">12</td><td>¿Android exclusivo, o se preserva la vía PC?</td><td>El soporte de teclado se eliminó deliberadamente del InputManager</td></tr>
+      <tr><td class="n">13</td><td>Licencia del repositorio y si sigue público al lanzar</td><td>Propiedad intelectual</td></tr>
+      <tr><td class="n">14</td><td>Velocidad del jugador</td><td>Todos los números de la IA</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s22">
+  <span class="sec-num">22</span>
+  <h3>Gobierno del documento</h3>
+
+  <h4>Qué documento manda sobre qué</h4>
+  <div class="scroller"><table>
+    <thead><tr><th>Tema</th><th>Fuente de verdad</th></tr></thead>
+    <tbody>
+      <tr><td>Identidad, lore, tono, universo</td><td>GDD v1</td></tr>
+      <tr><td>Diseño, técnica, negocio, plataforma</td><td>Este documento</td></tr>
+      <tr><td>IA de infectados, en detalle</td><td>Blueprint de IA de Infectados</td></tr>
+      <tr><td>Decisiones técnicas con fecha y motivo</td><td><code>dev_log.md</code></td></tr>
+      <tr><td>Hitos y progreso declarado</td><td><code>docs/bitacora.md</code></td></tr>
+      <tr><td>Reglas de trabajo con IA</td><td><code>AGENT.md</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="flag">
+    <span class="lbl">Caducidad de los datos de mercado</span>
+    <p>Toda la investigación comercial de las secciones 12 a 17 es una foto de 2025–2026: comisiones, plazos, requisitos de testers, modelos de monetización. <strong>Sin fecha de revisión escrita, este documento envejecerá igual que el v1</strong> —que sigue hablando de Steam Next Fest como si fuera el plan— y nadie se dará cuenta hasta que una decisión se tome sobre un dato muerto.</p>
+    <p><strong>Regla:</strong> revisar las secciones 12 a 18 antes de cualquier decisión que dependa de ellas, y en todo caso al menos una vez cada seis meses.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">Documentos que quedan desactualizados con este v2</span>
+    <p>El dev dashboard sigue diciendo «de la nada a Steam» y fija el alcance en «Capítulo 1 + Demo». <code>AGENT.md</code> describe carpetas <code>src/</code> y <code>assets/</code> en la raíz que no existen. Y la bitácora declara ≈40 % de progreso y marca el spawn como pendiente cuando ya está cerrado.</p>
+    <p>Ninguno es urgente, pero conviene reconciliarlos para que no contradigan a este documento.</p>
+  </div>
+
+  <blockquote>Y una última cosa, que es la más importante de todo el documento: hay unos 70 KB de documentación de diseño frente a 190 líneas de código. El riesgo real de este proyecto no es el burnout ni el mercado — es sustituir el desarrollo por la planificación y terminar con un GDD excelente sobre un juego que no existe. Este documento debería ser el último de planificación antes de volver al editor.</blockquote>
+</section>
+
+<footer>
+  <span>Antesala Zombies 2032 · GDD v2.0 · 7 sep 2026</span>
+  <span>El mundo aún no lo sabe… pero ya empezó</span>
+</footer>
+
+</div>

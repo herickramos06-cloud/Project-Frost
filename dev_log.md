@@ -145,6 +145,30 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-09
+
+### Navegación del Mundo, Velocidad del Player y GDD v2
+* **Sistema:** Navegación / Player / Documentación
+* **Decisión:**
+  1. Añadir una capa de navegación al TileSet y pintar el polígono navegable en el tile de suelo `(0,0)`, dejando el tile de muro `(1,0)` sin polígono.
+  2. Fijar la velocidad del Player en **180 px/s** (antes 450).
+  3. Redactar un **GDD v2** como documento nuevo, sin modificar el v1.
+* **Motivo:** El TileSet no tenía ninguna capa de navegación, así que un `NavigationAgent2D` no habría tenido por dónde caminar: es el prerrequisito duro de todo el sistema de infectados. Sobre la velocidad, las cifras del GDD v1 se escribieron antes de que existieran los tiles; con un jugador de 52 px sobre tiles de 32, 450 px/s equivalía a 14 tiles por segundo y arrastraba la sensación al terreno arcade. 180 px/s conserva las proporciones del v1 subiendo la escala ~1,5×. El GDD v2 se crea aparte porque el v1 es el documento fundacional del universo y no debe corregirse: manda el v1 en identidad y lore, y el v2 en diseño, técnica y negocio.
+* **Archivos:** [Laboratory_tileset.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Assets/Tiles/Laboratory_tileset.tres) | [player.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Player/player.gd) | [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn) | [gdd_v2_antesala_2032.html](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/docs/gdd/gdd_v2_antesala_2032.html)
+* **Detalles y Correcciones:**
+  1. **Capa duplicada eliminada:** se crearon dos capas de navegación por error y se retiró la segunda, que quedaba vacía. Se comprobó antes que el polígono vivía en la capa 0.
+  2. **UID restaurados a mano:** `ResourceSaver.save()` reescribió el `.tres` sin las líneas `uid://`, tanto la del propio recurso como la de la textura. Como `world.tscn` referencia el TileSet por UID, se restauraron ambas manualmente. **Conviene recordarlo antes de volver a guardar un recurso por código.**
+  3. **`world.tscn` reserializado:** al cambiar el TileSet, Godot reescribió la línea `tile_map_data` de `Ground`. Verificado que no se perdió ni una celda: 2574 totales, 880 válidas, 1694 huérfanas y 0 muros con suelo debajo, idéntico a antes.
+* **Verificación:** Godot 4.6.2. Polígono de 1024 px² sobre el tile `(0,0)` —el cuadrado completo— y tile de muro sin polígono. Agente de prueba sin lógica de IA: ruta de **51 puntos** de `(78, 701)` a `(1150, 120)`, recorrido real de **1289,6 px** frente a 1219,3 px en línea recta (rodea geometría), y **0,0 px de error** al llegar.
+
+#### Lección: el mapa de navegación no está listo al arrancar
+* **Síntoma:** Toda consulta de ruta devolvía vacío y `map_get_closest_point()` respondía `(0,0)` para cualquier punto, dando la impresión de que no existía superficie navegable.
+* **Causa Raíz:** El servidor de navegación necesita varios fotogramas de física para sincronizar el mapa. Antes de eso responde `(0,0)`, que **parece «aquí no hay nada» cuando significa «todavía no sé dónde estás»**. La creencia extendida de que basta un fotograma es falsa: en este proyecto el mapa quedó operativo en el **fotograma 16**, y en hardware más lento pueden ser más.
+* **Solución:** No contar fotogramas. Antes de la primera consulta, preguntar al mapa cuál es el punto navegable más cercano al agente: si devuelve la posición del propio agente, el mapa está listo; si devuelve `(0,0)`, todavía no. Esta regla debe aplicarse en el `infected.gd` del Hito 009.
+* **Notas de diagnóstico:** dos falsas pistas costaron tiempo y quedan registradas para no repetirlas. `region_get_connections_count()` devolvía 0 y se interpretó como «regiones aisladas»: no lo eran, esa función cuenta otra cosa. Y `NavigationAgent2D` calcula la ruta de forma **asíncrona**, así que leer `get_current_navigation_path()` en el fotograma siguiente a asignar `target_position` devuelve vacío aunque todo esté bien.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -158,6 +182,8 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 3. **Suelo y navegación:**
    * La capa `Ground` define el espacio caminable, no sólo el aspecto. No se pinta suelo bajo un muro sólido y opaco.
    * Colisión y navegación son sistemas independientes en Godot: nada garantiza que coincidan salvo que el mapa se dibuje de forma que coincidan.
+   * Sólo el tile de suelo lleva polígono de navegación. El de muro nunca.
+   * **Antes de la primera consulta de ruta hay que esperar a que el mapa esté sincronizado**, preguntándole si ya localiza al agente. Nunca contando fotogramas.
 
 4. **Instanciación del Player:**
    * El Player nunca se coloca a mano en una escena de mundo. Cada mundo lo instancia desde `player.tscn` en su `_ready()` y lo posiciona sobre su `Marker2D` `PlayerSpawn`.
@@ -171,5 +197,7 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [ ] **Aplazado hasta el mapa del Capítulo 1:** configurar los límites de cámara con `set_map_limits()` a partir del `get_used_rect()` del TileMap. Con la habitación provisional actual (1344 × 768 px contra un viewport de 1280 × 720) cualquier límite dejaría la cámara casi estática. Mientras tanto, el fondo `#070d14` cubre el problema visual.
 - [x] Desarrollar sistema de Joystick Virtual para Android (Completado: Etapas 1, 2 y 3).
 - [x] Spawn dinámico del Player desde `World` mediante `PlayerSpawn` (Marker2D).
+- [x] Capa de navegación en el TileSet, validada con un agente de prueba (Hito 009, paso 0).
 - [ ] Crear IA de persecución para el primer infectado.
+- [ ] **Nunca ejecutado en un teléfono.** Quince meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
 - [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).

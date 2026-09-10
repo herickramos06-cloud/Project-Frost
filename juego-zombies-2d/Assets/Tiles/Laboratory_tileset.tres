@@ -2,10 +2,17 @@
 
 [ext_resource type="Texture2D" uid="uid://wo0ewpejh7h8" path="res://Assets/Tiles/Tiles_project_frost.png_1.2.png" id="1_28os3"]
 
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_28os3"]
+vertices = PackedVector2Array(16, 16, -16, 16, -16, -16, 16, -16)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(16, -16, 16, 16, -16, 16, -16, -16)])
+agent_radius = 0.0
+
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_o6jk5"]
 texture = ExtResource("1_28os3")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
+0:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_28os3")
 1:0/0 = 0
 1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
 1:1/0 = 0
@@ -13,4 +20,5 @@ texture_region_size = Vector2i(32, 32)
 [resource]
 tile_size = Vector2i(32, 32)
 physics_layer_0/collision_layer = 1
+navigation_layer_0/layers = 1
 sources/0 = SubResource("TileSetAtlasSource_o6jk5")
