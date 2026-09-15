@@ -207,6 +207,48 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-14
+
+### Fase 1 — Bloque 2: El Cerebro del Infectado (tareas 2.1 a 2.4)
+* **Sistema:** Infectados / Percepción / Máquina de estados
+* **Decisión:**
+  1. **2.1** — Máquina de estados **plana**: un `enum` y un `match` en el mismo script. Rutina, Persecución y Búsqueda. Ni un nodo por estado, ni árbol de comportamiento, ni IA por utilidad.
+  2. **2.2** — Detección por **distancia pura** a 224 px (siete tiles). Sin cono, sin línea de visión, sin detección de movimiento. Ve a través de las paredes a propósito.
+  3. **2.3** — **Memoria de última posición conocida** con 8 segundos de insistencia, guardada como copia del `Vector2` y no como referencia al Player.
+  4. **2.4** — Volver a la rutina **desde donde esté**, sin punto de origen al que regresar.
+* **Motivo:** La máquina plana se eligió porque con tres o cuatro conductas un nodo por estado es más ceremonia que ayuda, y porque el blueprint ya prevé que la complejidad real viva en el **medidor de agitación** del Bloque 3, no en la estructura de estados. La detección tosca es deliberada: la gracia de este bloque es que **algo te persiga por primera vez**, y meter raycast y conos a la vez impide saber cuál de las dos piezas falla cuando algo se sienta mal. La memoria entra desde el primer día porque sin ella la IA sólo puede ser clarividente —sabe siempre dónde estás— o amnésica —te olvida al instante—, y **las dos rompen el sigilo**.
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd) | [player.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Player/player.gd)
+* **Detalles y Correcciones:**
+  1. **Perseguir no tiene llegada.** El plan original paraba al alcanzar la tolerancia del agente, que son 60 px: **dos cuerpos**. El infectado habría corrido hacia el jugador para quedarse plantado a dos pasos sin tocarlo nunca. Cada conducta declara ahora si se detiene al llegar; Búsqueda sí, Persecución no.
+  2. **Un solo dato de memoria.** Memoria y destino de búsqueda son la misma cosa. Separarlos en dos campos habría roto en silencio la comprobación de llegada que 2.1 ya tenía funcionando.
+  3. **Cambiar de estado ya no fuerza recálculo de ruta.** El jugador quieto en el borde del radio hace entrar y salir de persecución cada fotograma; forzar un recálculo en cada cambio son **60 por segundo en vez de 4**, exactamente el ×15 que la tarea 1.3.5 existía para evitar. El temporizador es la única autoridad.
+  4. **Perder al Player estando en Persecución lleva a Búsqueda.** Persecución no tiene temporizador de salida: sin esta transición, que el Player desaparezca del árbol dejaba al infectado clavado para siempre.
+  5. **El Player se localiza por grupo, nunca por referencia guardada.** `is_instance_valid()` devuelve `true` para un nodo sacado del árbol pero no liberado, y con él se leería una posición obsoleta. El grupo deja de contenerlo en cuanto sale del árbol. El coste —una consulta por infectado y fotograma— está muy por debajo del bucle que la separación ya paga contra todos los demás.
+  6. **Eliminados `estado_inicial` y `target_point`.** Restos de 2.1. Arrancar en Persecución sin memoria escrita manda al infectado a `(0,0)`.
+  7. **`search_duration` de 5 a 8 segundos**, que es el valor de la fila «Hostilidad» del GDD. Un número del código no debe contradecir al documento de diseño.
+  8. **Un solo punto del script sabe que el Player existe.** Cuando llegue la línea de visión del Bloque 3, se toca ahí y en ningún otro sitio.
+* **Verificación:** Godot 4.6.2 headless, **26 comprobaciones, 0 fallos**, sobre el mundo real cargado como escena.
+  * **Arranque:** los tres infectados en Rutina, sin memoria y con **0,00 px** de movimiento durante 60 fotogramas.
+  * **Persecución:** entra en Persecución al cruzar el radio y se planta a **1,7 px** del jugador — no a los 60 px de la tolerancia del agente, que es lo que habría pasado con el plan original.
+  * **Memoria:** al perder al jugador, la memoria queda congelada a **1132 px** de su posición real. Recorre 143 px hasta el punto recordado y se rinde en **0,65 s por llegada**, no por agotar los 8 s.
+  * **Coste del recálculo:** oscilando **120 veces en 2 segundos** en el borde del radio, se registraron **7 recálculos**. Sin control habrían sido 120.
+  * **Player fuera del árbol:** sale de Persecución en 3 fotogramas en lugar de quedarse clavado.
+  * `main.tscn` arranca limpio, 300 fotogramas, sin un solo error en consola.
+
+#### Lección 3: revisar el plan sale más barato que revisar el código
+* **Qué pasó:** antes de escribir una línea del Bloque 2, el plan pasó por tres revisiones independientes. Salieron **26 problemas**: 9 graves, 11 medios y 6 menores. Siete se corrigieron en el plan, cuatro se rechazaron por optimización prematura o por no pertenecer a este bloque, y el resto quedaron aplazados con un bloque concreto asignado.
+* **Por qué importa:** los tres hallazgos graves de verdad —la persecución que se aparca, los dos campos de memoria y el recálculo forzado— **no los habría cazado ninguna prueba automática**. Ninguno rompe nada: los tres producen un juego que funciona y se siente mal. Eso sólo se detecta leyendo el plan o jugando mucho después.
+* **El que faltó:** un octavo problema apareció **probando**, no revisando. Hasta el primer recálculo, el `target_position` del agente vale `(0,0)`, que no significa «la esquina del mapa» sino «todavía nada»; el infectado caminaba hacia ahí hasta un cuarto de segundo. Ahora no se mueve hasta tener ruta entregada, y esa pausa se lee como tiempo de reacción.
+* **Trampa de verificación:** la primera versión de la prueba de arranque daba verde **recorriendo una lista vacía**. El `add_child` había fallado dentro de `_ready()` —el nodo raíz todavía estaba montando la escena— y no había infectados que comprobar. Corregido con una comprobación explícita de que existen los tres. **Una prueba que no puede fallar no es una prueba.**
+
+#### Límite conocido: Búsqueda no es alcanzable jugando todavía
+* **Qué pasa:** en la habitación actual, un rectángulo vacío, **no se puede despistar a un infectado**. El infectado va a 220 px/s y el jugador camina a 180, así que la distancia sólo puede encogerse; y aunque la línea de visión existiera, no hay nada tras lo que esconderse.
+* **Los números:** la diagonal de la habitación son 1548 px, cruzarla entera lleva 8,6 s caminando, y en ese tiempo el infectado recorta 344 px. Aunque la detección se rompiera justo en el límite de los 224 px, alcanza al jugador antes de que llegue al otro extremo.
+* **Estado real:** Búsqueda está construida y verificada, pero hoy **sólo se alcanza forzándola**. No es una mecánica jugable todavía.
+* **Cuándo se levanta:** con la **línea de visión del Bloque 3**, que hace que un muro salve, y con el **correr a 320 px/s del Hito 010**, que permite abrir distancia. Está anotado como límite en el roadmap, no como pieza terminada.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -234,6 +276,13 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
    * El Player nunca se coloca a mano en una escena de mundo. Cada mundo lo instancia desde `player.tscn` en su `_ready()` y lo posiciona sobre su `Marker2D` `PlayerSpawn`.
    * En `main.tscn`, `World` debe permanecer **antes** de `CameraController` en el árbol. Los nodos nuevos que se agreguen al final no rompen esta regla.
 
+6. **Referencias entre entidades y percepción:**
+   * Una entidad se localiza **por grupo**, nunca por `NodePath` escrito a mano ni por referencia guardada. `is_instance_valid()` devuelve `true` para un nodo sacado del árbol pero no liberado, y con él se lee una posición obsoleta; el grupo deja de contenerlo de inmediato.
+   * La memoria de una posición se guarda **copiando el `Vector2`**, nunca apuntando al nodo. Una referencia sigue moviéndose; una copia es lo que se recuerda.
+   * Un mismo dato no se duplica en dos campos que puedan divergir. Si la memoria es también el destino, es un solo campo.
+   * **Un único punto de cada script sabe que otra entidad existe.** Cuando cambie la forma de percibirla, se toca ahí y en ningún otro sitio.
+   * Los cambios de estado **no adelantan trabajo caro**. Un estado que oscila en el borde de su condición lo dispararía cada fotograma; el temporizador es la única autoridad sobre cuándo se recalcula una ruta.
+
 ---
 
 ## Próximos Pasos
@@ -244,7 +293,8 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] Spawn dinámico del Player desde `World` mediante `PlayerSpawn` (Marker2D).
 - [x] Capa de navegación en el TileSet, validada con un agente de prueba (Hito 009, paso 0).
 - [x] **Bloque 1 completo:** escena del infectado, contenedor de spawns, navegación hasta un punto y capas de colisión (tareas 1.1 a 1.4).
-- [ ] **Bloque 2:** máquina de estados, detección por distancia pura y memoria de última posición. Ahí empiezan a perseguir.
-- [ ] Crear IA de persecución para el primer infectado.
-- [ ] **Nunca ejecutado en un teléfono.** Quince meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
+- [x] **Bloque 2 completo:** máquina de estados plana, detección por distancia pura y memoria de última posición conocida (tareas 2.1 a 2.4). Ya persiguen.
+- [ ] **Bloque 3:** línea de visión con raycast, cono de visión, detección por movimiento y el medidor de agitación. Ahí nace el sigilo de verdad, y ahí se resuelve la oscilación en el borde del radio de detección.
+- [ ] **Versionar el roadmap y el blueprint en `docs/`.** El código los cita como autoridad —«paso 3 del blueprint», «Bloque 2 del roadmap»— pero sólo existen publicados, no en el repositorio: no hay forma de saber qué decían cuando se escribió cada commit.
+- [ ] **Nunca ejecutado en un teléfono.** Casi cuatro meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
 - [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).

@@ -94,7 +94,7 @@
 <header class="doc-head">
   <p class="eyebrow">Project Frost · Game Design Document</p>
   <h1>Antesala Zombies 2032</h1>
-  <p class="subtitle">Versión 2. Documento completo de diseño, arquitectura, viabilidad y publicación. Reemplaza al v1 de mayo de 2025 sin borrarlo: aquel sigue siendo el documento fundacional del universo.</p>
+  <p class="subtitle">Versión 2. Documento completo de diseño, arquitectura, viabilidad y publicación. Reemplaza al v1 de mayo de 2026 sin borrarlo: aquel sigue siendo el documento fundacional del universo.</p>
   <dl class="meta">
     <div><dt>Versión</dt><dd>2.0 · 7 sep 2026</dd></div>
     <div><dt>Motor</dt><dd>Godot 4.6.2</dd></div>
@@ -138,10 +138,10 @@
 <section id="s1">
   <span class="sec-num">01</span>
   <h3>Qué cambia respecto al v1</h3>
-  <p class="lead">El GDD v1 se escribió en mayo de 2025, antes de que existiera una sola línea de código. Acertó en lo que importaba —la identidad— y quedó obsoleto en todo lo demás.</p>
+  <p class="lead">El GDD v1 se escribió en mayo de 2026, antes de que existiera una sola línea de código. Acertó en lo que importaba —la identidad— y quedó obsoleto en todo lo demás.</p>
 
   <div class="scroller"><table>
-    <thead><tr><th>Tema</th><th>v1 (mayo 2025)</th><th>v2 (sep 2026)</th></tr></thead>
+    <thead><tr><th>Tema</th><th>v1 (mayo 2026)</th><th>v2 (sep 2026)</th></tr></thead>
     <tbody>
       <tr><td>Plataforma</td><td>Steam, PC</td><td><strong>Android</strong>. Steam queda como puerta abierta con condiciones</td></tr>
       <tr><td>Monetización</td><td>Precio fijo 4,99–7,99 USD</td><td>Sin cerrar. La vía recomendada ya no es la app de pago clásica</td></tr>
@@ -503,7 +503,7 @@ InputManager (autoload) ... único puente entre entrada y jugabilidad</pre></div
     <thead><tr><th>Métrica</th><th>Valor medido</th></tr></thead>
     <tbody>
       <tr><td>Primer commit</td><td class="n">27 mayo 2026</td></tr>
-      <tr><td>Commits totales</td><td class="n">20 en 15 semanas</td></tr>
+      <tr><td>Commits totales</td><td class="n">22 en 110 días</td></tr>
       <tr><td>Líneas de GDScript</td><td class="n">190</td></tr>
       <tr><td>Escenas</td><td class="n">5</td></tr>
       <tr><td>Autoloads</td><td class="n">1 · InputManager</td></tr>
@@ -530,7 +530,7 @@ InputManager (autoload) ... único puente entre entrada y jugabilidad</pre></div
 
   <div class="flag crit">
     <span class="lbl">Verificado, y es el dato más importante del documento</span>
-    <p><strong>El juego nunca se ha ejecutado en un teléfono.</strong> Todas las verificaciones registradas son en PC sin ventana. Se lleva quince meses construyendo para Android sin un solo arranque en un dispositivo Android, sin <code>export_presets.cfg</code>, sin modo de estiramiento y sin orientación bloqueada.</p>
+    <p><strong>El juego nunca se ha ejecutado en un teléfono.</strong> Todas las verificaciones registradas son en PC sin ventana. Se llevan casi cuatro meses construyendo para Android sin un solo arranque en un dispositivo Android, sin <code>export_presets.cfg</code>, sin modo de estiramiento y sin orientación bloqueada.</p>
     <p>El primer export no será un trámite: será el descubrimiento de una lista de problemas de interfaz, rendimiento y entrada que nadie ha presupuestado. Debería ocurrir <strong>cuanto antes</strong>, aunque el juego sólo sea un cuadrado moviéndose.</p>
   </div>
 
@@ -541,7 +541,7 @@ InputManager (autoload) ... único puente entre entrada y jugabilidad</pre></div
 
   <div class="note">
     <span class="lbl">Velocidad histórica</span>
-    <p>20 commits en 15 semanas, con meses de dos y tres commits, produciendo 190 líneas de GDScript. Ésa es la velocidad real verificable y es la única base honesta para proyectar lo que queda —que es el 95 % del trabajo.</p>
+    <p>22 commits en 110 días, con meses de dos y tres commits. Ésa es la velocidad real verificable y es la única base honesta para proyectar lo que queda —que es el 95 % del trabajo.</p>
     <p>No es una crítica: es un dato de planificación. Cualquier calendario que asuma una velocidad mayor sin explicar qué va a cambiar es un calendario de deseos.</p>
   </div>
 </section>
@@ -712,7 +712,7 @@ InputManager (autoload) ... único puente entre entrada y jugabilidad</pre></div
   <span class="sec-num">16</span>
   <h3>Audiencia y lanzamiento</h3>
 
-  <p>Toda la maquinaria gratuita de construcción de audiencia que documenta la literatura indie —listas de deseos, festivales de demos, páginas de «próximamente»— <strong>es infraestructura de Steam</strong>. Google Play no tiene equivalente funcional: el pre-registro dura como máximo 90 días y captura demanda existente en lugar de generarla.</p>
+  <div class="note"><span class="lbl">Dato propio · actualizado 14 sep 2026</span><p>El proyecto <strong>ya tiene presencia pública</strong>: tres clips publicados, <strong>dos bien recibidos y uno con recepción regular</strong>. Eso invalida el supuesto de partida de este documento, que asumía audiencia cero.</p><p>Importa por dos razones. La primera es que el riesgo de abandono que el GDD identifica como número uno <strong>ya tiene su antídoto en marcha</strong>, no pendiente. La segunda es que hay <em>señal real</em>: dos formatos funcionaron y uno no, y averiguar en qué se diferencian vale más que cualquier consejo genérico de marketing de esta sección.</p></div><p>Toda la maquinaria gratuita de construcción de audiencia que documenta la literatura indie —listas de deseos, festivales de demos, páginas de «próximamente»— <strong>es infraestructura de Steam</strong>. Google Play no tiene equivalente funcional: el pre-registro dura como máximo 90 días y captura demanda existente en lugar de generarla.</p>
 
   <h4>Qué funciona y qué no</h4>
   <div class="scroller"><table>
@@ -797,7 +797,7 @@ InputManager (autoload) ... único puente entre entrada y jugabilidad</pre></div
 
   <h4>Inmediato · lo que va antes que cualquier otra cosa</h4>
   <ol class="steps">
-    <li><span class="sid">01</span><span class="sbody"><strong>Exportar a un teléfono real, aunque sea un cuadrado moviéndose.</strong> Quince meses sin un solo arranque en Android es el riesgo más grande y más barato de eliminar del proyecto.</span></li>
+    <li><span class="sid">01</span><span class="sbody"><strong>Exportar a un teléfono real, aunque sea un cuadrado moviéndose.</strong> Casi cuatro meses sin un solo arranque en Android es el riesgo más grande y más barato de eliminar del proyecto.</span></li>
     <li><span class="sid">02</span><span class="sbody"><strong>Confirmar los plazos vigentes de Google Play</strong> en la documentación oficial, y decidir el tipo de cuenta.</span></li>
     <li><span class="sid">03</span><span class="sbody"><strong>Fijar la velocidad del jugador</strong> probándola en dispositivo. Todos los números de la IA se calibran contra ella.</span></li>
     <li><span class="sid">04</span><span class="sbody"><strong>Añadir la capa de navegación al TileSet</strong> y comprobar con un agente de prueba que un cuadrado rodea un muro.</span></li>
