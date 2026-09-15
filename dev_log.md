@@ -169,6 +169,44 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-13
+
+### Fase 1 — Bloque 1: El Cuerpo del Infectado (tareas 1.1 a 1.4)
+* **Sistema:** Infectados / Navegación / Física
+* **Decisión:**
+  1. **1.1** — `infected.tscn` con `CharacterBody2D`, cápsula de radio 24 y alto 80, `Sprite2D` y `NavigationAgent2D`.
+  2. **1.2** — Un **contenedor** `InfectedSpawns` en `world.tscn` con varios `Marker2D` dentro, y `world.gd` creando un infectado por cada hijo. No un marcador único.
+  3. **1.3** — `infected.gd` con velocidad exportada de 220 px/s, espera a la sincronización del mapa, navegación hasta un punto fijo y recálculo de ruta escalonado.
+  4. **1.4** — Capas de colisión repartidas (1 Mundo, 2 Player, 3 Infectados) y **repulsión suave** entre infectados en lugar de colisión física.
+* **Motivo:** El contenedor se eligió porque el objetivo de densidad del GDD es de 4 a 10 infectados simultáneos, y un marcador único no puede darlo. Con él, **añadir un infectado al nivel es duplicar un `Marker2D` en el editor**: el código no se toca nunca más, ni para tres ni para veinte. Las capas se repartieron para que los infectados choquen con los muros pero atraviesen al jugador y entre sí — el daño irá por zona de detección, porque un enemigo que te empuja fuera de una puerta en plena huida se siente injusto. La repulsión se implementó a mano y no con la evitación del `NavigationAgent2D`: esa última cuesta más y hace que los infectados **se esquiven con cortesía**, que es tonalmente lo contrario de lo que pide el juego.
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd) | [infected.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Infected/infected.tscn) | [world.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/world.gd) | [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn) | [player.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Player/player.tscn) | [project.godot](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/project.godot)
+* **Detalles y Correcciones:**
+  1. **Nombres legibles al instanciar:** `add_child(nodo)` bautizaba al segundo y al tercer infectado como `@CharacterBody2D@2` y `@CharacterBody2D@3`. Se pasó a `add_child(nodo, true)`, que genera `Infected`, `Infected2`, `Infected3`. No afecta al funcionamiento, pero hace el árbol legible al depurar — y en el teléfono eso importa.
+  2. **Capas con nombre en `project.godot`:** el panel de colisión del editor deja de mostrar dieciséis casillas numeradas. Ojo con los valores: la capa 3 se escribe como `4`, porque son bits.
+  3. **El destino es un `@export`:** los tres infectados comparten el mismo por defecto, así que convergen. Es un artefacto de la prueba, no del diseño; dando a cada marcador un destino distinto se separan.
+  4. **Los números de separación son provisionales.** El radio de 48 px sale de la geometría (dos cápsulas de radio 24 se tocan ahí), pero la fuerza de 60 px/s está elegida a ojo y **hay que validarla en dispositivo**.
+* **Verificación:** Godot 4.6.2 headless, cuatro pasadas.
+  * **Aparición:** los tres infectados sobre sus marcadores, todos sobre suelo válido y sobre la malla de navegación, con su agente presente.
+  * **Navegación:** rutas de 38, 20 y 35 puntos; recorridos de 945, 504 y 928 px hacia el objetivo. **Cero incursiones en celda de muro** comprobando la capa `Walls` bajo cada infectado en cada uno de 900 fotogramas.
+  * **Recálculo escalonado:** 40 emisiones de `path_changed` en 10 segundos por infectado — exactamente 4 por segundo, frente a las 600 que habría con recálculo por fotograma. **Quince veces menos trabajo.** Las tres cuentas atrás medidas en el mismo instante daban valores distintos, confirmando el desfase.
+  * **Capas y repulsión:** Player en capa 2, infectados en capa 4, ambos con máscara 1. Los tres llegan al destino (antes dos se quedaban a 60 y 47 px empujándose) y la distancia mínima entre ellos nunca bajó de 8 px.
+
+#### Lección 1: corrección sobre el tiempo de sincronización de la navegación
+* **Qué se creía:** la entrada del 6 de septiembre registró que el mapa de navegación tardaba **16 fotogramas** en estar operativo.
+* **Qué es cierto:** esa medición se hizo con un arnés de pruebas que instanciaba el mundo dentro de otra escena. **En el juego real, cargado con normalidad, el mapa sincroniza en el fotograma 3.**
+* **Por qué importa:** el número **cambia según el contexto y el dispositivo**, así que nunca debe estar escrito en el código. Esto valida por partida doble la decisión de no contar fotogramas.
+* **Solución adoptada:** `NavigationServer2D.map_get_iteration_id()` vale 0 hasta la primera sincronización. Es una pregunta directa al servidor —*¿has sincronizado ya?*— en lugar de inferirlo de un síntoma, y evita por completo tener que interpretar el `(0,0)`.
+* **Nota de diagnóstico:** Godot **emite un error explícito** en estos casos: `NavigationServer navigation map query failed because it was made before first map synchronization`. Durante la depuración del 9 de septiembre se filtró la salida de consola buscando sólo los `print` propios y ese mensaje se perdió — era exactamente el diagnóstico que costó seis intentos deducir. **No filtrar la consola cuando algo no funciona.**
+
+#### Lección 2: el radio de llegada debe ser mayor que el de separación
+* **Síntoma:** al llegar al destino, los infectados rebotaban en el sitio indefinidamente.
+* **Causa Raíz:** la tolerancia de llegada del `NavigationAgent2D` es de 10 px por defecto y el radio de separación es de 48. El bucle: llego → la repulsión me empuja 20 o 30 px → ya estoy a más de 10 px → «no he llegado» → vuelvo a caminar → me empuja otra vez. Dos números peleándose, uno diciendo «acércate» y el otro «apártate».
+* **Solución:** `target_desired_distance` se deriva del radio de separación (`separation_radius * 1.25`) en lugar de escribirse suelto, **para que la relación no se rompa sola** el día que se ajuste la separación.
+* **Por qué importa más allá de esta prueba:** en el Bloque 2 el destino será el Player, y varios infectados rodeándolo habrían producido el mismo temblor permanente — mezclado con percepción, persecución y máquina de estados, y por tanto mucho más difícil de diagnosticar.
+* **Verificación:** **0,0 px de movimiento** en los tres durante los últimos 10 segundos, con la navegación marcada como terminada y una distribución en corona alrededor del punto.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -183,9 +221,16 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
    * La capa `Ground` define el espacio caminable, no sólo el aspecto. No se pinta suelo bajo un muro sólido y opaco.
    * Colisión y navegación son sistemas independientes en Godot: nada garantiza que coincidan salvo que el mapa se dibuje de forma que coincidan.
    * Sólo el tile de suelo lleva polígono de navegación. El de muro nunca.
-   * **Antes de la primera consulta de ruta hay que esperar a que el mapa esté sincronizado**, preguntándole si ya localiza al agente. Nunca contando fotogramas.
+   * **Antes de la primera consulta de ruta hay que esperar a que el mapa esté sincronizado**, comprobando `NavigationServer2D.map_get_iteration_id()`. Nunca contando fotogramas: el número cambia según el contexto y el dispositivo.
+   * El recálculo de ruta va **por temporizador y con desfase propio por entidad**, nunca cada fotograma.
 
-4. **Instanciación del Player:**
+4. **Capas de colisión:**
+   * Capa 1 Mundo · capa 2 Player · capa 3 Infectados. Se declaran con nombre en `project.godot`.
+   * Player e infectados enmascaran **sólo la capa 1**: chocan con el mundo, se atraviesan entre sí. El daño se resolverá por zona de detección, no por empujón físico.
+   * La separación entre entidades se hace con repulsión propia, no con la evitación del `NavigationAgent2D`.
+   * **El radio de llegada debe ser mayor que el de separación**, o la repulsión saca a la entidad de «he llegado» y aparece un rebote permanente.
+
+5. **Instanciación del Player:**
    * El Player nunca se coloca a mano en una escena de mundo. Cada mundo lo instancia desde `player.tscn` en su `_ready()` y lo posiciona sobre su `Marker2D` `PlayerSpawn`.
    * En `main.tscn`, `World` debe permanecer **antes** de `CameraController` en el árbol. Los nodos nuevos que se agreguen al final no rompen esta regla.
 
@@ -198,6 +243,8 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] Desarrollar sistema de Joystick Virtual para Android (Completado: Etapas 1, 2 y 3).
 - [x] Spawn dinámico del Player desde `World` mediante `PlayerSpawn` (Marker2D).
 - [x] Capa de navegación en el TileSet, validada con un agente de prueba (Hito 009, paso 0).
+- [x] **Bloque 1 completo:** escena del infectado, contenedor de spawns, navegación hasta un punto y capas de colisión (tareas 1.1 a 1.4).
+- [ ] **Bloque 2:** máquina de estados, detección por distancia pura y memoria de última posición. Ahí empiezan a perseguir.
 - [ ] Crear IA de persecución para el primer infectado.
 - [ ] **Nunca ejecutado en un teléfono.** Quince meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
 - [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).

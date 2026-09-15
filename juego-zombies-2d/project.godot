@@ -54,6 +54,12 @@ move_right={
 
 pointing/emulate_touch_from_mouse=true
 
+[layer_names]
+
+2d_physics/layer_1="Mundo"
+2d_physics/layer_2="Player"
+2d_physics/layer_3="Infectados"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

@@ -11,6 +11,7 @@ class_name VirtualJoystick
 
 # Porcentaje del radio de la Base que define el límite máximo del Stick.
 # Percentage of the Base's radius that defines the Stick's max limit.
+
 # 1.0 = llega exactamente al borde. 0.9 deja un pequeño margen visual.
 # 1.0 = reaches exactly the edge. 0.9 leaves a small visual margin.
 @export_range(0.1, 1.0, 0.05) var max_radius_ratio: float = 0.9
@@ -34,10 +35,11 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	# Usamos _input (no _gui_input) para no perder el drag ni el release
-	# We use _input (not _gui_input) so we don't miss drag or release events
-	# cuando el dedo se mueve fuera del área visual del joystick.
-	# when the finger moves outside the joystick's visual area.
+	# Usamos _input (no _gui_input) para no perder el drag ni el release..
+	# We use _input (not _gui_input) so we don't miss drag or release events..
+	# ..cuando el dedo se mueve fuera del área visual del joystick.
+	# ..when the finger moves outside the joystick's visual area.
+	
 	if event is InputEventScreenTouch:
 		_handle_touch(event)
 	elif event is InputEventScreenDrag:
@@ -117,6 +119,7 @@ func _reset_stick_position() -> void:
 
 # Interfaz pública: esto es lo que Player.gd debe leer cada frame.
 # Public interface: this is what Player.gd should read every frame.
+
 # Devuelve un Vector2 normalizado entre (0,0) y longitud 1.0.
 # Returns a Vector2 normalized between (0,0) and length 1.0.
 func get_vector() -> Vector2:

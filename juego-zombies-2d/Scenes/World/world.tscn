@@ -16,3 +16,14 @@ tile_set = ExtResource("1_t1gg8")
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1428650077]
 position = Vector2(78, 701)
+
+[node name="InfectedSpawns" type="Node2D" parent="." unique_id=2073006533]
+
+[node name="Spawn1" type="Marker2D" parent="InfectedSpawns" unique_id=1904773215]
+position = Vector2(1150, 120)
+
+[node name="Spawn2" type="Marker2D" parent="InfectedSpawns" unique_id=1188456903]
+position = Vector2(640, 176)
+
+[node name="Spawn3" type="Marker2D" parent="InfectedSpawns" unique_id=1657024488]
+position = Vector2(1150, 592)

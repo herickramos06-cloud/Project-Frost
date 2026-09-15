@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://bthugd6op2cka"]
+
+[ext_resource type="Script" uid="uid://bfemgbtbw1qby" path="res://Scripts/Infected/infected.gd" id="1_infected"]
+[ext_resource type="Texture2D" uid="uid://d2e8c08qftmyn" path="res://Assets/Placeholders/circulo_negro_base_placeholder.jpeg" id="2_svpqr"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_y8o1g"]
+radius = 24.0
+height = 80.0
+
+[node name="Infected" type="CharacterBody2D" unique_id=1221433178]
+collision_layer = 4
+script = ExtResource("1_infected")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=580832121]
+shape = SubResource("CapsuleShape2D_y8o1g")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=808665080]
+position = Vector2(1, -3)
+scale = Vector2(0.07847221, 0.16250002)
+texture = ExtResource("2_svpqr")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=1943147351]
