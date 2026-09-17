@@ -18,10 +18,14 @@ const INFECTED_SCENE: PackedScene = preload("res://Scenes/Infected/infected.tscn
 # Marker container: one infected per child.
 @onready var _infected_spawns: Node2D = $InfectedSpawns
 
+# Opcional a propósito: un mundo sin este nodo sigue funcionando, simplemente
+# no se puede comprobar la holgura.
+@onready var _navigation: NavigationRegion2D = get_node_or_null("Navigation") as NavigationRegion2D
+
 
 func _ready() -> void:
 	_spawn_player()
-	_spawn_infected()
+	_comprobar_holgura(_spawn_infected())
 
 
 func _spawn_player() -> void:
@@ -42,10 +46,12 @@ func _spawn_player() -> void:
 	player.global_position = _player_spawn.global_position
 
 
-func _spawn_infected() -> void:
+func _spawn_infected() -> Array[Node2D]:
+	var creados: Array[Node2D] = []
+
 	if _infected_spawns == null:
 		push_error("World: falta el nodo 'InfectedSpawns'; no se creó ningún infectado.")
-		return
+		return creados
 
 	# Un infectado por cada marcador del contenedor. Añadir uno al nivel es..
 	# One infected per marker in the container. Adding one to the level means..
@@ -71,3 +77,48 @@ func _spawn_infected() -> void:
 		
 		add_child(infected, true)
 		infected.global_position = marcador.global_position
+		creados.append(infected)
+
+	return creados
+
+
+## La malla de navegación se encoge una distancia fija contra los muros, y los
+## cuerpos que la recorren tienen su propio radio. Son dos números en dos
+## archivos distintos y nada los ata: si el cuerpo pasa de la holgura, las rutas
+## vuelven a salir pegadas al filo y el infectado se queda empujando contra la
+## esquina sin avanzar.
+##
+## No rompe nada y no da error: produce un juego que funciona y se siente mal,
+## que sólo se descubre jugando. Por eso se avisa al nacer.
+func _comprobar_holgura(infectados: Array[Node2D]) -> void:
+	if _navigation == null:
+		return
+
+	for infectado in infectados:
+		var radio: float = _radio_ocupado(infectado)
+		if radio <= _navigation.agent_radius:
+			continue
+
+		push_warning(
+			"World: el cuerpo de '%s' ocupa %.0f px y la malla sólo deja %.0f px de holgura contra los muros. Las rutas se pegarán a las esquinas y se quedará atascado."
+			% [infectado.name, radio, _navigation.agent_radius]
+		)
+		return
+
+
+## Cuánto espacio libre necesita un cuerpo alrededor de su centro, en el peor
+## eje. El horneado supone un agente circular, así que una cápsula alta pide su
+## semieje mayor y no su radio: 48 px de ancho pero 80 de alto necesitan 40, no 24.
+func _radio_ocupado(cuerpo: Node2D) -> float:
+	var colision := cuerpo.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if colision == null or colision.shape == null:
+		return 0.0
+
+	var forma: Shape2D = colision.shape
+	if forma is CircleShape2D:
+		return (forma as CircleShape2D).radius
+	if forma is CapsuleShape2D:
+		var capsula := forma as CapsuleShape2D
+		return maxf(capsula.radius, capsula.height / 2.0)
+
+	return 0.0

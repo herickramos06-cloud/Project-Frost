@@ -249,6 +249,71 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-16
+
+### Fase 1 — Bloque 3: Los Sentidos (tareas 3.0 y 3.1a)
+* **Sistema:** Mundo / Infectados / Percepción
+* **Decisión:**
+  1. **3.0** — Tallar geometría interior en la habitación: un bloque macizo de 29 × 6 celdas, un pasillo norte de 3 celdas de alto con una entrada de 5, y una alcoba al fondo.
+  2. **3.1a** — `_percibir()` pasa de dos preguntas a tres: existe el Player, está dentro del radio, y **hay una pared en medio**. Un rayo contra la capa 1, y sólo contra la capa 1.
+* **Motivo:** El criterio de verificación del Bloque 3 es *«esconderte tras un muro te salva»*, y la habitación era un rectángulo vacío — 128 celdas de muro, **todas de perímetro, cero interiores**. No había nada tras lo que esconderse, así que ni la línea de visión ni el cono ni la detección por movimiento se podían verificar jugando. Se empieza por lo que no es inteligencia artificial, igual que el Paso 0 del blueprint. Sobre 3.1a: la tarea 2.2.2 dejó escrito que un solo punto del script sabe que el Player existe, precisamente para que este cambio cupiera en un sitio.
+* **Archivos:** [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn) | [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd) | [player.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Player/player.tscn)
+* **Detalles y Correcciones:**
+  1. **El mapa pasa a ser una U con un apéndice.** De 128 a 226 celdas de muro, 109 de ellas interiores, y 753 celdas pisables. No hay atajos: la **única** ruta entre la sala norte y la sala sur es el pasillo izquierdo. Cero suelo bajo muro, comprobado antes de seguir.
+  2. **El hueco de 5 celdas del muro norte es deliberado.** Da a un pasillo estrecho con un infectado justo al otro lado de la pared: es el banco de pruebas de la línea de visión y a la vez terreno de juego.
+  3. **La distancia se comprueba antes que el rayo.** Es el filtro barato: con el jugador fuera del radio no se lanza ni una consulta. Medido: **0 rayos en 300 fotogramas** a 800 px, y **exactamente uno por fotograma** dentro del radio.
+  4. **La máscara es sólo la capa 1.** Si incluyera la 2, el infectado se cegaría contra el propio jugador al que apunta; si incluyera la 4, uno plantado delante de otro le taparía la vista al de atrás.
+  5. **Consulta directa al espacio físico, sin nodo `RayCast2D`.** El objetivo se mueve, así que habría que reescribir su `target_position` cada fotograma de todas formas, y `force_raycast_update()` cuesta lo mismo. Un nodo menos por infectado, que en Android cuenta.
+  6. **Desplazamiento de la cápsula del Player corregido a (0,0).** Estaba a (7,9) y se rechazó en la revisión del Bloque 2 por ser arte y no IA — pero al apuntar rayos al centro del cuerpo dejó de serlo. Verificado: el Player se detiene en **x = 58** contra el muro oeste (32 + radio 26) y en **y = 691,9** contra el sur (736 − semialtura 44). Exacto en los dos ejes.
+  7. **Los dos rayos laterales (3.1b) quedan sin construir.** Se decidió un solo rayo al centro: la fantasía de asomarse sin que te vean la va a dar 3.3 con la detección por movimiento, que es una regla que el jugador controla, no una frontera invisible.
+* **Verificación:** Godot 4.6.2 headless, sobre el mundo real cargado como escena.
+  * **Par controlado:** sin muro a **208 px** detecta; con muro a **192,7 px** no detecta. Las dos dentro del radio de 224, así que lo único que cambia entre ellas es la pared.
+  * **Los cuerpos no tapan:** tres infectados alineados a 100, 160 y 210 px del jugador — **los tres detectan**.
+  * **La memoria se congela:** ve al jugador en (700, 176), se tapa, y la memoria se queda ahí mientras el jugador está realmente a **197 px**. Es la primera demostración de la memoria construida el 14 de septiembre.
+  * **Tras la pared: 0,00 px de movimiento** en 3 s. A la vista: recorre 209 px y se planta a **1,0 px**.
+  * `main.tscn`, 300 fotogramas: **2 líneas de salida en total**, cero errores, sin filtrar la consola.
+
+---
+
+### Bloque 1.5 — Rutas con holgura (el fallo que destapó el mapa de 3.0)
+* **Sistema:** Navegación / Mundo
+* **Decisión:** Dejar de generar la malla de navegación tile a tile y **hornear una sola malla para todo el mundo, encogida 26 px respecto a los muros**, en tiempo de ejecución al cargar el nivel. Y cambiar el cuerpo del infectado de cápsula 48 × 80 a **círculo de radio 24**.
+* **Motivo:** Al probar 3.0 aparecieron infectados clavados en las esquinas. La causa no era percepción ni memoria: **la navegación de Godot calcula la ruta como si el agente fuera un punto sin cuerpo**, así que la ruta más corta sale pegada al filo del muro. Un cuerpo de 48 px de ancho que la sigue mete medio cuerpo en la pared, empuja en perpendicular exacta, y `move_and_slide()` no puede deslizar — deslizar consiste en restar la componente contra el muro, y si toda la velocidad va contra el muro lo que queda es cero. El infectado pide la misma dirección imposible para siempre.
+* **Archivos:** [navigation_baker.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/navigation_baker.gd) | [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn) | [world.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/world.gd) | [infected.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Infected/infected.tscn)
+* **Detalles y Correcciones:**
+  1. **El diagnóstico se hizo descartando, no adivinando.** El radio del cuerpo **no** era la causa: con radio 14 en vez de 24 las rutas fallaban **en el mismo píxel y con el mismo decimal** (472,3 · 839,6 · 726,1). El post-proceso `EDGECENTERED` de Godot lo **empeoraba**. Y con memoria infinita se atascaba igual, así que tampoco era el olvido.
+  2. **No era cosa de sitios estrechos, era cosa de esquinas.** También se clavaba en la esquina del bloque central, donde el pasillo mide 10 celdas de ancho — y esa esquina está en la única ruta que une las dos mitades del mapa.
+  3. **Sólo se liberaba si el jugador caminaba hacia él.** Quieto: atascado. Alejándose: atascado. Acercándose: se libera en 8,6 s. Los dos casos que fallan son **esconderse y huir**, que son las dos únicas cosas que hace un jugador de sigilo — y quedarse quieto va a ser la mecánica defensiva principal a partir de 3.3.
+  4. **Se hornea en ejecución, no en el editor.** El blueprint había descartado esta opción en su Decisión 1 porque *«exige volver a hornear tras cada cambio del mapa»*. Esa objeción deja de aplicar al medir el coste: **5,9 ms**. Se hornea en cada carga a partir de los tiles, así que el mapa sigue siendo la única fuente de verdad y **pintar una habitación nueva se hace exactamente igual que antes**.
+  5. **La cápsula era un error de modelado para un juego cenital.** 48 px de ancho pero **80 de alto**: el horneado supone un agente circular, así que 26 px de holgura sobraban a los lados y faltaban arriba y abajo. En el pasillo norte la malla dejaba 44 px de franja pero el cuerpo sólo cabía en 16, y se pasaba el trayecto rozando. **Ruta 1: de 15,70 s a 5,77 s**, con un mínimo teórico de 5,8. De regalo, `separation_radius = 48` pasa a ser *exactamente* «dos cuerpos que se tocan» en vez de una aproximación.
+  6. **Tres guardias nuevos**, porque el fallo era silencioso por naturaleza: `world.gd` compara el cuerpo real de cada infectado contra la holgura de la malla y avisa si no cabe (y a una cápsula le pide su semieje mayor, no su radio); `infected.gd` avisa si `vision_mask` está a 0; y el baker avisa si la navegación por tile sigue encendida y hay dos superficies superpuestas.
+  7. **La capa de navegación del TileSet se conserva, apagada.** Editar ese polígono ya no tiene ningún efecto. Se deja documentado en la cabecera del baker en vez de borrarlo, para no quemar el camino de vuelta mientras 1.5 no se haya jugado.
+* **Verificación:** **23 comprobaciones, 0 fallos.**
+  * **Rutas: de 1/4 a 7/7.** Ruta 1 en 5,77 s (mínimo teórico 5,8), la arteria norte↔sur en 8,35 s, y los dos casos que nunca se soltaban —jugador quieto y jugador alejándose— en 5,75 s y 7,17 s.
+  * **Holgura:** 420 rutas y 754 puntos intermedios, **ninguno a menos de 26 px de un muro**; el peor a 36,6. Antes, el punto que atascaba estaba a **0 px**.
+  * **Conectividad: 753/753 celdas** alcanzables desde el spawn del Player. Encoger 26 px no aisló ni el pasillo de 3 celdas ni la alcoba.
+  * **Regresión:** cero incursiones en celda de muro con los tres infectados navegando 900 fotogramas, y las 10 comprobaciones de 3.1a otra vez en verde.
+  * **Polígonos de navegación: de 136 a 7**, lo que abarata cada consulta de ruta justo donde hará falta en las oleadas del Bloque 5.
+
+#### Lección 4: una ruta correcta no es lo mismo que una ruta recorrible
+* **Qué pasó:** Este fallo llevaba ahí desde el Bloque 1 y ninguna de las verificaciones anteriores podía cazarlo, aunque las dos estaban bien hechas.
+* **Por qué no lo cazaron:** La del 9 de septiembre —*51 puntos de ruta, 1289,6 px, 0,0 px de error*— se hizo con **un agente de prueba sin cuerpo**. Midió si la ruta es correcta, que es una pregunta distinta de si el cuerpo puede recorrerla. Y la del Bloque 1 midió *«cero incursiones en celda de muro»*, que es literalmente **la pregunta contraria**: aquí el problema no es que entre en la pared, es que **no entra y por eso se para**.
+* **Y lo que lo mantuvo invisible:** la habitación era un rectángulo vacío. **Sin esquinas interiores, ninguna ruta tenía por qué pegarse a un filo.** El fallo no apareció porque el mapa de 3.0 lo creara, sino porque fue el primer mapa capaz de revelarlo.
+* **La regla que queda:** cuando se valide navegación, el agente de prueba tiene que tener **el mismo cuerpo** que quien va a recorrerla. Un punto sin cuerpo pasa por sitios que no existen.
+
+#### Lección 5: un ajuste de depuración que apaga un sistema tiene que gritar
+* **Síntoma:** La batería de regresión dio tres fallos de línea de visión. El rayo funcionaba perfectamente —se comprobó que choca con el muro en (652, 32)— pero se lanzaba con **máscara 0**, que no choca con nada.
+* **Causa Raíz:** `vision_mask` se había dejado a 0 para probar el pasillo. Un cero ahí **apaga la subetapa 3.1 entera sin un error, sin un aviso y sin ningún síntoma visible** salvo que los infectados vuelvan a ver a través de las paredes — que es exactamente lo que se estaba probando.
+* **Solución:** `infected.gd` avisa por consola al nacer si la máscara está a 0. En la prueba de los guardias, el aviso saltó **en el primer arranque** y señaló el problema en dos segundos.
+* **Por qué importa más allá de este caso:** los tres números nuevos que introduce el 1.5 —holgura de malla, radio del cuerpo, máscara de visión— fallan todos **hacia el silencio**. Ninguno rompe nada; los tres producen un juego que funciona y se siente mal. Por eso los tres guardias, y por eso los tres avisan al arrancar y no cuando ya es tarde.
+* **Nota de coordinación:** el cambio se perdió dos veces porque Godot estaba abierto con el script en su editor y volcó su buffer encima. **Con Godot abierto, un `.gd` editado desde fuera puede revertirse sin avisar.**
+
+#### Límite conocido: 3.1b sin construir y el Player sigue en cápsula
+* **3.1b** —los dos rayos laterales que miden la silueta real en vez del centro— está diseñado y decidido, pero no escrito. Con un solo rayo al centro hay una franja de ±26 px en la que lo que ves en pantalla y lo que el infectado sabe no coinciden.
+* **El Player conserva su cápsula de 52 × 88.** No navega, así que no le afecta este fallo — pero el pasillo norte mide 96 px de alto y eso le deja **8 px de margen** para maniobrar. Con un círculo de radio 26 serían 44.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -262,9 +327,11 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 3. **Suelo y navegación:**
    * La capa `Ground` define el espacio caminable, no sólo el aspecto. No se pinta suelo bajo un muro sólido y opaco.
    * Colisión y navegación son sistemas independientes en Godot: nada garantiza que coincidan salvo que el mapa se dibuje de forma que coincidan.
-   * Sólo el tile de suelo lleva polígono de navegación. El de muro nunca.
+   * **La malla de navegación se hornea en ejecución a partir de los tiles, encogida el radio del cuerpo más un margen.** El polígono por tile del TileSet queda apagado: llega hasta el filo del muro, y ahí no cabe un cuerpo. Se conserva pero no se usa, así que editarlo no tiene ningún efecto.
+   * **La holgura debe cubrir el semieje MAYOR del cuerpo, no su radio.** El horneado supone un agente circular, así que una cápsula alta en un juego cenital pide su media altura. Por eso los cuerpos que navegan son círculos: en vista desde arriba la forma de colisión es la huella en el suelo, no la silueta del sprite.
    * **Antes de la primera consulta de ruta hay que esperar a que el mapa esté sincronizado**, comprobando `NavigationServer2D.map_get_iteration_id()`. Nunca contando fotogramas: el número cambia según el contexto y el dispositivo.
    * El recálculo de ruta va **por temporizador y con desfase propio por entidad**, nunca cada fotograma.
+   * **La navegación se valida con un agente que tenga el mismo cuerpo que va a recorrerla.** Un punto sin cuerpo pasa por sitios que no existen, y una ruta correcta no es lo mismo que una ruta recorrible.
 
 4. **Capas de colisión:**
    * Capa 1 Mundo · capa 2 Player · capa 3 Infectados. Se declaran con nombre en `project.godot`.
@@ -283,6 +350,11 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
    * **Un único punto de cada script sabe que otra entidad existe.** Cuando cambie la forma de percibirla, se toca ahí y en ningún otro sitio.
    * Los cambios de estado **no adelantan trabajo caro**. Un estado que oscila en el borde de su condición lo dispararía cada fotograma; el temporizador es la única autoridad sobre cuándo se recalcula una ruta.
 
+7. **Fallos silenciosos:**
+   * **Un número que puede desincronizarse de otro que vive en otro archivo lleva un aviso al arrancar.** Hoy son dos: la holgura de la malla contra el radio real del cuerpo, y `vision_mask` contra cero.
+   * **Un ajuste de depuración que apaga un sistema entero tiene que gritar por consola** mientras esté puesto. Estos fallos no rompen nada: producen un juego que funciona y se siente mal, y eso no lo detecta ninguna prueba automática.
+   * **Con Godot abierto, un `.gd` editado desde fuera puede revertirse sin avisar** cuando el editor vuelca su buffer encima.
+
 ---
 
 ## Próximos Pasos
@@ -294,7 +366,13 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] Capa de navegación en el TileSet, validada con un agente de prueba (Hito 009, paso 0).
 - [x] **Bloque 1 completo:** escena del infectado, contenedor de spawns, navegación hasta un punto y capas de colisión (tareas 1.1 a 1.4).
 - [x] **Bloque 2 completo:** máquina de estados plana, detección por distancia pura y memoria de última posición conocida (tareas 2.1 a 2.4). Ya persiguen.
-- [ ] **Bloque 3:** línea de visión con raycast, cono de visión, detección por movimiento y el medidor de agitación. Ahí nace el sigilo de verdad, y ahí se resuelve la oscilación en el borde del radio de detección.
+- [x] **Bloque 1.5 completo:** malla de navegación horneada en ejecución con holgura de agente, y cuerpo circular. Los infectados dejan de atascarse en las esquinas. No estaba en el roadmap: salió de probar 3.0.
+- [x] **3.0 completo:** geometría interior en el mapa —bloque macizo, pasillo norte y alcoba— para poder verificar el Bloque 3 jugando.
+- [x] **3.1a completo:** línea de visión con un rayo contra la capa Mundo. Un muro ya te salva, y Búsqueda pasa a ser alcanzable jugando por primera vez.
+- [ ] **3.1b:** los dos rayos laterales, con la perilla de silueta apagada hasta que llegue 3.3. Diseñado y decidido, sin escribir.
+- [ ] **Resto del Bloque 3:** cono de visión (3.2), detección por movimiento (3.3) y el medidor de agitación (3.4). Ahí nace el sigilo de verdad, y ahí se resuelve la oscilación en el borde del radio de detección.
+- [ ] **El Player sigue en cápsula de 52 × 88.** No navega, así que el fallo del 1.5 no le afecta, pero el pasillo norte mide 96 px de alto y eso le deja 8 px de margen. Con un círculo de radio 26 serían 44.
+- [ ] **Ninguna prueba está versionada.** Las 23 comprobaciones del 16 de septiembre, y las 26 del Bloque 2, se escribieron, se ejecutaron y se borraron: hoy no se pueden repetir. Decidir si las de verificación pasan a `tests/`.
 - [ ] **Versionar el roadmap y el blueprint en `docs/`.** El código los cita como autoridad —«paso 3 del blueprint», «Bloque 2 del roadmap»— pero sólo existen publicados, no en el repositorio: no hay forma de saber qué decían cuando se escribió cada commit.
 - [ ] **Nunca ejecutado en un teléfono.** Casi cuatro meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
 - [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).

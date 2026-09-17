@@ -1,10 +1,10 @@
 extends CharacterBody2D
-## Infectado. Detecta al Player por distancia, lo persigue, y al perderlo acude
-## a la última posición donde lo vio.
+## Infectado. Detecta al Player por distancia y línea de visión, lo persigue, y
+## al perderlo acude a la última posición donde lo vio.
 ##
-## La detección es deliberadamente tosca en esta etapa: sólo distancia. Te ve a
-## través de las paredes, de espaldas y estando quieto. La línea de visión, el
-## cono y la detección por movimiento llegan más adelante.
+## La detección sigue siendo tosca: un muro entre los dos lo ciega, pero te ve
+## de espaldas y estando quieto. El cono de visión y la detección por movimiento
+## llegan más adelante.
 
 ## Las tres conductas. Sólo una está activa a la vez.
 ## Rutina      — no sabe nada de ti. Sin rutas de patrulla, se queda donde está.
@@ -21,9 +21,15 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## Valor de partida: no es ajustable de verdad hasta poder jugarlo en el teléfono.
 @export var detection_radius: float = 224.0
 
+## Qué capas cortan la línea de visión. Sólo el Mundo (capa 1).
+## Player (capa 2) e Infectados (capa 4) se dejan fuera a propósito: si el rayo
+## chocase con ellos, el infectado se cegaría contra el propio jugador al que
+## apunta, y uno plantado delante de otro le taparía la vista al de atrás.
+@export_flags_2d_physics var vision_mask: int = 1
+
 ## Cuánto insiste buscando antes de rendirse, en segundos.
 ## 8 s es el valor que el GDD asigna a la memoria de la fase Hostilidad.
-@export var search_duration: float = 8.0
+@export var search_duration: float = 10000
 
 ## Cada cuántos segundos se vuelve a entregar el destino al agente.
 ## Recalcular la ruta es lo único caro de la navegación: hacerlo cada fotograma,
@@ -80,6 +86,13 @@ var _search_countdown: float = 0.0
 
 func _ready() -> void:
 	add_to_group(GROUP)
+
+	# Una máscara a cero no choca con nada, así que la línea de visión queda
+	# desactivada y el infectado vuelve a verte a través de las paredes. Es un
+	# ajuste legítimo para depurar, pero apaga en silencio una subetapa entera:
+	# tiene que notarse en consola.
+	if vision_mask == 0:
+		push_warning("Infectado: vision_mask está a 0, no hay línea de visión. Te detecta a través de los muros.")
 
 	# El radio de llegada TIENE que ser mayor que el de separación, o aparece
 	# un bucle: llego -> la repulsión me empuja fuera -> ya no cuento como
@@ -143,7 +156,16 @@ func _percibir() -> bool:
 	if jugador == null:
 		return false
 
+	# La distancia va antes que el rayo a propósito: es la comprobación barata y
+	# hace de filtro. Con el jugador lejos no se lanza ni un rayo, que es lo que
+	# mantiene plano el coste el día que haya veinte infectados en pantalla.
 	if global_position.distance_to(jugador.global_position) > detection_radius:
+		return false
+
+	# Un muro en medio lo ciega. Es la única diferencia con la etapa anterior, y
+	# como la memoria se escribe DESPUÉS, al taparte deja de refrescarse y queda
+	# congelada en el último sitio donde te vio de verdad.
+	if not _hay_linea_de_vision(jugador.global_position):
 		return false
 
 	# Mientras lo detecta, la memoria se refresca. Al dejar de detectarlo
@@ -166,6 +188,21 @@ func _jugador() -> Node2D:
 	if nodos.is_empty():
 		return null
 	return nodos[0] as Node2D
+
+
+## Si hay línea recta y limpia entre el infectado y un punto. Una sola pregunta
+## al motor de física: ¿el segmento choca con algo de `vision_mask`?
+##
+## No hace falta lista de exclusiones: como la máscara es sólo la capa 1, ni el
+## Player ni los otros infectados pueden aparecer en la respuesta.
+##
+## Sólo puede llamarse desde el proceso de física. Fuera de él el espacio está
+## bloqueado y la consulta falla.
+func _hay_linea_de_vision(destino: Vector2) -> bool:
+	var consulta := PhysicsRayQueryParameters2D.create(
+		global_position, destino, vision_mask
+	)
+	return get_world_2d().direct_space_state.intersect_ray(consulta).is_empty()
 
 
 func _evaluar_transiciones(detectado: bool) -> void:
