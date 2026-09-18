@@ -3,9 +3,8 @@
 [ext_resource type="Script" uid="uid://brt4cpi318j1t" path="res://Scripts/Player/player.gd" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://c8306ul5ihghm" path="res://Assets/Placeholders/player_1.png" id="2_a3d8c"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_f60y1"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_a3d8c"]
 radius = 26.0
-height = 88.0
 
 [node name="Player" type="CharacterBody2D" unique_id=772290188]
 editor_description = "Escena principal del JUGADOR."
@@ -13,7 +12,7 @@ collision_layer = 2
 script = ExtResource("1_player")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2046203504]
-shape = SubResource("CapsuleShape2D_f60y1")
+shape = SubResource("CircleShape2D_a3d8c")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1891386436]
 scale = Vector2(2.4999998, 2.59375)

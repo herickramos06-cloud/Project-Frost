@@ -314,6 +314,50 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-18
+
+### Fase 1 — Bloque 3: tarea 3.1b (los dos rayos laterales)
+* **Sistema:** Infectados / Percepción / Player
+* **Decisión:**
+  1. La visión pasa de un rayo a tres: uno al centro y **dos a los costados del cuerpo del jugador**, perpendiculares a la línea que los une. Los costados sólo se lanzan si el del centro falla.
+  2. Una perilla única, `silueta_factor` de 0 a 1, que **arranca en 0** — o sea, en el comportamiento de un solo rayo.
+  3. `player.gd` gana un método público `media_silueta()`, y el cuerpo del Player pasa de cápsula 52 × 88 a **círculo de radio 26**.
+* **Motivo:** Con un solo rayo al centro hay una franja de ±26 px —casi un tile— en la que medio cuerpo del jugador está a la vista y el infectado dice que no lo ve. El problema no es la precisión: es que la regla de estar escondido pasa a ser *«mi centro está tapado»*, y **el centro no se dibuja en ninguna parte**. No se puede ver, ni apuntar, ni aprender: es suerte, no habilidad. Con tres rayos la regla pasa a ser «todo mi cuerpo está tapado», que es la que cualquiera asume y la única comprobable mirando la pantalla. Arranca apagado porque la fantasía de asomarse sin ser visto la va a dar **3.3 con la detección por movimiento**, que sí es una regla que el jugador controla.
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd) | [player.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Player/player.gd) | [player.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Player/player.tscn)
+* **Detalles y Correcciones:**
+  1. **El rayo del centro corta y decide solo.** Si llega, no se lanza nada más. Persiguiéndote estás a la vista, así que el caso normal —y el único que importará con veinte infectados— **sigue costando un rayo** aunque los costados estén encendidos. Medido: 0 rayos fuera del radio, 1 a la vista con el factor a 1, y 3 sólo cuando estás tapado del todo.
+  2. **Los costados salen perpendiculares a la línea de visión**, no fijos a los lados de la pantalla. Si fueran fijos, al mirarte desde arriba los dos caerían uno detrás del otro y no medirían nada.
+  3. **El ancho se le pregunta al Player, no se copia.** Un número escrito en `infected.gd` sería un cuarto valor capaz de desincronizarse en silencio el día que el cuerpo cambie de tamaño. Por eso `silueta_factor` es un factor y no una medida en píxeles.
+  4. **La cápsula del Player era el mismo error de modelado que la del infectado.** 52 de ancho pero 88 de alto: visto desde el norte mide 52 y visto desde el este mide 88, **casi el doble**, así que un solo número no puede describir su silueta. En cenital la forma de colisión es la huella en el suelo, no la silueta del sprite. Con el círculo, la media silueta vale 26 desde cualquier dirección.
+  5. **Y de regalo, el pasillo norte.** Mide 96 px de alto; la cápsula de 88 dejaba **8 px** de margen y cualquier roce frenaba. El círculo deja **44**. Medido: lo cruza a 360,0 px en 2 s —velocidad de diseño exacta— incluso pegado al techo.
+  6. **`search_duration` devuelto a 8.0.** Se había quedado en 10000 de una prueba y se coló en el commit del 16 de septiembre. Con ese valor el infectado seguía rindiéndose al llegar al punto recordado, que es la salida habitual, pero perdía el techo de tiempo para cuando no consigue llegar.
+* **Verificación:** **40 comprobaciones, 0 fallos**, repartidas en las tres baterías nuevas.
+  * **La prueba A/B de los costados:** barriendo 91 posiciones alrededor de la esquina del bloque central, **34 pasan de oculto a visto** al encender los costados, y 5 ya se veían con el rayo del centro. Esa es la franja que hoy es invisible para el infectado.
+  * **Y una que nunca saltó:** añadir costados **jamás quita visión**. Si algún día la quita, la perpendicular está mal.
+  * **Coste en rayos:** 0,00 fuera del radio · 1,00 a la vista con factor 0 · **1,00 a la vista con factor 1** · 3,00 tapado del todo con factor 1.
+  * **El Player redondo:** se para en x = 58 contra el muro oeste (32 + 26) y en y = 710 contra el sur (736 − 26), donde la cápsula se paraba en 691,9.
+  * **Regresión:** con el factor a 0 las comprobaciones de 3.1a dan idéntico, así que es un no-op de verdad. Y `main.tscn`, 300 fotogramas: 2 líneas de salida, cero avisos.
+
+---
+
+### Decisión de arquitectura: las pruebas se versionan en `Tests/`
+* **Sistema:** Estructura del proyecto
+* **Decisión:** Crear `juego-zombies-2d/Tests/` con cuatro guiones —`test_base.gd`, `test_player.gd`, `test_perception.gd` y `test_navigation.gd`— más un `README.md`, y declarar la carpeta en `AGENT.md`.
+* **Motivo:** Hasta hoy las pruebas se escribían, se ejecutaban y se borraban. Las 26 comprobaciones del Bloque 2, las 23 del Bloque 1.5 y las 10 de 3.1a quedaron en este documento como **números que ya no se pueden repetir**: si algo rompiera la percepción mañana, nada lo notaría. La que más valor tiene a largo plazo es la de **holgura de ruta**: mide que ningún punto de ruta quede a menos de 26 px de un muro, que es exactamente lo que habría cazado el fallo de las esquinas el primer día en vez de tras varios días de depuración.
+* **Archivos:** [Tests/](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Tests) | [AGENT.md](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/AGENT.md)
+* **Detalles y Correcciones:**
+  1. **Se ejecutan contra el mundo real cargado como escena**, nunca contra un montaje aparte. Es la lección del 13 de septiembre: medir a través de un arnés que instanciaba el mundo dentro de otra escena dio 16 fotogramas de sincronización cuando en el juego real son 3, y esa cifra falsa estuvo escrita aquí durante días.
+  2. **Cada batería sale con código 1 si algo falla**, así que valen encadenadas y no sólo a ojo.
+  3. **`navigation_baker.gd` se queda en `Scripts/World/`.** Es código de producción: sin él el mundo no tiene malla de navegación, y ponerlo en `Tests/` diría algo falso sobre lo que es. La regla de la carpeta queda escrita en `AGENT.md`: sólo código de prueba, nada que el juego necesite para funcionar.
+  4. **Las pruebas llevan coordenadas del mapa escritas a mano** —(640, 176), (656, −16), la esquina del bloque—. Si el mapa se reforma hay que revisarlas: una prueba que mide otra cosa es peor que no tenerla.
+  5. **Reparto:** 461 líneas de prueba contra 334 de producción. Es normal a esta escala, pero conviene mirarlo de vez en cuando.
+* **Verificación:** Las tres baterías en verde de forma independiente: **Player 9/9**, **Percepción 18/18**, **Navegación 13/13**. La de navegación tarda unos 60 s porque recorre las siete rutas con el cuerpo de verdad; las otras dos, unos 10 s.
+
+#### Pendiente antes del export a Android
+`Tests/` entraría en el paquete. Hay que excluirla en los ajustes de exportación cuando exista `export_presets.cfg` — tarea 0.2 del roadmap, que sigue abierta.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -354,6 +398,12 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
    * **Un número que puede desincronizarse de otro que vive en otro archivo lleva un aviso al arrancar.** Hoy son dos: la holgura de la malla contra el radio real del cuerpo, y `vision_mask` contra cero.
    * **Un ajuste de depuración que apaga un sistema entero tiene que gritar por consola** mientras esté puesto. Estos fallos no rompen nada: producen un juego que funciona y se siente mal, y eso no lo detecta ninguna prueba automática.
    * **Con Godot abierto, un `.gd` editado desde fuera puede revertirse sin avisar** cuando el editor vuelca su buffer encima.
+   * **Antes de commitear se lee el diff completo, no la lista de archivos.** Un valor de prueba —`search_duration` a 10000— se coló así en el commit del 16 de septiembre. Los ajustes temporales viven en los mismos archivos que el trabajo bueno, y preparar el commit archivo por archivo no los distingue.
+
+8. **Pruebas:**
+   * Viven versionadas en `Tests/`, se ejecutan **contra el mundo real cargado como escena** y devuelven código de salida 1 si algo falla. Nada que el juego necesite para funcionar vive en esa carpeta.
+   * **Una prueba que no se puede repetir es un número, no una prueba.** Los resultados que sólo quedan escritos aquí no protegen de nada.
+   * **Se valida la pregunta correcta.** «¿La ruta es correcta?» y «¿el cuerpo puede recorrerla?» son distintas, y medir sólo la primera dejó un fallo escondido durante semanas.
 
 ---
 
@@ -369,10 +419,12 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] **Bloque 1.5 completo:** malla de navegación horneada en ejecución con holgura de agente, y cuerpo circular. Los infectados dejan de atascarse en las esquinas. No estaba en el roadmap: salió de probar 3.0.
 - [x] **3.0 completo:** geometría interior en el mapa —bloque macizo, pasillo norte y alcoba— para poder verificar el Bloque 3 jugando.
 - [x] **3.1a completo:** línea de visión con un rayo contra la capa Mundo. Un muro ya te salva, y Búsqueda pasa a ser alcanzable jugando por primera vez.
-- [ ] **3.1b:** los dos rayos laterales, con la perilla de silueta apagada hasta que llegue 3.3. Diseñado y decidido, sin escribir.
-- [ ] **Resto del Bloque 3:** cono de visión (3.2), detección por movimiento (3.3) y el medidor de agitación (3.4). Ahí nace el sigilo de verdad, y ahí se resuelve la oscilación en el borde del radio de detección.
-- [ ] **El Player sigue en cápsula de 52 × 88.** No navega, así que el fallo del 1.5 no le afecta, pero el pasillo norte mide 96 px de alto y eso le deja 8 px de margen. Con un círculo de radio 26 serían 44.
-- [ ] **Ninguna prueba está versionada.** Las 23 comprobaciones del 16 de septiembre, y las 26 del Bloque 2, se escribieron, se ejecutaron y se borraron: hoy no se pueden repetir. Decidir si las de verificación pasan a `tests/`.
+- [x] **3.1b completo:** los dos rayos laterales, construidos y verificados, con `silueta_factor` en 0 hasta que llegue 3.3.
+- [x] **El Player pasa a círculo de radio 26.** Su silueta deja de depender de por dónde se le mire, y el pasillo norte pasa de 8 px de margen a 44.
+- [x] **Las pruebas se versionan en `Tests/`.** Tres baterías, 40 comprobaciones, ejecutables cuando haga falta.
+- [ ] **3.2 — el cono de visión:** hace falta primero darle al infectado una dirección de mirada, que hoy no existe, y un dibujo de depuración para poder verla. El ángulo arranca en 360° para no cambiar nada hasta activarlo.
+- [ ] **Resto del Bloque 3:** detección por movimiento (3.3) y el medidor de agitación (3.4). Ahí nace el sigilo de verdad, y ahí se resuelve la oscilación en el borde del radio de detección.
+- [ ] **Excluir `Tests/` del export de Android** cuando exista `export_presets.cfg`.
 - [ ] **Versionar el roadmap y el blueprint en `docs/`.** El código los cita como autoridad —«paso 3 del blueprint», «Bloque 2 del roadmap»— pero sólo existen publicados, no en el repositorio: no hay forma de saber qué decían cuando se escribió cada commit.
 - [ ] **Nunca ejecutado en un teléfono.** Casi cuatro meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
 - [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).

@@ -27,9 +27,22 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## apunta, y uno plantado delante de otro le taparía la vista al de atrás.
 @export_flags_2d_physics var vision_mask: int = 1
 
+## Cuánto de la silueta del jugador se tiene en cuenta, de 0 a 1.
+##
+## En 0 se lanza un solo rayo a su centro. En 1 se lanzan además dos a los
+## bordes de su cuerpo, así que asomar un hombro por una esquina basta para que
+## lo vean. Es un factor y no una medida en píxeles para no copiar aquí el ancho
+## del Player, que es suyo y puede cambiar.
+##
+## Arranca en 0 a propósito. Con un solo rayo puedes asomarte sin que te vean,
+## pero por una frontera invisible —tu centro— que no puedes ver ni aprender ni
+## apuntar: es suerte, no habilidad. Esa fantasía la dará 3.3, cuando quedarse
+## quieto sea una defensa de verdad. Ahí se sube a 1.
+@export_range(0.0, 1.0, 0.05) var silueta_factor: float = 0.0
+
 ## Cuánto insiste buscando antes de rendirse, en segundos.
 ## 8 s es el valor que el GDD asigna a la memoria de la fase Hostilidad.
-@export var search_duration: float = 10000
+@export var search_duration: float = 8.0
 
 ## Cada cuántos segundos se vuelve a entregar el destino al agente.
 ## Recalcular la ruta es lo único caro de la navegación: hacerlo cada fotograma,
@@ -162,10 +175,9 @@ func _percibir() -> bool:
 	if global_position.distance_to(jugador.global_position) > detection_radius:
 		return false
 
-	# Un muro en medio lo ciega. Es la única diferencia con la etapa anterior, y
-	# como la memoria se escribe DESPUÉS, al taparte deja de refrescarse y queda
-	# congelada en el último sitio donde te vio de verdad.
-	if not _hay_linea_de_vision(jugador.global_position):
+	# Un muro en medio lo ciega. Como la memoria se escribe DESPUÉS, al taparte
+	# deja de refrescarse y queda congelada en el último sitio donde te vio.
+	if not _lo_veo(jugador):
 		return false
 
 	# Mientras lo detecta, la memoria se refresca. Al dejar de detectarlo
@@ -188,6 +200,35 @@ func _jugador() -> Node2D:
 	if nodos.is_empty():
 		return null
 	return nodos[0] as Node2D
+
+
+## Si alcanza a ver alguna parte del jugador.
+##
+## El rayo al centro va primero y resuelve solo la mayoría de las veces:
+## persiguiéndote estás a la vista, así que el caso normal —y el único que
+## importa el día que haya veinte infectados— cuesta un único rayo. Los dos
+## costados existen sólo para rescatar un «no» del centro, que es justo cuando
+## asomas medio cuerpo por una esquina.
+func _lo_veo(jugador: Node2D) -> bool:
+	if _hay_linea_de_vision(jugador.global_position):
+		return true
+
+	if silueta_factor <= 0.0:
+		return false
+
+	# Los costados salen perpendiculares a la línea que os une, no fijos a los
+	# lados de la pantalla. Si fueran fijos, al mirarte desde arriba los dos
+	# rayos caerían uno detrás del otro y no medirían absolutamente nada.
+	#
+	# El ancho se lo pregunta al Player en lugar de guardarlo: un número copiado
+	# aquí se desincronizaría en silencio el día que su cuerpo cambie de tamaño.
+	var media: float = jugador.media_silueta() * silueta_factor
+	var costado: Vector2 = global_position.direction_to(jugador.global_position).orthogonal() * media
+
+	return (
+		_hay_linea_de_vision(jugador.global_position + costado)
+		or _hay_linea_de_vision(jugador.global_position - costado)
+	)
 
 
 ## Si hay línea recta y limpia entre el infectado y un punto. Una sola pregunta
