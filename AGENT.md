@@ -73,9 +73,6 @@ Escenas de Godot.
 juego-zombies-2d/scripts
 Lógica del juego 
 
-juego-zombies-2d/Tests
-Baterías de verificación headless. Se ejecutan contra el mundo real cargado como escena y devuelven código de salida 1 si algo falla. Sólo código de prueba: nada que el juego necesite para funcionar vive aquí. Ver Tests/README.md.
-
 project-frost/src
 Otros utiles, codigo "bruto"
 

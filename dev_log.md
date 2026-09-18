@@ -358,6 +358,45 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+### Fase 1 — Bloque 3: tarea 3.2 (el cono de visión)
+* **Sistema:** Infectados / Percepción
+* **Decisión:**
+  1. **3.2a** — El infectado gana una **mirada**: un vector propio que persiste al pararse, gira a velocidad limitada, y persiguiendo apunta al objetivo en vez de a la marcha.
+  2. **3.2b** — La detección pasa de un círculo a **(dentro del cono de 120° Y a menos de 224 px) O (a menos de 64 px, mire donde mire)**, y en los dos casos con línea de visión limpia.
+* **Motivo:** Hasta ahora te detectaba igual de bien por delante que por detrás, así que acercarse nunca era una decisión. El cono deja que lo rodees a distancia; el alcance corto de 360° impide que pegarse a su espalda salga gratis. Ancho a propósito —120° y no 60— porque en un cenital táctil no hay forma clara de leer hacia dónde mira un sprite pequeño, y un cono estrecho se sentiría injusto. La mirada tuvo que construirse antes: **en el código no existía el concepto de hacia dónde mira**, y sin él el cono no tenía eje.
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd)
+* **Detalles y Correcciones:**
+  1. **La mirada no se deduce de la velocidad en el momento.** Si se dedujera, al pararse la velocidad valdría cero y quedaría indefinida y temblorosa. Es un dato propio que persiste, y arranca encarando hacia abajo.
+  2. **Sigue al rumbo, no a la velocidad final.** El rumbo se guarda antes de sumar la repulsión entre infectados, así que un codazo de un compañero no le gira la cabeza. De paso ahorró un umbral exportado que habría hecho falta para filtrar los empujones: el problema desaparece en vez de parchearse.
+  3. **Persiguiendo mira a su objetivo y no a su marcha.** Si mirase hacia donde camina, al rodear un obstáculo el jugador le saldría fuera del cono, lo perdería, lo recuperaría al fotograma siguiente, y habría un parpadeo permanente entre Persecución y Búsqueda. Persiguiéndote te mira: sólo un muro te salva.
+  4. **El giro va limitado a 120°/s**, tres segundos por vuelta completa, ajustado jugando desde los 360 de partida. Girar de golpe es ilegible: el jugador no podría anticipar hacia dónde va a mirar, y con el cono eso se convierte en detecciones que se sienten arbitrarias.
+  5. **El alcance corto sigue siendo vista, no un sexto sentido.** Una pared lo corta igual. Se comprobó colocando al jugador dentro del muro, porque con 32 px de roca y cuerpos de 48 es geométricamente imposible estar a menos de 64 px al otro lado sin solaparse.
+  6. **La geometría se comprueba antes que el rayo.** El cono es una comparación de ángulo y filtra lo que está a la espalda, así que con el cono estrecho se lanzan **menos** rayos que antes, no más.
+  7. **`detection_radius` pasa a `vision_radius`.** Con dos radios en juego, «el radio de detección» dejaba de identificar a ninguno.
+  8. **Se construyó con el cono apagado.** `vision_angle` arrancó en 360 —que abarca todo y reproduce el comportamiento anterior— para poder montar la mirada y el cono sin cambiar nada del juego hasta tenerlos verificados. Se encendió a 120 después de jugarlo.
+* **Verificación:** Con el cono activo, **15 comprobaciones, 0 fallos**.
+  * **El cono mide lo que dice:** 24 posiciones repartidas en corona alrededor del infectado. Con el cono abierto ve las 24; **a 120° ve exactamente 8**, que es el tercio que 120° de 360 tiene que dar. Las muestras van desplazadas 7,5° para que ninguna caiga justo en el borde.
+  * **Encarándote a 208 px te ve; de espaldas a la misma distancia, no. De espaldas a 50 px, sí** — por el alcance corto.
+  * **El giro:** pidiéndole media vuelta de golpe gira exactamente su ración de un fotograma, medida llamando a la función con un delta conocido en vez de simulando.
+  * **La mirada persiste:** 4 s parado sin moverse ni un grado. Y tres infectados apartándose a codazos no cambian de mirada ni uno.
+  * `main.tscn`, 300 fotogramas: 2 líneas de salida, cero avisos.
+
+---
+
+### Decisión de arquitectura: se retira `Tests/` y el proyecto queda limpio
+* **Sistema:** Estructura del proyecto
+* **Decisión:** Eliminar `juego-zombies-2d/Tests/` y su declaración en `AGENT.md`, y retirar del código de producción todo el andamiaje de depuración: el dibujo del cono, su interruptor `mostrar_vision` y la llamada al redibujado.
+* **Motivo:** Dejar el proyecto con **sólo lo que el juego necesita para funcionar**. `juego-zombies-2d/` queda en `Assets`, `Scenes`, `Scripts` y `project.godot`, sin una línea que exista para probar o para mirar.
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd) | [AGENT.md](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/AGENT.md)
+* **Detalles y Correcciones:**
+  1. **Las pruebas se usaron para validar su propia retirada.** Antes de borrarlas se pasó el código ya limpio por ellas, y ahí salió el dato más interesante de la decisión: **encender el cono invalidó cuatro comprobaciones que el día anterior eran correctas**. No fallaba el juego — fallaban las pruebas, escritas cuando el infectado veía en redondo y el giro era el doble de rápido. Es exactamente el coste de mantenimiento que se había anotado al versionarlas, cobrado a las veinticuatro horas.
+  2. **Lo que se pierde, dicho claro:** las 54 comprobaciones dejan de poder repetirse. Cuando llegue el mapa del Capítulo 1 —que es justo lo que puede volver a romper la navegación— habrá que reescribir la comprobación de holgura de ruta en vez de ejecutarla. Quedan en el historial de git, recuperables.
+  3. **El andamiaje de depuración también sale.** El dibujo del cono hizo falta para verificar 3.2 —el sprite es un círculo y no delata nada— pero es código que existe para mirar, no para jugar. Cuando 3.3 lo vuelva a necesitar, se vuelve a añadir temporalmente.
+  4. **Los tres guardias se quedan.** No son código de prueba: avisan por consola cuando dos números de archivos distintos se desincronizan, y eso protege al juego en ejecución, no a la verificación.
+* **Verificación:** Con el código ya limpio y el cono encendido, **15 comprobaciones en verde** sobre el mundo real: percepción encarando y de espaldas, el alcance corto, la memoria congelándose, los cuerpos que no tapan, y la persecución de extremo a extremo. Después se retiró también ese guion. La consola del juego real sigue dando 2 líneas y cero avisos.
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -400,10 +439,12 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
    * **Con Godot abierto, un `.gd` editado desde fuera puede revertirse sin avisar** cuando el editor vuelca su buffer encima.
    * **Antes de commitear se lee el diff completo, no la lista de archivos.** Un valor de prueba —`search_duration` a 10000— se coló así en el commit del 16 de septiembre. Los ajustes temporales viven en los mismos archivos que el trabajo bueno, y preparar el commit archivo por archivo no los distingue.
 
-8. **Pruebas:**
-   * Viven versionadas en `Tests/`, se ejecutan **contra el mundo real cargado como escena** y devuelven código de salida 1 si algo falla. Nada que el juego necesite para funcionar vive en esa carpeta.
-   * **Una prueba que no se puede repetir es un número, no una prueba.** Los resultados que sólo quedan escritos aquí no protegen de nada.
+8. **Verificación:**
+   * Se verifica con guiones headless **contra el mundo real cargado como escena**, nunca contra un arnés que lo instancie dentro de otra cosa: medir así dio 16 fotogramas de sincronización cuando en el juego real son 3.
+   * **Los guiones son temporales: se escriben, se ejecutan y se retiran.** Lo único que sobrevive es el número en este documento, así que cada resultado se anota con su valor medido y nunca con un «funciona».
    * **Se valida la pregunta correcta.** «¿La ruta es correcta?» y «¿el cuerpo puede recorrerla?» son distintas, y medir sólo la primera dejó un fallo escondido durante semanas.
+   * Una prueba tiene que **poder fallar**, y **no puede depender del estado que le dejó la anterior**. Las dos trampas ya han mordido: una recorría una lista vacía, y otra daba verde porque el infectado venía en el estado adecuado por casualidad.
+   * El código de producción **no conserva andamiaje de depuración**. Lo que haga falta para mirar se añade mientras se mide y se retira después.
 
 ---
 
@@ -421,10 +462,11 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] **3.1a completo:** línea de visión con un rayo contra la capa Mundo. Un muro ya te salva, y Búsqueda pasa a ser alcanzable jugando por primera vez.
 - [x] **3.1b completo:** los dos rayos laterales, construidos y verificados, con `silueta_factor` en 0 hasta que llegue 3.3.
 - [x] **El Player pasa a círculo de radio 26.** Su silueta deja de depender de por dónde se le mire, y el pasillo norte pasa de 8 px de margen a 44.
-- [x] **Las pruebas se versionan en `Tests/`.** Tres baterías, 40 comprobaciones, ejecutables cuando haga falta.
-- [ ] **3.2 — el cono de visión:** hace falta primero darle al infectado una dirección de mirada, que hoy no existe, y un dibujo de depuración para poder verla. El ángulo arranca en 360° para no cambiar nada hasta activarlo.
-- [ ] **Resto del Bloque 3:** detección por movimiento (3.3) y el medidor de agitación (3.4). Ahí nace el sigilo de verdad, y ahí se resuelve la oscilación en el borde del radio de detección.
-- [ ] **Excluir `Tests/` del export de Android** cuando exista `export_presets.cfg`.
+- [x] **3.2 completa:** la mirada con giro limitado y el cono de 120° con su alcance corto de 64 px. Rodearlo por detrás ya te salva.
+- [x] **El proyecto queda limpio:** `Tests/` retirada y el andamiaje de depuración fuera del código. `juego-zombies-2d/` son `Assets`, `Scenes`, `Scripts` y `project.godot`.
+- [ ] **3.3 — detección por movimiento:** quedarse quieto pasa a ser una defensa. Es también el momento de subir `silueta_factor` a 1, que sigue apagado esperándolo.
+- [ ] **3.4 — el medidor de agitación** y la cuarta conducta, Alerta. Ahí se resuelve la oscilación en el borde del cono.
+- [ ] **Al reescribir una verificación, recordar que puede haber envejecido.** Encender el cono invalidó cuatro comprobaciones correctas del día anterior: los supuestos de una prueba caducan cuando cambia el diseño.
 - [ ] **Versionar el roadmap y el blueprint en `docs/`.** El código los cita como autoridad —«paso 3 del blueprint», «Bloque 2 del roadmap»— pero sólo existen publicados, no en el repositorio: no hay forma de saber qué decían cuando se escribió cada commit.
 - [ ] **Nunca ejecutado en un teléfono.** Casi cuatro meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
 - [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).

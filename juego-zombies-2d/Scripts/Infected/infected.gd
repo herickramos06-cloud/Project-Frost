@@ -2,9 +2,9 @@ extends CharacterBody2D
 ## Infectado. Detecta al Player por distancia y línea de visión, lo persigue, y
 ## al perderlo acude a la última posición donde lo vio.
 ##
-## La detección sigue siendo tosca: un muro entre los dos lo ciega, pero te ve
-## de espaldas y estando quieto. El cono de visión y la detección por movimiento
-## llegan más adelante.
+## Ve dentro de un cono hacia donde mira, más un alcance corto en redondo para
+## lo que tiene encima, y un muro entre los dos lo ciega. Lo que todavía no
+## distingue es si te mueves: quedarse quieto no salva. Eso llega más adelante.
 
 ## Las tres conductas. Sólo una está activa a la vez.
 ## Rutina      — no sabe nada de ti. Sin rutas de patrulla, se queda donde está.
@@ -17,9 +17,29 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## (Alteración, Hostilidad, Adaptación) llegan como perfiles de datos más adelante.
 @export var speed: float = 220.0
 
-## Radio de detección, en píxeles. 224 son 7 tiles de 32.
+## Hasta dónde llega la vista dentro del cono, en píxeles. 224 son 7 tiles de 32.
 ## Valor de partida: no es ajustable de verdad hasta poder jugarlo en el teléfono.
-@export var detection_radius: float = 224.0
+@export var vision_radius: float = 224.0
+
+## Apertura total del cono de visión, en grados. 120 es el valor que el GDD
+## asigna a la fase Hostilidad: ancho a propósito, porque en un cenital táctil
+## no hay forma clara de leer hacia dónde mira un sprite pequeño, y un cono
+## estrecho se sentiría injusto.
+##
+## A 360 el cono abarca todo y vuelve a ver igual por detrás que por delante.
+@export_range(10.0, 360.0, 5.0) var vision_angle: float = 120.0
+
+## Alcance a quemarropa, en píxeles, que funciona en 360° mire donde mire.
+## Es lo que impide que pegarse a su espalda salga gratis — y, cuando 3.3 haga
+## del quedarse quieto una defensa, que congelarse encima de él sea un truco.
+@export var close_radius: float = 64.0
+
+## Cuánto tarda en girar la cabeza, en grados por segundo.
+##
+## Girar de golpe es ilegible: el jugador no podría anticipar hacia dónde va a
+## mirar, y con el cono eso se convierte en detecciones que se sienten
+## arbitrarias. 120 son tres segundos por vuelta, ajustado jugando.
+@export var turn_speed: float = 120.0
 
 ## Qué capas cortan la línea de visión. Sólo el Mundo (capa 1).
 ## Player (capa 2) e Infectados (capa 4) se dejan fuera a propósito: si el rayo
@@ -96,6 +116,16 @@ var _tiene_memoria: bool = false
 
 var _search_countdown: float = 0.0
 
+# Hacia dónde mira. Es un dato propio y no se deduce de la velocidad en el
+# momento: si se dedujera, al pararse la velocidad valdría cero y la mirada se
+# quedaría indefinida. Arranca mirando hacia abajo, hacia la cámara.
+var _mirada: Vector2 = Vector2.DOWN
+
+# A dónde intenta ir la navegación, sin contar la repulsión de los compañeros.
+# La mirada sigue la intención y no los empujones: un infectado apartado de un
+# codazo no se gira a mirar a quien lo apartó.
+var _rumbo: Vector2 = Vector2.ZERO
+
 
 func _ready() -> void:
 	add_to_group(GROUP)
@@ -134,6 +164,7 @@ func _physics_process(delta: float) -> void:
 			_conducta_busqueda(delta)
 
 	_avanzar(delta)
+	_actualizar_mirada(delta)
 
 
 ## Cambia de conducta. Pública porque la usan la percepción y las pruebas.
@@ -160,6 +191,40 @@ func tiene_memoria() -> bool:
 	return _tiene_memoria
 
 
+## Hacia dónde mira, como vector unitario. Es el eje del cono de visión.
+func mirada() -> Vector2:
+	return _mirada
+
+
+# --- Mirada ------------------------------------------------------------------
+
+## Gira la cabeza hacia donde toca, sin pasar de `turn_speed` grados por segundo.
+## Si no hay nada que mirar, la mirada **se queda donde estaba**: un infectado
+## parado sigue encarando lo último que encaraba, que es lo que un cuerpo hace.
+func _actualizar_mirada(delta: float) -> void:
+	var deseada: Vector2 = _mirada_deseada()
+	if deseada.is_zero_approx():
+		return
+
+	var giro_maximo: float = deg_to_rad(turn_speed) * delta
+	_mirada = _mirada.rotated(clampf(_mirada.angle_to(deseada), -giro_maximo, giro_maximo))
+
+
+## Qué querría estar mirando ahora mismo. Vector cero significa «nada nuevo».
+func _mirada_deseada() -> Vector2:
+	# Persiguiendo mira a su objetivo y no a su marcha. Si mirase hacia donde
+	# camina, al rodear un obstáculo el jugador le saldría fuera del cono, lo
+	# perdería, lo recuperaría al fotograma siguiente, y tendrías un parpadeo
+	# permanente entre Persecución y Búsqueda. Persiguiéndote te mira: sólo un
+	# muro te salva.
+	if _estado == Estado.PERSECUCION and _tiene_memoria:
+		return global_position.direction_to(_ultima_posicion_conocida)
+
+	# Si no, mira hacia donde intenta ir. En Rutina no hay destino, así que esto
+	# vale cero y la mirada no se toca.
+	return _rumbo
+
+
 # --- Percepción --------------------------------------------------------------
 
 ## Único sitio del script que sabe que el Player existe. Devuelve si lo tiene
@@ -169,10 +234,10 @@ func _percibir() -> bool:
 	if jugador == null:
 		return false
 
-	# La distancia va antes que el rayo a propósito: es la comprobación barata y
-	# hace de filtro. Con el jugador lejos no se lanza ni un rayo, que es lo que
-	# mantiene plano el coste el día que haya veinte infectados en pantalla.
-	if global_position.distance_to(jugador.global_position) > detection_radius:
+	# La geometría va antes que el rayo a propósito: es la comprobación barata y
+	# hace de filtro. Con el jugador lejos o a la espalda no se lanza ni un rayo,
+	# que es lo que mantiene plano el coste el día que haya veinte en pantalla.
+	if not _esta_en_mi_campo(jugador.global_position):
 		return false
 
 	# Un muro en medio lo ciega. Como la memoria se escribe DESPUÉS, al taparte
@@ -200,6 +265,30 @@ func _jugador() -> Node2D:
 	if nodos.is_empty():
 		return null
 	return nodos[0] as Node2D
+
+
+## Si un punto cae dentro de lo que el infectado podría ver, sin contar muros.
+## Es pura geometría: el cono hacia donde mira, más el alcance corto de 360°.
+##
+## No sustituye a la línea de visión, la precede. El alcance corto **también**
+## respeta las paredes: es vista a quemarropa, no un sexto sentido.
+func _esta_en_mi_campo(punto: Vector2) -> bool:
+	var distancia: float = global_position.distance_to(punto)
+
+	# Lo que tiene encima lo nota mire donde mire.
+	if distancia <= close_radius:
+		return true
+
+	if distancia > vision_radius:
+		return false
+
+	# A 360° el cono lo abarca todo. Se atiende aparte para que apagarlo sea
+	# exacto: con el ángulo justo en el límite, el redondeo podría decidir.
+	if vision_angle >= 360.0:
+		return true
+
+	var desvio: float = absf(_mirada.angle_to(global_position.direction_to(punto)))
+	return desvio <= deg_to_rad(vision_angle) / 2.0
 
 
 ## Si alcanza a ver alguna parte del jugador.
@@ -319,6 +408,11 @@ func _avanzar(delta: float) -> void:
 			# de dónde viene la dirección: allí del joystick, aquí de la navegación.
 			var next_point: Vector2 = _agent.get_next_path_position()
 			deseada = global_position.direction_to(next_point) * speed
+
+	# Se guarda antes de sumar la repulsión, porque esto es a dónde QUIERE ir.
+	# La mirada lee este dato y no la velocidad final: si leyera la velocidad,
+	# un empujón de un compañero le giraría la cabeza.
+	_rumbo = deseada.normalized()
 
 	# La separación se aplica siempre, incluso parado: si no, se apilarían unos
 	# encima de otros al llegar o al quedarse en rutina.
