@@ -1,6 +1,10 @@
 extends CharacterBody2D
 ## Controla el movimiento top-down del jugador en 8 direcciones.
 
+## Emitida cuando el jugador muere. World la escuchará para gestionar
+## el respawn en la tarea 4.2.
+signal player_died
+
 ## Velocidad en píxeles por segundo. Editable desde el inspector.
 @export var speed: float = 180.0
 
@@ -11,6 +15,7 @@ extends CharacterBody2D
 const GROUP: StringName = &"player"
 
 @onready var _colision: CollisionShape2D = $CollisionShape2D
+@onready var _health: Node = $HealthComponent
 
 
 func _ready() -> void:
@@ -22,6 +27,8 @@ func _ready() -> void:
 	# número deja de describirla.
 	if not (_colision.shape is CircleShape2D):
 		push_warning("Player: el cuerpo no es un círculo, así que su silueta cambia según desde dónde se le mire y la línea de visión del infectado la medirá mal.")
+
+	_health.died.connect(_on_died)
 
 
 func _physics_process(_delta: float) -> void:
@@ -45,3 +52,24 @@ func media_silueta() -> float:
 	if forma is CapsuleShape2D:
 		return (forma as CapsuleShape2D).radius
 	return 0.0
+
+
+## Punto de entrada para recibir daño desde cualquier fuente. El infectado
+## llama aquí; el Player delega en su HealthComponent. Si algún día hay más
+## fuentes de daño (trampas, frío), todas pasan por el mismo sitio.
+func receive_damage(amount: float) -> void:
+	_health.take_damage(amount)
+
+
+## El HealthComponent avisa de que la salud llegó a cero.
+func _on_died() -> void:
+	# Desactiva el movimiento: el jugador deja de responder al joystick.
+	set_physics_process(false)
+	velocity = Vector2.ZERO
+
+	# Sale del grupo para que los infectados dejen de percibirlo al instante.
+	# Sin esto, _jugador() seguiría devolviéndolo y la percepción leería
+	# una posición que ya no se actualiza.
+	remove_from_group(GROUP)
+
+	player_died.emit()

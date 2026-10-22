@@ -397,6 +397,66 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-09-21
+
+### Fase 1 — Bloque 3: Tarea 3.3 (Sigilo y Detección por Movimiento)
+* **Sistema:** Infectados / Percepción / Sigilo
+* **Decisión:**
+  1. Ignorar por completo al jugador en `_percibir()` si no se está moviendo físicamente y está fuera del radio a quemarropa (`close_radius`).
+  2. Subir `silueta_factor` a `1.0` por defecto, activando los rayos de visión laterales.
+* **Motivo:** La inmovilidad como mecánica defensiva. Si el infectado no ve tu movimiento y estás lo suficientemente lejos, pasas desapercibido incluso dentro de su cono de visión. Además, al forzar `silueta_factor` a 1.0, se requieren coberturas completas (asomarse revela al jugador), lo que fomenta el sigilo táctico y recompensa el posicionamiento correcto.
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd)
+* **Detalles y Correcciones:**
+  1. **Velocidad como prueba de movimiento.** En lugar de añadir variables booleanas al jugador, el infectado consulta `jugador.velocity.length_squared() > 0.001` asegurando que cualquier inmovilidad física real sirva como defensa.
+  2. **El peligro a quemarropa se mantiene.** Si la distancia es menor a `close_radius` (64 px), la inmovilidad no salva al jugador.
+  3. **Comprobación barata.** Esta verificación ocurre inmediatamente después de obtener la distancia, descartando el resto de validaciones costosas (raycasts, ángulos del cono) cuando el jugador cumple los requisitos del sigilo.
+* **Verificación:** Jugador inmóvil a más de 64 px dentro del cono: no detectado. Jugador se mueve ligeramente: detectado. Jugador inmóvil a menos de 64 px: detectado.
+
+---
+
+### Fase 1 — Bloque 3: Tarea 3.4 (Medidor de Agitación y Alerta)
+* **Sistema:** Infectados / IA / Máquina de Estados
+* **Decisión:**
+  1. Implementar `agitacion` (de 0.0 a 1.0) como motor de transiciones, con un decaimiento automático de 0.1/s por defecto.
+  2. Sustituir transiciones directas por comprobaciones contra el medidor.
+  3. Añadir el estado `ALERTA`.
+* **Motivo:** Evitar la oscilación rápida de estados (intermitencia Persecución/Búsqueda) cuando el jugador entra y sale de la detección. El decaimiento ofrece histéresis natural: la aguja debe vaciarse para abandonar el estado de sospecha, haciendo al infectado más persistente y "humano".
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd)
+* **Detalles y Correcciones:**
+  1. **Subida instantánea.** Ver al jugador moviéndose dispara la agitación a `1.0`.
+  2. **Alerta como estado intermedio.** Si la agitación baja de `1.0` pero sigue por encima de `0.0`, el infectado investiga la última posición conocida a una velocidad reducida (`alert_speed = 120.0`).
+  3. **El tiempo manda.** Durante `BUSQUEDA`, el decaimiento sigue operando; al terminar los 8s, la agitación dicta el siguiente estado fluidamente (`ALERTA` o `RUTINA`).
+* **Verificación:** Jugador detectado dispara persecución. Al perder visión, se pasa a búsqueda. Transcurridos los segundos de búsqueda, si resta agitación, el infectado adopta `ALERTA` y camina despacio, hasta que se agota el medidor y vuelve a `RUTINA`.
+
+---
+
+### Fase 1 — Bloque 4: Tarea 4.1 (Daño por Proximidad y Cooldown del Infectado)
+* **Sistema:** Infectados / Combate / Salud y Daño
+* **Decisión:**
+  1. Integración de `AttackArea` (`Area2D`) en `infected.tscn` con forma circular de 28 px de radio, detectando la capa 2 (`Player`) con `collision_layer = 0` y `monitorable = false`.
+  2. Implementar `@export var damage_amount: float = 25.0` y `@export var attack_cooldown: float = 1.0` en `infected.gd`.
+  3. Aplicar daño inmediato al entrar en contacto con el Player y de forma periódica cada 1.0 s mientras permanezca dentro.
+  4. Desacoplamiento total: el infectado delega el daño en `player.receive_damage(amount)` (que canaliza a `HealthComponent`).
+  5. Corrección de robustez en `health_component.gd`: inicializar `_current_health` a 100.0 por defecto para evitar estados transitorios incoherentes antes de `_ready()`.
+* **Motivo:** Convertir el contacto en consecuencia jugable sin empujones físicos que bloqueen al jugador en puertas o pasillos. El cooldown garantiza que el daño no se aplique cada frame y opere de forma independiente por cada infectado.
+* **Archivos:** [infected.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Infected/infected.tscn), [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd), [health_component.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Player/health_component.gd)
+* **Verificación:** Ejecutada con Godot 4.6.2 headless: al entrar, salud baja de 100 a 75; tras 1.0s continuo dentro baja a 50; al salir se detiene el daño; al reingresar aplica 25 más; al llegar a 0 el Player emite `player_died`, detiene física y sale del grupo.
+
+---
+
+### Fase 1 — Bloque 4: Tarea 4.3 (Objetivo Dinámico de Cámara)
+* **Sistema:** Player / Cámara / Seguimiento
+* **Decisión:**
+  1. Sustituir resolución estática única de `_follow_target` en `_ready()` por resolución dinámica y protegida.
+  2. Implementar `is_instance_valid(_follow_target)` en `_physics_process()`. Si la instancia previa fue liberada (`queue_free()`), no intentar acceder a `.global_position` para evitar errores de puntero colgado / instancia liberada.
+  3. Búsqueda automática y segura del Player mediante el grupo oficial `&"player"` como fallback ante `follow_target_path`, de acuerdo con la Convención 6 de arquitectura.
+  4. Añadir método público `set_target(new_target: Node2D, instant: bool = false)` para permitir reasignación explícita desde sistemas de respawn.
+* **Motivo:** Desbloquear la tarea 4.2 (muerte y reaparición). Cuando el Player se destruye, la cámara queda en su última posición sin emitir errores de motor, y retoma el seguimiento fluido tan pronto como la nueva instancia ingresa al árbol de nodos.
+* **Archivos:** [camera_controller.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Player/camera_controller.gd)
+* **Verificación:** Ejecutada prueba headless con 3 ciclos consecutivos de spawn $\rightarrow$ seguimiento verificado $\rightarrow$ destrucción de instancia $\rightarrow$ 5 frames de física sin target $\rightarrow$ reaparición y re-enlace automático sin errores de instancia liberada (0 fallos).
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -464,9 +524,9 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] **El Player pasa a círculo de radio 26.** Su silueta deja de depender de por dónde se le mire, y el pasillo norte pasa de 8 px de margen a 44.
 - [x] **3.2 completa:** la mirada con giro limitado y el cono de 120° con su alcance corto de 64 px. Rodearlo por detrás ya te salva.
 - [x] **El proyecto queda limpio:** `Tests/` retirada y el andamiaje de depuración fuera del código. `juego-zombies-2d/` son `Assets`, `Scenes`, `Scripts` y `project.godot`.
-- [ ] **3.3 — detección por movimiento:** quedarse quieto pasa a ser una defensa. Es también el momento de subir `silueta_factor` a 1, que sigue apagado esperándolo.
-- [ ] **3.4 — el medidor de agitación** y la cuarta conducta, Alerta. Ahí se resuelve la oscilación en el borde del cono.
+- [x] **3.3 completo — detección por movimiento:** quedarse quieto pasa a ser una defensa. Se subió `silueta_factor` a 1.0, por lo que asomarse a medias te expone. El sigilo básico está operativo.
+- [x] **3.4 completo — el medidor de agitación** y la cuarta conducta, Alerta. Soluciona la oscilación en el borde del cono y establece el motor de las transiciones.
 - [ ] **Al reescribir una verificación, recordar que puede haber envejecido.** Encender el cono invalidó cuatro comprobaciones correctas del día anterior: los supuestos de una prueba caducan cuando cambia el diseño.
 - [ ] **Versionar el roadmap y el blueprint en `docs/`.** El código los cita como autoridad —«paso 3 del blueprint», «Bloque 2 del roadmap»— pero sólo existen publicados, no en el repositorio: no hay forma de saber qué decían cuando se escribió cada commit.
 - [ ] **Nunca ejecutado en un teléfono.** Casi cuatro meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
-- [ ] **Pendiente antes del sistema de respawn:** `CameraController` resuelve su objetivo una sola vez en `_ready()`. Cuando exista muerte/respawn y el Player se destruya y se vuelva a crear, la cámara quedará apuntando a una referencia liberada. Habrá que hacer que el objetivo se reasigne (señal desde `World` o búsqueda por grupo).
+- [x] **Completado (4.3):** `CameraController` resuelve su objetivo de forma dinámica y protegida con `is_instance_valid()`, búsqueda por grupo `player` y método `set_target()`. Soporta destrucción y reaparición continua sin errores de instancia liberada.

@@ -279,7 +279,7 @@ Incluye
 
 ### **Pendiente**
 
-* ⬜ Spawn  
+* ✅ Spawn  
 * ⬜ Objetos  
 * ⬜ Puertas  
 * ⬜ Iluminación
@@ -290,11 +290,11 @@ Incluye
 
 Pendiente
 
-* Primer infectado  
-* IA básica  
-* Detección  
-* Ataque  
-* Sistema de vida
+* ✅ Primer infectado  
+* ✅ IA básica  
+* ✅ Detección (Movimiento y Sigilo)
+* ✅ Ataque por área y cooldown
+* ✅ Sistema de vida (HealthComponent)
 
 ---
 
@@ -339,6 +339,9 @@ Pendiente
 | ✅ | Paredes |
 | ✅ | Colisiones |
 | ✅ | Primer cuarto funcional |
+| ✅ | Medidor de agitación y conducta Alerta |
+| ✅ | Tarea 4.1: Daño del infectado y HealthComponent |
+| ✅ | Tarea 4.3: Objetivo dinámico de cámara |
 
 ---
 
@@ -374,10 +377,11 @@ Pendiente
 
 ### **Próximo objetivo**
 
-* ⬜ Spawn  
+* ✅ Spawn  
 * ⬜ Objetos interactivos  
-* ⬜ Primer infectado  
-* ⬜ IA de persecución
+* ✅ Primer infectado  
+* ✅ IA de persecución y sigilo  
+* ✅ Medidor de agitación y conducta Alerta
 
 ---
 

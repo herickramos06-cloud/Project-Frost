@@ -1,0 +1,626 @@
+<title>Roadmap Antesala 2032</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  /* Paleta del GDD §07. El color con tono queda reservado a peligro y atención. */
+  :root{
+    --ground:#070d14; --panel:#0a1628; --panel-2:#0e1e35;
+    --line:#1a3a5a; --line-soft:#14293f;
+    --text:#e3edf6; --text-2:#a9bccd; --muted:#8899aa; --ice:#cfe1f0;
+    --danger:#c8574d; --danger-bg:#2c1614;
+    --warn:#c9a227; --warn-bg:#2a2311;
+    --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+    --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--ground);color:var(--text);font-family:var(--f-body);font-size:15.5px;line-height:1.68;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1040px;margin:0 auto;padding:44px 26px 100px;}
+
+  .doc-head{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel) 0%,#081221 100%);padding:28px 30px 24px;}
+  .eyebrow{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0;}
+  h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5.4vw,48px);line-height:1.04;letter-spacing:-.012em;margin:11px 0 7px;text-wrap:balance;color:var(--ice);}
+  .subtitle{color:var(--text-2);max-width:64ch;margin:0;}
+  .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:23px;}
+  .meta div{background:var(--panel);padding:11px 13px;}
+  .meta dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 3px;}
+  .meta dd{margin:0;font-family:var(--f-mono);font-size:13.5px;color:var(--ice);}
+
+  section{margin-top:58px;}
+  .sec-num{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  h2{font-family:var(--f-display);font-weight:600;font-size:26px;margin:0 0 6px;color:var(--ice);text-wrap:balance;}
+  .sec-note{color:var(--muted);max-width:72ch;margin:0 0 22px;font-size:14.5px;}
+  h3{font-family:var(--f-display);font-weight:600;font-size:20px;margin:0 0 4px;color:var(--text);}
+  h4{font-family:var(--f-display);font-weight:600;font-size:17px;margin:28px 0 8px;color:var(--ice);}
+  p{max-width:72ch;}
+  code{font-family:var(--f-mono);font-size:.9em;color:var(--ice);background:var(--panel-2);border:1px solid var(--line-soft);padding:1px 5px;}
+
+  .gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:26px;}
+  .gauge-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px;}
+  .gauge-name{font-family:var(--f-display);font-weight:600;font-size:17px;}
+  .gauge-num{font-family:var(--f-mono);font-size:17px;font-variant-numeric:tabular-nums;color:var(--ice);}
+  .bar{height:9px;background:#0c1a2c;border:1px solid var(--line-soft);overflow:hidden;}
+  .bar span{display:block;height:100%;background:var(--ice);}
+  .bar.low span{background:var(--warn);}
+  .bar.zero span{background:var(--danger);}
+  .gauge-cap{font-size:13.5px;color:var(--muted);margin:9px 0 0;}
+
+  .rule{border-left:2px solid var(--ice);padding:4px 0 4px 20px;margin:34px 0 0;}
+  .rule p{font-family:var(--f-display);font-size:20px;line-height:1.42;color:var(--ice);margin:0;max-width:58ch;}
+  .rule cite{display:block;font-family:var(--f-mono);font-style:normal;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:9px;}
+
+  .block{display:grid;grid-template-columns:158px 1fr;gap:30px;padding:28px 0 6px;border-top:1px solid var(--line-soft);}
+  .block:first-of-type{border-top:1px solid var(--line);}
+  .rail{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;gap:5px;}
+  .rail .hito{color:var(--ice);font-size:14px;letter-spacing:.07em;font-weight:600;}
+  .rail .dep{color:var(--text-2);text-transform:none;letter-spacing:0;font-size:11.5px;line-height:1.5;border-left:1px solid var(--line);padding-left:9px;margin-top:3px;}
+  .rail .dep.hot{color:var(--danger);border-left-color:var(--danger);}
+  .block-lead{color:var(--text-2);margin:5px 0 16px;}
+
+  ol.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
+  ol.tasks li{display:grid;grid-template-columns:38px 1fr;gap:13px;align-items:start;}
+  .tid{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--muted);background:var(--panel-2);border:1px solid var(--line-soft);text-align:center;padding:2px 0;line-height:1.5;}
+  .tbody{color:var(--text-2);}
+  .tbody strong{font-weight:600;color:var(--text);}
+  .done-tag{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);border:1px solid var(--line);background:var(--panel-2);padding:1px 7px;margin-right:7px;white-space:nowrap;}
+  .blocks{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:5px;}
+  .blocks.hard{color:var(--danger);}
+  li.ok .tid{color:var(--ice);border-color:var(--ice);}
+  li.ok .tbody strong{color:var(--ice);}
+  ol.subs{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  ol.subs li{display:grid;grid-template-columns:34px 1fr;gap:11px;align-items:start;font-size:14px;}
+  .sid{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-align:right;padding-top:1px;}
+  .subs .sb{color:var(--text-2);}
+  .subs .sb b{color:var(--text);font-weight:600;}
+  li.dropped .tid{opacity:.45;}
+  li.dropped .tbody{color:var(--muted);}
+  li.dropped .tbody strong{color:var(--muted);font-weight:400;text-decoration:line-through;}
+
+  .check{margin-top:18px;border:1px solid var(--line-soft);background:var(--panel);padding:13px 17px;}
+  .check .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  .check p{margin:0;color:var(--text-2);font-size:14.5px;max-width:72ch;}
+
+  .flag{margin-top:15px;border:1px solid var(--warn);border-left-width:3px;background:var(--warn-bg);padding:13px 17px;}
+  .flag.crit{border-color:var(--danger);background:var(--danger-bg);}
+  .flag .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:5px;}
+  .flag.crit .lbl{color:var(--danger);}
+  .flag p{margin:0 0 8px;font-size:14.5px;color:var(--text);max-width:72ch;}
+  .flag p:last-child{margin-bottom:0;}
+
+  .note{margin-top:15px;border:1px solid var(--line-soft);background:var(--panel);padding:13px 17px;}
+  .note .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  .note p{margin:0 0 8px;color:var(--text-2);font-size:14.5px;max-width:72ch;}
+  .note p:last-child{margin-bottom:0;}
+
+  .milestone{margin-top:34px;border:1px solid var(--ice);background:var(--panel);padding:22px 26px;}
+  .milestone .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ice);display:block;margin-bottom:8px;}
+  .milestone h3{font-size:24px;color:var(--ice);margin-bottom:8px;}
+  .milestone p{margin:0;color:var(--text-2);}
+
+  .scroller{overflow-x:auto;border:1px solid var(--line-soft);margin-top:12px;}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  thead th{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--panel);border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:0;}
+  td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ice);white-space:nowrap;}
+  td.t{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  td.t.bad{color:var(--danger);} td.t.mid{color:var(--warn);} td.t.good{color:var(--ice);}
+
+  .parked{border:1px dashed var(--line);padding:20px 22px;color:var(--muted);margin-top:14px;}
+  .parked ul{columns:2;column-gap:34px;margin:12px 0 0;padding-left:19px;font-size:14px;}
+  .parked li{margin-bottom:5px;break-inside:avoid;}
+
+  footer{margin-top:66px;padding-top:23px;border-top:1px solid var(--line-soft);font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+
+  @media (max-width:720px){
+    .block{grid-template-columns:1fr;gap:14px;}
+    .rail{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:10px;}
+    .rail .dep{border-left:0;padding-left:0;width:100%;}
+    .parked ul{columns:1;}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="doc-head">
+    <p class="eyebrow">Project Frost · Documento de planificación</p>
+    <h1>Roadmap Antesala 2032</h1>
+    <p class="subtitle">Ruta completa desde hoy hasta cerrar el Hito 009, el sistema de infectados. Cada bloque con dependencias explícitas y criterio de verificación.</p>
+    <dl class="meta">
+      <div><dt>Fecha</dt><dd>18 sep 2026</dd></div>
+      <div><dt>Cerrado</dt><dd>Bloques 1, 1.5, 2 y 3.2</dd></div>
+      <div><dt>Horizonte</dt><dd>009 · Infectados</dd></div>
+      <div><dt>Bloqueante</dt><dd>Nunca en móvil</dd></div>
+      <div><dt>Decisiones</dt><dd>2 que bloquean</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <span class="sec-num">01 — Estado</span>
+    <h2>Dónde estás realmente</h2>
+    <p class="sec-note">Tres barras en lugar de una. La tercera lleva cuatro meses en cero y es la que más pesa.</p>
+
+    <div class="gauges">
+      <div>
+        <div class="gauge-top"><span class="gauge-name">Fundación</span><span class="gauge-num">95%</span></div>
+        <div class="bar"><span style="width:95%"></span></div>
+        <p class="gauge-cap">Git, arquitectura, movimiento, cámara, InputManager, joystick, TileMap, colisiones, spawn, fondo. Por encima del promedio indie en solitario.</p>
+      </div>
+      <div>
+        <div class="gauge-top"><span class="gauge-name">Bucle jugable</span><span class="gauge-num">≈30%</span></div>
+        <div class="bar low"><span style="width:30%"></span></div>
+        <p class="gauge-cap">Esconderse ya funciona: un muro te salva, rodearlo por detrás te salva, y al perderte va a donde estabas y se rinde. Sigue sin haber daño, ruido, vida, evidencia ni salida.</p>
+      </div>
+      <div>
+        <div class="gauge-top"><span class="gauge-name">Validado en móvil</span><span class="gauge-num">0%</span></div>
+        <div class="bar zero"><span style="width:2%"></span></div>
+        <p class="gauge-cap">Casi cuatro meses construyendo para Android sin un solo arranque en Android. Todas las pruebas han sido en PC sin ventana.</p>
+      </div>
+    </div>
+
+    <h4>Cerrado desde la última versión de este documento</h4>
+    <ol class="tasks">
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Spawn dinámico del Player</strong> desde <code>world.gd</code> sobre un <code>Marker2D</code>. El patrón se reutiliza tal cual para los infectados.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Fondo <code>#070d14</code></strong>. El borde del mapa se lee como oscuridad en vez de como fallo de render, sin atar la cámara.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Bitácora y dashboard al repositorio.</strong> Los tres documentos ya están versionados.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Suelo bajo los muros borrado.</strong> 123 celdas. <code>Ground</code> pasa a significar «dónde se puede estar» y el navmesh saldrá correcto por construcción.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Blueprint de IA cerrado.</strong> Ocho decisiones de diseño resueltas y ocho pasos de implementación definidos.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Capa de navegación validada</strong> con un agente de prueba sin lógica de IA: 51 puntos de ruta, cruzó el cuarto entero, 0,0 px de error al llegar.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Escena del infectado y contenedor de spawns.</strong> Tres infectados apareciendo sobre sus marcadores, todos sobre suelo válido y sobre la malla de navegación.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Bloque 1 completo.</strong> El infectado navega hasta un punto rodeando la geometría, recalcula la ruta de forma escalonada y ya no pelea con sus compañeros por el espacio. Sin cerebro todavía: no percibe, no decide y no persigue.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>GDD v2.</strong> Mercado, competencia, viabilidad, obligaciones legales y estado medido del proyecto.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Bloque 2 completo.</strong> El infectado te detecta por distancia, te persigue hasta encima, guarda la última posición donde te vio, acude a ella al perderte y vuelve a su rutina donde acabe. 26 comprobaciones headless en verde.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Geometría interior en el mapa (3.0).</strong> Un bloque macizo, un pasillo norte de 3 celdas y una alcoba. La habitación era un rectángulo vacío con 128 muros de perímetro y nada tras lo que esconderse: sin esto, ninguna parte del Bloque 3 se podía verificar jugando.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Línea de visión (3.1a).</strong> Un muro entre los dos lo ciega, y la memoria queda congelada donde te vio por última vez. Búsqueda pasa a ser alcanzable jugando por primera vez.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Bloque 1.5 · rutas con holgura.</strong> El mapa nuevo destapó un fallo que llevaba ahí desde el Bloque 1: las rutas salían pegadas al filo del muro y el infectado se quedaba clavado en las esquinas. Malla horneada en ejecución con holgura de agente. <b>De 1 de 4 rutas a 7 de 7.</b></span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho 18 sep</span><strong>Los dos rayos laterales (3.1b).</strong> La visión mide la silueta real del jugador y no sólo su centro. Construidos y verificados, apagados hasta 3.3.</span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho 18 sep</span><strong>Cono de visión (3.2).</strong> Mirada con giro limitado y cono de 120° con alcance corto de 64 px. <b>Rodearlo por detrás ya te salva.</b></span></li>
+      <li><span class="tid">✓</span><span class="tbody"><span class="done-tag">Hecho 18 sep</span><strong>Proyecto limpio.</strong> Sin andamiaje de depuración ni código de prueba: <code>juego-zombies-2d/</code> son <code>Assets</code>, <code>Scenes</code>, <code>Scripts</code> y <code>project.godot</code>.</span></li>
+    </ol>
+
+    <div class="rule">
+      <p>La fundación está terminada. Todo lo que viene a partir de aquí se ve, se juega y se graba.</p>
+      <cite>Y eso es exactamente lo que alimenta el devlog</cite>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">02 — Ruta crítica</span>
+    <h2>De hoy al Hito 009</h2>
+    <p class="sec-note">Siete bloques en orden de dependencia, con todas sus tareas. Lo marcado en hielo está hecho y verificado con el motor: cuatro bloques cerrados y medio Bloque 3, dos y medio por delante.</p>
+
+    <div class="block">
+      <div class="rail">
+        <span>Bloque 0</span>
+        <span class="hito">Realidad</span>
+        <span class="dep hot">Antes que cualquier línea de IA</span>
+      </div>
+      <div>
+        <h3>Tocar el terreno real</h3>
+        <p class="block-lead">Cuatro tareas que no son inteligencia artificial. La primera bloquea toda la cadena de la IA; las otras tres son urgentes por razones propias. Ninguna es opcional.</p>
+        <ol class="tasks">
+          <li class="ok"><span class="tid">0.1</span><span class="tbody"><span class="done-tag">Hecho 9 sep</span><strong>Capa de navegación en el TileSet</strong> y polígono en el tile de suelo <code>(0,0)</code>. El muro sin polígono. Validada con un agente de prueba tonto: ruta de 51 puntos, cruzó el cuarto, 0,0 px de error.<span class="blocks">Desbloqueó los Bloques 1 al 5</span></span></li>
+          <li><span class="tid">0.2</span><span class="tbody"><strong>Exportar a un teléfono real.</strong> Aunque el juego sea sólo un cuadrado moviéndose. Falta <code>export_presets.cfg</code>, orientación, modo de estiramiento e icono.<span class="blocks hard">No bloquea código · es el mayor riesgo acumulado del proyecto</span></span></li>
+          <li class="ok"><span class="tid">0.3</span><span class="tbody"><span class="done-tag">Hecho 9 sep</span><strong>Velocidad del jugador fijada en 180 px/s.</strong> Pendiente de validar la sensación en el dispositivo.<span class="blocks">Desbloqueó la calibración de los números de la IA</span></span></li>
+          <li><span class="tid">0.4</span><span class="tbody"><strong>Confirmar los plazos vigentes de Google Play</strong> en la documentación oficial, y decidir el tipo de cuenta. Son trámites con fecha; no se arreglan con código.<span class="blocks">Administrativo · no bloquea desarrollo</span></span></li>
+          <li><span class="tid">0.5</span><span class="tbody"><strong>Versionar este roadmap y el blueprint en <code>docs/</code>.</strong> Hoy el GDD v1 y el v2 están en el repositorio, pero estos dos sólo existen publicados. El código los cita como autoridad —«paso 3 del blueprint», «Bloque 2 del roadmap»— y no hay forma de saber qué decían cuando se escribió ese código.<span class="blocks">Hallazgo de la revisión del Bloque 2 · sin coste técnico</span></span></li>
+        </ol>
+        <div class="flag crit">
+          <span class="lbl">Crítico · el riesgo más grande y el más barato de eliminar</span>
+          <p>Casi cuatro meses construyendo para Android sin un solo arranque en Android. El primer export no será un trámite: será el descubrimiento de una lista de problemas de interfaz, rendimiento y entrada que nadie ha presupuestado.</p>
+          <p>Y hay un problema ya identificado esperando ahí: el joystick está anclado a 64 px del borde inferior izquierdo, <strong>justo donde Android coloca el gesto de retroceso</strong>. En un juego de sigilo, un retroceso accidental durante una persecución es una reseña de una estrella.</p>
+        </div>
+        <div class="check">
+          <span class="lbl">Verificación</span>
+          <p>El juego arranca en un teléfono real, en la orientación correcta, y el joystick responde sin disparar gestos del sistema. Caminar se siente tenso y no pesado. Un cuadrado sin cerebro va de A a B rodeando un muro.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail">
+        <span>Bloque 1</span>
+        <span class="hito">El cuerpo</span>
+        <span class="dep hot">Necesita 0.1 · la navegación</span>
+      </div>
+      <div>
+        <h3>Que exista y sepa moverse</h3>
+        <p class="block-lead">Pasos 1 y 2 del blueprint. Sin cerebro todavía: sólo un cuerpo que navega.</p>
+        <ol class="tasks">
+          <li class="ok"><span class="tid">1.1</span><span class="tbody"><span class="done-tag">Hecho 12 sep</span><strong><code>infected.tscn</code></strong> con <code>CharacterBody2D</code>, cápsula de radio 24 y alto 80, <code>Sprite2D</code> y <code>NavigationAgent2D</code>.</span></li>
+          <li class="ok"><span class="tid">1.2</span><span class="tbody"><span class="done-tag">Hecho 12 sep</span><strong>Contenedor <code>InfectedSpawns</code></strong> en <code>world.tscn</code> con tres marcadores, y <code>world.gd</code> creando un infectado por cada hijo. Añadir uno al nivel es duplicar un <code>Marker2D</code>: el código no se toca.</span></li>
+          <li class="ok"><span class="tid">1.3</span><span class="tbody"><span class="done-tag">Hecho 13 sep</span><strong>Navegación hasta un punto.</strong>
+            <ol class="subs">
+              <li><span class="sid">1.3.1</span><span class="sb"><code>infected.gd</code> adjuntado a la raíz de la escena.</span></li>
+              <li><span class="sid">1.3.2</span><span class="sb">Velocidad como <code>@export</code> en <b>220 px/s</b> — número de partida, no una fase.</span></li>
+              <li><span class="sid">1.3.3</span><span class="sb">Espera al mapa con <code>map_get_iteration_id()</code>, que vale 0 hasta la primera sincronización. <b>Sin contar fotogramas:</b> son 3 en el juego real y 16 medidos a través de un arnés, así que el número no puede vivir en el código.</span></li>
+              <li><span class="sid">1.3.4</span><span class="sb">Camina hacia el objetivo con <code>move_and_slide()</code>, tomando la dirección del agente.</span></li>
+              <li><span class="sid">1.3.5</span><span class="sb">Recálculo por temporizador con desfase aleatorio: <b>40 recálculos en 10 s</b> en vez de 600.</span></li>
+            </ol>
+          </span></li>
+          <li class="ok"><span class="tid">1.4</span><span class="tbody"><span class="done-tag">Hecho 13 sep</span><strong>Capas de colisión y separación.</strong>
+            <ol class="subs">
+              <li><span class="sid">1.4.1</span><span class="sb">Capa 1 Mundo · capa 2 Player · capa 3 Infectados, con nombre en <code>project.godot</code>.</span></li>
+              <li><span class="sid">1.4.2</span><span class="sb">Ambos enmascaran sólo la capa 1: chocan con el mundo y se atraviesan entre sí.</span></li>
+              <li><span class="sid">1.4.3</span><span class="sb">Repulsión propia, no la evitación del agente — que cuesta más y les hace esquivarse con cortesía.</span></li>
+              <li><span class="sid">1.4.4</span><span class="sb"><b>Corregido el rebote al llegar:</b> el radio de llegada debe ser mayor que el de separación, o la repulsión te saca de «he llegado» y vuelves a caminar en bucle.</span></li>
+            </ol>
+          </span></li>
+        </ol>
+        <div class="note">
+          <span class="lbl">Verificado con el motor antes de commitear</span>
+          <p>Los tres infectados llegan y se asientan con <strong>0,0 px de movimiento tardío</strong>, nunca se acercan a menos de 8 px entre ellos, y registran <strong>cero incursiones en celda de muro</strong> a lo largo de 1200 fotogramas de física.</p>
+        </div>
+        <div class="check">
+          <span class="lbl">Verificación</span>
+          <p>Aparece donde marcas el marcador, no atraviesa muros, llega rodeando la geometría y se detiene limpio sin vibrar sobre el destino.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail">
+        <span>Bloque 2</span>
+        <span class="hito">El cerebro</span>
+        <span class="dep">Cerrado el 14 sep. Aquí ya hay clip para el devlog</span>
+      </div>
+      <div>
+        <h3>Perseguir, perder y rendirse</h3>
+        <p class="block-lead">Paso 3. Detección por distancia pura, tosca a propósito: te ve a través de las paredes y da igual. Es la primera vez que algo te persigue.</p>
+        <ol class="tasks">
+          <li class="ok"><span class="tid">2.1</span><span class="tbody"><span class="done-tag">Hecho 14 sep</span><strong>Máquina de estados plana</strong> con un <code>enum</code> y un <code>match</code>: Rutina, Persecución y Búsqueda. Un solo script, sin un nodo por estado.
+            <ol class="subs">
+              <li><span class="sid">2.1.1</span><span class="sb">Cada conducta decide sólo <b>a dónde</b> quiere ir; el movimiento es común a las tres y vive en un único sitio.</span></li>
+              <li><span class="sid">2.1.2</span><span class="sb"><b>Corregido:</b> Búsqueda se rendía en su primer fotograma porque preguntaba «¿he llegado?» antes de que el agente tuviera ruta, y el agente contesta que sí.</span></li>
+            </ol>
+          </span></li>
+          <li class="ok"><span class="tid">2.2</span><span class="tbody"><span class="done-tag">Hecho 14 sep</span><strong>Detección por distancia pura</strong> en <b>224 px</b>, siete tiles. Sin cono, sin línea de visión, sin movimiento. Te ve a través de las paredes y da igual: es tosca a propósito.
+            <ol class="subs">
+              <li><span class="sid">2.2.1</span><span class="sb">El Player se anuncia en un grupo; el infectado lo busca por grupo, <b>no por ruta escrita a mano</b> ni por referencia guardada.</span></li>
+              <li><span class="sid">2.2.2</span><span class="sb">Un solo punto del script sabe que el Player existe. Cuando llegue la línea de visión, se cambia ahí y en ningún otro sitio.</span></li>
+              <li><span class="sid">2.2.3</span><span class="sb"><b>Perseguir no tiene llegada.</b> Si se detuviera al «llegar» se aparcaría a 60 px de ti — dos cuerpos — y no te alcanzaría nunca.</span></li>
+            </ol>
+          </span></li>
+          <li class="ok"><span class="tid">2.3</span><span class="tbody"><span class="done-tag">Hecho 14 sep</span><strong>Memoria de última posición conocida</strong> desde el primer día, con <b>8 s</b> de insistencia. Sin ella la IA sólo puede ser clarividente o amnésica, y las dos rompen el sigilo.
+            <ol class="subs">
+              <li><span class="sid">2.3.1</span><span class="sb">La memoria es una <b>copia</b> de la posición, no un puntero que te siga: al perderte deja de escribirse y se queda donde estaba.</span></li>
+              <li><span class="sid">2.3.2</span><span class="sb">Un solo dato sirve de memoria <em>y</em> de destino de búsqueda. Dos campos separados podrían divergir en silencio.</span></li>
+              <li><span class="sid">2.3.3</span><span class="sb">Si el Player desaparece del árbol en plena persecución, pasa a Búsqueda. Persecución no tiene temporizador de salida: sin esto se quedaría clavado para siempre.</span></li>
+            </ol>
+          </span></li>
+          <li class="ok"><span class="tid">2.4</span><span class="tbody"><span class="done-tag">Hecho 14 sep</span><strong>Volver a la rutina desde donde esté</strong>, no a un punto fijo. «Rutina» era quedarse quieto donde le pilló; la deriva por el mapa la cumple <b>3.3a</b>, que al hacer que Rutina deambule consigue gratis que tras perderte se quede merodeando <em>donde te perdió</em> — sin tocar esta parte, como estaba previsto.</span></li>
+        </ol>
+        <div class="note">
+          <span class="lbl">Verificado con el motor · 26 comprobaciones, 0 fallos</span>
+          <p>Al arrancar, los tres infectados siguen en Rutina, sin memoria y con <strong>0,00 px</strong> de movimiento. Al entrar en el radio persigue y se planta a <strong>1,7 px</strong> del jugador, no a los 60 de la tolerancia del agente. Al perderlo, la memoria se queda congelada a <strong>1132 px</strong> del jugador real, recorre 143 px hasta ese punto y se rinde en <strong>0,65 s</strong> por llegada, no por agotar los 8 s.</p>
+          <p>Y oscilando en el borde del radio <strong>120 veces en 2 segundos</strong>, los recálculos de ruta fueron <strong>7</strong>. Sin control habrían sido 120.</p>
+        </div>
+        <div class="flag">
+          <span class="lbl">Lo que cambió la revisión antes de escribir una línea</span>
+          <p>El plan inicial paraba la persecución al llegar a la distancia de tolerancia del agente. Eso deja al infectado aparcado a dos cuerpos de ti, mirándote: <strong>mata el entregable entero del bloque</strong> y no se habría visto en ninguna prueba automática, sólo jugando.</p>
+          <p>También forzaba un recálculo de ruta en cada cambio de estado. Con el jugador oscilando en el borde del radio eso son 60 recálculos por segundo en vez de 4 — exactamente el ×15 que la tarea 1.3.5 existía para evitar.</p>
+        </div>
+        <div class="check">
+          <span class="lbl">Verificación</span>
+          <p>Te persigue, lo despistas, va a donde estabas, no te encuentra y vuelve a su rutina desde donde haya acabado.</p>
+        </div>
+        <div class="flag">
+          <span class="lbl">Límite conocido · levantado el 16 sep</span>
+          <p>Durante dos días Búsqueda existió sin poder alcanzarse jugando: en un cuarto rectangular vacío no había nada tras lo que esconderse, y él corre a 220 px/s mientras tú caminas a 180, así que la distancia sólo podía encogerse.</p>
+          <p>Lo levantaron dos cosas de la misma jornada: la <strong>geometría interior de 3.0</strong> y la <strong>línea de visión de 3.1a</strong>. Doblar una esquina ya te despista de verdad. Queda pendiente el correr a 320 px/s del Hito 010, que es lo que permitirá abrir distancia en campo abierto.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail">
+        <span>Bloque 1.5</span>
+        <span class="hito">Navegación</span>
+        <span class="dep">Defecto del Bloque 1, destapado al probar 3.0</span>
+      </div>
+      <div>
+        <h3>Rutas con holgura</h3>
+        <p class="block-lead">No estaba en esta ruta. Apareció el 16 de septiembre, bloqueó el Bloque 3 entero, y se resolvió el mismo día.</p>
+        <ol class="tasks">
+          <li class="ok"><span class="tid">1.5.1</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Diagnóstico por descarte.</strong> No era el olvido —con memoria infinita se atascaba igual—, no era el tamaño del cuerpo —con radio 14 en vez de 24 fallaba <b>en el mismo píxel y con el mismo decimal</b>— y el post-proceso <code>EDGECENTERED</code> de Godot lo empeoraba.</span></li>
+          <li class="ok"><span class="tid">1.5.2</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Malla horneada en ejecución</strong> a partir de los tiles, encogida 26 px respecto a los muros. Cuesta <b>6 ms</b> al cargar el nivel, así que el mapa sigue siendo la única fuente de verdad y <b>pintar una habitación se hace igual que antes</b>: no hay nada que recordar re-hornear.</span></li>
+          <li class="ok"><span class="tid">1.5.3</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Los cuerpos pasan a ser círculos.</strong> Una cápsula de 48 × 80 es una silueta de perfil en un juego cenital: el horneado supone un agente circular, así que la holgura sobraba a los lados y faltaba arriba y abajo. La ruta 1 <b>pasó de 15,70 s a 5,77 s</b>, con un mínimo teórico de 5,8.</span></li>
+          <li class="ok"><span class="tid">1.5.4</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Tres guardias de arranque.</strong> El fallo era silencioso por naturaleza, así que ahora avisan por consola cuando dos números de archivos distintos se desincronizan: la holgura contra el cuerpo, la máscara de visión a cero, y la doble malla de navegación.</span></li>
+        </ol>
+        <div class="flag crit">
+          <span class="lbl">La causa, que no era la que parecía</span>
+          <p>La navegación de Godot calcula la ruta <strong>como si el agente fuera un punto sin cuerpo</strong>, así que la ruta más corta sale pegada al filo del muro. Un cuerpo de 48 px que la sigue mete medio cuerpo en la pared y empuja en perpendicular exacta — y deslizar una velocidad perpendicular deja exactamente cero. El infectado pedía la misma dirección imposible para siempre.</p>
+          <p>Y los dos casos que se quedaban clavados eran <strong>esconderse y huir</strong>: sólo se liberaba si caminabas hacia él. Justo lo que nunca vas a hacer.</p>
+        </div>
+        <div class="note">
+          <span class="lbl">Verificado con el motor · 23 comprobaciones, 0 fallos</span>
+          <p>De <strong>1 de 4 rutas a 7 de 7</strong>. En 420 rutas y 754 puntos intermedios, <strong>ninguno queda a menos de 26 px de un muro</strong>; antes, el punto que atascaba estaba a 0. Las 753 celdas pisables siguen alcanzables desde el spawn, y cero incursiones en celda de muro con los tres infectados a la vez.</p>
+        </div>
+        <div class="check">
+          <span class="lbl">Verificación</span>
+          <p>Te persigue entre las dos mitades del mapa sin engancharse en ninguna esquina, aunque te escondas quieto o huyas de él.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail">
+        <span>Bloque 3</span>
+        <span class="hito">Los sentidos</span>
+        <span class="dep hot">Mitad hecho. Aquí nace el sigilo</span>
+      </div>
+      <div>
+        <h3>Que esconderse funcione</h3>
+        <p class="block-lead">Pasos 4 y 5. Tres cosas en orden, probando entre medias, y después el medidor que convierte la IA de interruptor en escalada. Las dos primeras están cerradas.</p>
+        <ol class="tasks">
+          <li class="ok"><span class="tid">3.0</span><span class="tbody"><span class="done-tag">Hecho 16 sep</span><strong>Geometría interior en el mapa.</strong> No es IA, pero bloqueaba la verificación de todo lo demás: la habitación era un rectángulo vacío con los 128 muros en el perímetro, así que <b>no había nada tras lo que esconderse</b>. Ahora es una U con un bloque macizo, un pasillo norte y una alcoba. De 128 a 226 muros, 753 celdas pisables.<span class="blocks">Destapó además el fallo del Bloque 1.5</span></span></li>
+          <li class="ok"><span class="tid">3.1</span><span class="tbody"><span class="done-tag">Hecho 16–18 sep</span><strong>Línea de visión</strong> con rayo contra los muros.
+            <ol class="subs">
+              <li><span class="sid">3.1a</span><span class="sb">Un rayo al centro, sólo contra la capa 1. Ni el Player ni los otros infectados cortan la vista. La distancia se comprueba antes, así que fuera del radio <b>no se lanza ni un rayo</b>.</span></li>
+              <li><span class="sid">3.1b</span><span class="sb">Dos rayos más a los costados del cuerpo, perpendiculares a la línea de visión, para medir la silueta real y no sólo el centro. <b>Apagados</b> (<code>silueta_factor</code> a 0) hasta 3.3: con un rayo puedes asomarte sin que te vean, pero por una frontera invisible que no puedes aprender.</span></li>
+            </ol>
+          </span></li>
+          <li class="ok"><span class="tid">3.2</span><span class="tbody"><span class="done-tag">Hecho 18 sep</span><strong>Cono de 120° más alcance corto de 64 px.</strong>
+            <ol class="subs">
+              <li><span class="sid">3.2a</span><span class="sb">La mirada, que <b>no existía</b>: un dato propio que persiste al pararse, gira a 120°/s y persiguiendo apunta al objetivo en vez de a la marcha — si mirase a su marcha, al rodear un obstáculo te perdería y te recuperaría cada fotograma.</span></li>
+              <li><span class="sid">3.2b</span><span class="sb">Detección = (dentro del cono <b>y</b> a menos de 224 px) <b>o</b> (a menos de 64 px, mire donde mire), y en los dos casos con línea de visión limpia. El alcance corto <b>también respeta las paredes</b>: es vista a quemarropa, no un sexto sentido.</span></li>
+            </ol>
+          </span></li>
+          <li><span class="tid">3.3</span><span class="tbody"><strong>Que estar quieto te salve.</strong>
+            <ol class="subs">
+              <li><span class="sid">3.3a</span><span class="sb"><b>La patrulla.</b> Rutina deja de ser esperar de pie: elige un destino cerca, <b>se para y gira la cabeza hacia él</b>, camina despacio y repite. Sin puntos fijos que pintar — el azar se vuelve legible porque <b>cada giro va anunciado por una parada</b>.<br>No estaba en esta ruta: el blueprint la tenía en su Paso 8, después del Hito 009. Se adelanta porque <b>sin ella 3.3b no tiene ocasión de usarse</b>: contra un infectado parado nunca hace falta congelarse, basta con no entrar en su cono.</span></li>
+              <li><span class="sid">3.3b</span><span class="sb"><b>Detección por movimiento.</b> No te ve: detecta que algo se mueve. Quedarse inmóvil pasa a ser una defensa. El alcance corto de 64 px sigue notándote quieto, para que congelarse encima de él no sea un truco. Es también el momento de encender los costados de 3.1b.</span></li>
+            </ol>
+          </span></li>
+          <li><span class="tid">3.4</span><span class="tbody"><strong>Medidor de agitación</strong> con decaimiento, sus umbrales, y la cuarta conducta: Alerta.</span></li>
+        </ol>
+        <div class="note">
+          <span class="lbl">Verificado con el motor · 3.1 y 3.2</span>
+          <p>Encarándote a <strong>208 px</strong> te ve; de espaldas a la misma distancia, no; de espaldas a <strong>50 px</strong>, sí. De 24 posiciones repartidas en corona alrededor del infectado, con el cono abierto ve las 24 y <strong>a 120° ve exactamente 8</strong> — el tercio que 120 de 360 tiene que dar.</p>
+          <p>Y el coste no sube: la geometría del cono se comprueba <strong>antes</strong> que el rayo, así que un cono estrecho lanza menos rayos, no más. Persiguiéndote cuesta <strong>un solo rayo</strong> aunque los costados estén encendidos.</p>
+        </div>
+        <div class="check">
+          <span class="lbl">Verificación</span>
+          <p><s>Esconderte tras un muro te salva.</s> <s>Rodearlo por detrás te salva.</s> Falta: quedarte completamente inmóvil dentro de su cono te salva, pero moverte un poco te delata. Y que ya no oscile entre conductas cuando estás justo en el límite.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail">
+        <span>Bloque 4</span>
+        <span class="hito">Consecuencia</span>
+        <span class="dep">Desbloqueado. Sin esto el infectado es un juguete</span>
+      </div>
+      <div>
+        <h3>Que alcanzarte signifique algo</h3>
+        <p class="block-lead">Paso 6. Corto, pero es el que convierte la persecución en juego.</p>
+        <ol class="tasks">
+          <li><span class="tid">4.1</span><span class="tbody"><strong>Vida del jugador</strong> con señal de cambio, y <strong>zona de detección de daño</strong> con recarga — no colisión física, para que no te empuje fuera de una puerta en plena huida.</span></li>
+          <li><span class="tid">4.2</span><span class="tbody"><strong>Muerte y reaparición</strong> en <code>PlayerSpawn</code>. Aquí paga su inversión el spawn del Hito 008.</span></li>
+          <li><span class="tid">4.3</span><span class="tbody"><strong>Arreglar el objetivo de la cámara.</strong> Resuelve su target una sola vez en <code>_ready()</code> y quedará apuntando al Player destruido.</span></li>
+        </ol>
+        <div class="check">
+          <span class="lbl">Verificación</span>
+          <p>Morir y reaparecer tres veces seguidas sin que la cámara se pierda ni la consola tire errores de instancia liberada.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail">
+        <span>Bloque 5</span>
+        <span class="hito">Las tres fases</span>
+        <span class="dep">Necesita 3 y 4. Cierra el Hito 009</span>
+      </div>
+      <div>
+        <h3>Alteración, Hostilidad, Adaptación</h3>
+        <p class="block-lead">Paso 7. Ningún código nuevo de IA: sólo datos y el techo de conducta por fase.</p>
+        <ol class="tasks">
+          <li><span class="tid">5.1</span><span class="tbody"><strong>Extraer todos los números a un Resource</strong> y crear los tres perfiles con sus velocidades, radios, umbrales y decaimiento.</span></li>
+          <li><span class="tid">5.2</span><span class="tbody"><strong>El techo por fase.</strong> Un Alteración llega a Alerta y nunca a Persecución, por mucho ruido que hagas.</span></li>
+          <li><span class="tid">5.3</span><span class="tbody"><strong>El infectado recibe su perfil al nacer</strong>, desde <code>world.gd</code>, igual que hoy recibe su posición. El script del infectado no elige nada.</span></li>
+          <li><span class="tid">5.4</span><span class="tbody"><strong>Tabla de aparición por capítulo</strong>, que decide qué perfil recibe cada infectado al nacer. La dificultad escala sin tocar código.</span></li>
+          <li><span class="tid">5.5</span><span class="tbody"><strong>Medir en el teléfono</strong> con 4, 10 y 20 infectados. El presupuesto es 16,6 ms por fotograma y menos de 200 draw calls.</span></li>
+        </ol>
+        <div class="check">
+          <span class="lbl">Verificación</span>
+          <p>Un Alteración se pone nervioso, investiga y se va. Un Adaptación te sigue insistiendo mucho después de haberte perdido. Y con 10 infectados a la vez el teléfono mantiene el presupuesto de fotograma.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="milestone">
+      <span class="lbl">Hito 009 cerrado</span>
+      <h3>El sistema de infectados existe</h3>
+      <p>Un infectado percibe, se enciende, persigue, pierde el rastro, busca, se rinde y deriva. Hay tres tipos con conductas distintas, la dificultad escala cambiando la tabla de aparición, y todo corre dentro del presupuesto de un teléfono de gama media. A partir de aquí, subir la dificultad no requiere tocar código.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">03 — Revisión</span>
+    <h2>Los 26 hallazgos del Bloque 2</h2>
+    <p class="sec-note">Tres revisiones independientes sobre el plan del Bloque 2, antes de escribir código: 9 graves, 11 medios, 6 menores. Siete se corrigieron en el plan, cuatro se rechazaron, y los que sobrevivieron tienen aquí un sitio concreto en vez de quedarse flotando.</p>
+
+    <h4>Corregidos antes de implementar</h4>
+    <div class="scroller"><table>
+      <thead><tr><th>Hallazgo</th><th>Qué habría pasado</th><th>Solución</th></tr></thead>
+      <tbody>
+        <tr><td>Persecución se detenía al llegar</td><td>Aparcado a 60 px de ti sin alcanzarte nunca</td><td class="t good">2.2.3</td></tr>
+        <tr><td>Memoria y punto de búsqueda como dos campos</td><td>Rompía en silencio la llegada que 2.1 ya tenía funcionando</td><td class="t good">2.3.2</td></tr>
+        <tr><td>Cambiar de estado forzaba recálculo</td><td>60 recálculos por segundo oscilando en el borde</td><td class="t good">2.1.1</td></tr>
+        <tr><td>Perder la referencia en plena persecución</td><td>Clavado en Persecución para siempre</td><td class="t good">2.3.3</td></tr>
+        <tr><td>Guardar la referencia al Player</td><td>Posición obsoleta: un nodo fuera del árbol sigue pareciendo válido</td><td class="t good">2.2.1</td></tr>
+        <tr><td><code>estado_inicial</code> y <code>target_point</code> exportados</td><td>Arrancar en Persecución sin memoria manda al infectado a (0,0)</td><td class="t good">Eliminados</td></tr>
+        <tr><td>Memoria de 5 s</td><td>No coincidía con la fila «Hostilidad» del GDD</td><td class="t good">8 s</td></tr>
+        <tr><td>Destino sin entregar todavía al agente</td><td>Hasta 55 px caminando hacia (0,0), que no es «la esquina» sino «todavía nada»</td><td class="t good">Encontrado al probar</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Rechazados, y por qué</h4>
+    <div class="scroller"><table>
+      <thead><tr><th>Propuesta</th><th>Motivo del rechazo</th></tr></thead>
+      <tbody>
+        <tr><td>Comparar distancias al cuadrado</td><td>Optimización prematura: una raíz cuadrada por infectado y fotograma, frente al bucle de separación que ya recorre a todos los demás</td></tr>
+        <tr><td>Evitar la reserva de memoria de la consulta por grupo</td><td>Mismo caso. Si algún día pesa, se mide primero en el teléfono</td></tr>
+        <tr><td>Inyectar el Player desde <code>world.gd</code></td><td>Acopla el infectado a quien lo crea. El grupo ya resuelve el problema y se autolimpia</td></tr>
+        <tr><td>Corregir el desplazamiento de 9 px de la cápsula</td><td>Real, pero es arte y colisión, no IA. No pertenece a este bloque</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Aplazados, con destino asignado</h4>
+    <div class="scroller"><table>
+      <thead><tr><th>Hallazgo</th><th>Dónde se resuelve</th></tr></thead>
+      <tbody>
+        <tr><td>Oscila entre conductas justo en el límite del radio</td><td class="t mid">3.4 · el medidor de agitación es la histéresis, y hacerlo dos veces sería duplicarlo</td></tr>
+        <tr><td>Búsqueda no se alcanza jugando en un cuarto vacío</td><td class="t good">Resuelto el 16 sep · la geometría de 3.0 y la línea de visión de 3.1a</td></tr>
+        <tr><td>Ve a través de las paredes</td><td class="t good">Resuelto el 16 sep · 3.1a</td></tr>
+        <tr><td>Los números están puestos a ojo</td><td class="t mid">5.1 los saca a un Resource · 0.2 permite calibrarlos en el teléfono</td></tr>
+        <tr><td>Roadmap y blueprint no están en el repositorio</td><td class="t mid">0.5 · el código los cita como autoridad y no son rastreables</td></tr>
+        <tr><td>Rendimiento de la percepción con 20 infectados</td><td class="t mid">5.5 · se mide en el dispositivo, no se adivina</td></tr>
+        <tr><td>El desplazamiento de 9 px de la cápsula, rechazado por «no es IA»</td><td class="t good">Resuelto el 16 sep · dejó de ser arte en cuanto los rayos apuntaron al centro del cuerpo</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="note">
+      <span class="lbl">Lo que enseña esto</span>
+      <p>Los tres hallazgos graves de verdad —la persecución aparcada, los dos campos de memoria y el recálculo forzado— <strong>no los habría cazado ninguna prueba automática</strong>. Ninguno rompe nada: producen un juego que funciona y se siente mal. Por eso la revisión fue sobre el plan y no sobre el código ya escrito.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">04 — Después</span>
+    <h2>Lo que viene tras el 009</h2>
+    <p class="sec-note">Fuera del horizonte de este documento, pero conviene ver hacia dónde apunta la ruta.</p>
+    <ol class="tasks">
+      <li><span class="tid">010</span><span class="tbody"><strong>Ruido y sigilo completo.</strong> Caminar, correr y agacharse con su valor de ruido, el oído del infectado, y los botones táctiles que eso exige. Es diseño de interfaz, no sólo código.</span></li>
+      <li><span class="tid">011</span><span class="tbody"><strong>Evidencia y zona de escape.</strong> Una pieza recogible y una salida que termina la partida. Con esto el bucle del GDD existe entero por primera vez.</span></li>
+      <li><span class="tid">012</span><span class="tbody"><strong>Seguir alimentando el canal.</strong> Ya hay tres clips publicados — dos bien recibidos y uno regular. El Bloque 2 ya dio el primer material que muestra algo <em>persiguiéndote</em>, que es otra cosa distinta a enseñar movimiento o mundo.</span></li>
+      <li><span class="tid">013</span><span class="tbody"><strong>Inventario de contenido.</strong> Cuántas habitaciones, sprites, fotogramas, piezas de evidencia, palabras y minutos de audio. Sin esto no se puede poner fecha a nada.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="sec-num">05 — Decisiones</span>
+    <h2>Lo que bloquea esta ruta</h2>
+    <p class="sec-note">El GDD v2 lista catorce decisiones abiertas. Sólo estas bloquean el Hito 009, y una de las tres ya está resuelta.</p>
+    <div class="scroller"><table>
+      <thead><tr><th>Decisión</th><th>Bloquea</th><th>Cuándo hace falta</th></tr></thead>
+      <tbody>
+        <tr><td>Velocidad del jugador</td><td>Todos los números de la IA se calibran contra ella</td><td class="t good">Resuelta · 180 px/s</td></tr>
+        <tr><td>¿Existe combate, sí o no?</td><td>IA, controles táctiles, equilibrio, promesa al jugador</td><td class="t mid">Bloque 4</td></tr>
+        <tr><td>Orientación y esquema de control táctil</td><td>El prototipo de sigilo en el teléfono</td><td class="t bad">Bloque 0</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note">
+      <span class="lbl">Sobre el combate</span>
+      <p>El GDD v1 lo marcaba como «opcional». Eso no es una prioridad, es un aplazamiento. Si existe, cambian la IA y los controles; si no existe, el sigilo carga con todo el peso y hay que perfeccionarlo. Puede decidirse tarde, pero no después del Bloque 4.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">06 — Números</span>
+    <h2>Estado medido del proyecto</h2>
+    <p class="sec-note">Todo verificado sobre el repositorio y el motor. Los valores en ámbar son propuestas pendientes de validar en dispositivo.</p>
+    <div class="scroller"><table>
+      <thead><tr><th>Parámetro</th><th>Valor</th><th>Equivalencia</th><th>Fuente</th></tr></thead>
+      <tbody>
+        <tr><td>Líneas de GDScript</td><td class="n">363</td><td>en 26 commits y 114 días</td><td class="t">Medido</td></tr>
+        <tr><td>Señales declaradas</td><td class="n">0</td><td>en todo el proyecto</td><td class="t">Medido</td></tr>
+        <tr><td>Veces ejecutado en un teléfono</td><td class="n">0</td><td>—</td><td class="t bad">Medido</td></tr>
+        <tr><td>Tamaño de tile</td><td class="n">32 × 32 px</td><td>—</td><td class="t">Medido</td></tr>
+        <tr><td>Mundo jugable</td><td class="n">1344 × 992 px</td><td>42 × 31 celdas, en U con alcoba</td><td class="t">Medido</td></tr>
+        <tr><td>Celdas pisables</td><td class="n">753</td><td>todas conectadas entre sí</td><td class="t">Medido</td></tr>
+        <tr><td>Celdas de muro</td><td class="n">226</td><td>109 de ellas interiores</td><td class="t">Medido</td></tr>
+        <tr><td>Celdas huérfanas</td><td class="n">1693</td><td>fuera del mundo y ya no navegables</td><td class="t mid">Medido</td></tr>
+        <tr><td>Jugador</td><td class="n">52 px de diámetro</td><td>círculo de radio 26 · 1,63 tiles</td><td class="t">Medido</td></tr>
+        <tr><td>Infectado</td><td class="n">48 px de diámetro</td><td>círculo de radio 24 · 1,5 tiles</td><td class="t">Medido</td></tr>
+
+        <tr><td>Caminar</td><td class="n">180 px/s</td><td>7,1 s por pantalla</td><td class="t good">En código</td></tr>
+        <tr><td>Correr</td><td class="n">320 px/s</td><td>4,0 s por pantalla</td><td class="t mid">Propuesta</td></tr>
+        <tr><td>Agacharse</td><td class="n">90 px/s</td><td>14,2 s por pantalla</td><td class="t mid">Propuesta</td></tr>
+        <tr><td>Velocidad del infectado</td><td class="n">220 px/s</td><td>entre caminar y correr</td><td class="t good">En código</td></tr>
+        <tr><td>Radio de separación</td><td class="n">48 px</td><td>dos cápsulas de radio 24</td><td class="t good">En código</td></tr>
+        <tr><td>Radio de llegada</td><td class="n">60 px</td><td>separación × 1,25 · sólo en Búsqueda</td><td class="t good">Derivado</td></tr>
+        <tr><td>Radio de visión</td><td class="n">224 px</td><td>7 tiles · los cruza en 1,0 s</td><td class="t mid">A ojo · validar</td></tr>
+        <tr><td>Apertura del cono</td><td class="n">120°</td><td>un tercio de la vuelta</td><td class="t good">Del GDD</td></tr>
+        <tr><td>Alcance corto de 360°</td><td class="n">64 px</td><td>2 tiles · lo que tiene encima</td><td class="t good">Del GDD</td></tr>
+        <tr><td>Giro de la mirada</td><td class="n">120 °/s</td><td>3 s por vuelta completa</td><td class="t mid">Ajustado jugando</td></tr>
+        <tr><td>Holgura de la malla</td><td class="n">26 px</td><td>radio del cuerpo + 2 de margen</td><td class="t good">Derivado</td></tr>
+        <tr><td>Horneado de la malla</td><td class="n">6 ms</td><td>una vez al cargar · 7 polígonos</td><td class="t good">Medido</td></tr>
+        <tr><td>Rayos de visión por infectado</td><td class="n">0 · 1 · 3</td><td>fuera del campo · a la vista · tapado</td><td class="t good">Medido</td></tr>
+        <tr><td>Memoria del infectado</td><td class="n">8 s</td><td>fila «Hostilidad» del GDD</td><td class="t good">Del GDD</td></tr>
+        <tr><td>Fuerza de separación</td><td class="n">60 px/s</td><td>27 % de su velocidad</td><td class="t mid">A ojo · validar</td></tr>
+        <tr><td>Intervalo de recálculo</td><td class="n">0,25 s</td><td>4 por segundo, no 60</td><td class="t good">En código</td></tr>
+        <tr><td>Capas de colisión</td><td class="n">1 · 2 · 4</td><td>Mundo · Player · Infectados</td><td class="t good">En código</td></tr>
+        <tr><td>Densidad objetivo</td><td class="n">4–10</td><td>picos de 15–20 en escape</td><td class="t mid">Decidida</td></tr>
+        <tr><td>Presupuesto de fotograma</td><td class="n">&lt; 16,6 ms</td><td>&lt; 200 draw calls</td><td class="t">Investigado</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <span class="sec-num">07 — Riesgos</span>
+    <h2>Riesgos vivos</h2>
+    <div class="scroller"><table>
+      <thead><tr><th>Riesgo</th><th>Dónde aparece</th><th>Antídoto en esta ruta</th></tr></thead>
+      <tbody>
+        <tr><td>Nunca se ha ejecutado en un teléfono</td><td class="t bad">Ahora mismo</td><td>Tarea 0.2, antes que nada</td></tr>
+        <tr><td>La IA persigue pero no alcanza</td><td class="t good">Resuelto</td><td>Detectado en la revisión del plan del Bloque 2, antes de escribir código. Persecución ya no se detiene al llegar</td></tr>
+        <tr><td>Despistarlo no es posible jugando</td><td class="t good">Resuelto</td><td>La geometría de 3.0 y la línea de visión de 3.1a, el 16 sep. Doblar una esquina ya te despista</td></tr>
+        <tr><td>El código cita documentos que no están en el repositorio</td><td class="t mid">Ahora mismo</td><td>Tarea 0.5: roadmap y blueprint a <code>docs/</code>, junto al GDD</td></tr>
+        <tr><td>El sigilo táctil no se siente bien</td><td class="t bad">Bloque 3</td><td>Prototipar en el teléfono antes que el arte. Es el único sistema sin caso de éxito verificado en móvil</td></tr>
+        <tr><td>Navegación: rutas que chocan contra la pared</td><td class="t good">Resuelto</td><td>Suelo bajo los muros ya borrado el 6 sep</td></tr>
+        <tr><td><strong>Rutas que el cuerpo no cabe por recorrer</strong></td><td class="t good">Resuelto</td><td>Apareció el 16 sep con el mapa nuevo y paralizó a los infectados en las esquinas. Malla horneada con holgura, Bloque 1.5</td></tr>
+        <tr><td>Verificar la pregunta equivocada</td><td class="t mid">Permanente</td><td>El fallo anterior llevaba ahí desde el Bloque 1 y dos validaciones correctas no podían cazarlo: medían si la ruta era correcta, no si el cuerpo cabía. Un agente de prueba tiene que tener el cuerpo de quien va a recorrerla</td></tr>
+        <tr><td>Los supuestos de una verificación caducan</td><td class="t mid">Permanente</td><td>Encender el cono invalidó cuatro comprobaciones correctas del día anterior. Al reescribir una, comprobar primero contra qué diseño estaba escrita</td></tr>
+        <tr><td>Un ajuste de prueba que se queda puesto</td><td class="t mid">Vigilado</td><td>Ya pasó dos veces —<code>vision_mask</code> a 0 y <code>search_duration</code> a 10000, este último hasta GitHub—. Tres guardias avisan al arrancar, y el diff se lee entero antes de commitear</td></tr>
+        <tr><td>Retuneo del infectado</td><td class="t good">Mitigado</td><td>Velocidad del jugador fijada en 180 px/s el 9 sep</td></tr>
+        <tr><td>Pathfinding no cuadra</td><td class="t good">Resuelto</td><td>Validado el 9 sep con un agente tonto, antes de añadir cerebro</td></tr>
+        <tr><td>Cámara rota al reaparecer</td><td class="t mid">Bloque 4</td><td>Tarea 4.3, ya identificada</td></tr>
+        <tr><td>Rendimiento con 15–20 infectados</td><td class="t mid">Bloque 5</td><td>Recálculo escalonado ya implementado. Falta medirlo en el teléfono: nadie ha publicado ese límite</td></tr>
+        <tr><td>Luces y partículas contra el hardware</td><td class="t mid">Cuando llegue el arte</td><td>Decidir las alternativas antes de producir assets</td></tr>
+        <tr><td>Scope creep</td><td class="t mid">Permanente</td><td>El candado de abajo</td></tr>
+        <tr><td>Sustituir el desarrollo por la planificación</td><td class="t mid">Vigilado</td><td>Sigue habiendo más documento que código, pero el Bloque 2 cerró en el mismo día en que se planificó. La proporción se corrige escribiendo, no recortando documentos</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <span class="sec-num">08 — Scope</span>
+    <h2>Candado</h2>
+    <p class="sec-note">Todo esto es legítimo y llegará. Nada se toca antes de cerrar el Hito 009.</p>
+    <div class="parked">
+      <strong>Aparcado hasta después del 009</strong>
+      <ul>
+        <li>Límites de cámara <em>(hasta el mapa del Cap. 1)</em></li>
+        <li>Conducta de grupo y flanqueo</li>
+        <li>Transiciones visuales entre fases</li>
+        <li>Puertas</li>
+        <li>Iluminación dinámica</li>
+        <li>Objetos decorativos</li>
+        <li>Screen shake</li>
+        <li>Habitaciones 2 en adelante</li>
+        <li>Inventario limitado</li>
+        <li>Lanzar objetos para distraer</li>
+        <li>Los tres finales</li>
+        <li>Modo Survival</li>
+        <li>Multitouch</li>
+        <li>Guardado de progreso</li>
+        <li>Audio y música</li>
+        <li>Arte definitivo</li>
+        <li>Menús y pantallas de sistema</li>
+        <li>Limpiar las 1693 celdas huérfanas</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <span>Project Frost · Antesala Zombies 2032</span>
+    <span>Actualizado el 18 sep 2026 · el mundo aún no lo sabe… pero ya empezó</span>
+  </footer>
+
+</div>

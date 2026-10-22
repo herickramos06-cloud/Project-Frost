@@ -3,23 +3,40 @@ extends CharacterBody2D
 ## al perderlo acude a la última posición donde lo vio.
 ##
 ## Ve dentro de un cono hacia donde mira, más un alcance corto en redondo para
-## lo que tiene encima, y un muro entre los dos lo ciega. Lo que todavía no
+## lo que tiene encima, y un muro entre los dos lo ciega. Sin nada que perseguir
+## merodea: elige un sitio cerca, se para a encararlo y va. Lo que todavía no
 ## distingue es si te mueves: quedarse quieto no salva. Eso llega más adelante.
 
 ## Las tres conductas. Sólo una está activa a la vez.
 ## Rutina      — no sabe nada de ti. Sin rutas de patrulla, se queda donde está.
 ## Persecución — te tiene detectado y va hacia ti.
 ## Búsqueda    — te perdió. Acude a la última posición conocida y no te encuentra.
-enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
+enum Estado { RUTINA, ALERTA, PERSECUCION, BUSQUEDA }
+
+## Nivel de agitación del infectado, de 0.0 a 1.0. 
+## Gobierna las transiciones entre estados.
+var agitacion: float = 0.0
+
+## Cuánto decae la agitación por segundo si no hay estímulos.
+@export var agitacion_decaimiento: float = 0.08
 
 ## Velocidad en píxeles por segundo. Editable desde el inspector.
 ## Es un valor de partida, no una fase de comportamiento: las fases del GDD
 ## (Alteración, Hostilidad, Adaptación) llegan como perfiles de datos más adelante.
 @export var speed: float = 220.0
 
+## Velocidad en estado de Alerta, cuando camina investigando.
+@export var alert_speed: float = 70.0
+
+## Daño que aplica al Player al entrar en su radio de ataque o por cada segundo que permanezca dentro.
+@export var damage_amount: float = 20.0
+
+## Intervalo en segundos entre cada golpe consecutivo mientras el Player permanezca en el área.
+@export var attack_cooldown: float = 1.0
+
 ## Hasta dónde llega la vista dentro del cono, en píxeles. 224 son 7 tiles de 32.
 ## Valor de partida: no es ajustable de verdad hasta poder jugarlo en el teléfono.
-@export var vision_radius: float = 224.0
+@export var vision_radius: float = 190.0
 
 ## Apertura total del cono de visión, en grados. 120 es el valor que el GDD
 ## asigna a la fase Hostilidad: ancho a propósito, porque en un cenital táctil
@@ -27,7 +44,7 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## estrecho se sentiría injusto.
 ##
 ## A 360 el cono abarca todo y vuelve a ver igual por detrás que por delante.
-@export_range(10.0, 360.0, 5.0) var vision_angle: float = 120.0
+@export_range(10.0, 360.0, 5.0) var vision_angle: float = 100.0
 
 ## Alcance a quemarropa, en píxeles, que funciona en 360° mire donde mire.
 ## Es lo que impide que pegarse a su espalda salga gratis — y, cuando 3.3 haga
@@ -39,7 +56,25 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## Girar de golpe es ilegible: el jugador no podría anticipar hacia dónde va a
 ## mirar, y con el cono eso se convierte en detecciones que se sienten
 ## arbitrarias. 120 son tres segundos por vuelta, ajustado jugando.
-@export var turn_speed: float = 120.0
+@export var turn_speed: float = 150
+
+## Cuánto se aleja en cada salto del merodeo, en píxeles.
+## Corto lo deja rondando una zona; largo lo hace cruzar el mapa.
+@export var wander_radius: float = 350.0
+
+## Cuánto se para en cada punto antes de echar a andar, en segundos.
+##
+## Es también el tiempo que tiene para girar la cabeza, y el giro va ahí a
+## propósito: un giro anunciado por una parada se puede leer, y uno a mitad de
+## camino no. El jugador no aprende su recorrido — aprende su ritmo.
+@export var wander_pause: float = 1.0
+
+## A qué ritmo merodea. Muy por debajo de `speed`, que es velocidad de caza:
+## un patrullero con prisa no da miedo, da prisa.
+@export var wander_speed: float = 120
+
+## Dibuja el cono, el alcance corto y la mirada. Sólo para depurar.
+@export var mostrar_vision: bool = false
 
 ## Qué capas cortan la línea de visión. Sólo el Mundo (capa 1).
 ## Player (capa 2) e Infectados (capa 4) se dejan fuera a propósito: si el rayo
@@ -58,7 +93,7 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## pero por una frontera invisible —tu centro— que no puedes ver ni aprender ni
 ## apuntar: es suerte, no habilidad. Esa fantasía la dará 3.3, cuando quedarse
 ## quieto sea una defensa de verdad. Ahí se sube a 1.
-@export_range(0.0, 1.0, 0.05) var silueta_factor: float = 0.0
+@export_range(0.0, 1.0, 0.05) var silueta_factor: float = 1.0
 
 ## Cuánto insiste buscando antes de rendirse, en segundos.
 ## 8 s es el valor que el GDD asigna a la memoria de la fase Hostilidad.
@@ -67,7 +102,7 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## Cada cuántos segundos se vuelve a entregar el destino al agente.
 ## Recalcular la ruta es lo único caro de la navegación: hacerlo cada fotograma,
 ## multiplicado por todos los infectados, es lo que hunde el rendimiento en móvil.
-@export var repath_interval: float = 0.25
+@export var repath_interval: float = 0.20
 
 ## Distancia a la que dos infectados empiezan a separarse. Dos cápsulas de
 ## radio 24 se tocan a 48 px, así que por debajo de eso ya están solapados.
@@ -77,6 +112,26 @@ enum Estado { RUTINA, PERSECUCION, BUSQUEDA }
 ## suave: queremos que se amontonen sin fundirse, no que se eviten con cortesía.
 @export var separation_strength: float = 60.0
 
+## Cuántas veces prueba a encontrar un sitio válido al merodear antes de
+## rendirse y quedarse quieto ese ciclo. Un tope, no un bucle abierto.
+const INTENTOS_MERODEO: int = 8
+
+## Sólo para el dibujo de depuración: de dónde sale la V y con cuántos tramos se
+## traza el arco.
+## Por debajo de esta distancia no se actualiza la mirada: la dirección a un
+## punto que tienes casi debajo es ruido, no una intención.
+const MIRADA_MINIMA: float = 30.0
+
+const RADIO_CUERPO: float = 24.0
+const TRAMOS_CONO: int = 48
+
+## Amarillo limpio, ni naranja ni lima. El fondo del juego es un azul casi negro
+## (#070d14), así que un amarillo saturado es lo que más separa el cono del suelo
+## sin teñirlo. El relleno va muy bajo para que se lea la silueta, no la mancha.
+const AMARILLO_BORDE := Color(1.0, 0.86, 0.20, 0.55)
+const AMARILLO_RELLENO := Color(1.0, 0.86, 0.20, 0.10)
+const ROJO_CERCA := Color(1.0, 0.35, 0.30, 0.55)
+
 ## Grupo al que se apuntan todos los infectados, para poder separarse entre sí.
 const GROUP: StringName = &"infected"
 
@@ -84,6 +139,7 @@ const GROUP: StringName = &"infected"
 const PLAYER_GROUP: StringName = &"player"
 
 @onready var _agent: NavigationAgent2D = $NavigationAgent2D
+@onready var _attack_area: Area2D = get_node_or_null("AttackArea")
 
 # El destino sólo se entrega al agente una vez que el mapa está sincronizado.
 var _navigation_started: bool = false
@@ -126,9 +182,30 @@ var _mirada: Vector2 = Vector2.DOWN
 # codazo no se gira a mirar a quien lo apartó.
 var _rumbo: Vector2 = Vector2.ZERO
 
+# A qué ritmo quiere ir la conducta activa. Cada una lo fija, igual que fija a
+# dónde va y si se detiene al llegar: merodear es mucho más lento que cazar.
+var _velocidad_actual: float = 0.0
+
+# A dónde va el merodeo. Aparte de `_destino` porque durante la parada ya está
+# elegido pero el cuerpo todavía no camina hacia él — sólo lo encara.
+var _destino_merodeo: Vector2 = Vector2.ZERO
+var _tiene_merodeo: bool = false
+
+# Lo que le queda de parada. Mientras corre, está quieto girando la cabeza.
+var _pausa_restante: float = 0.0
+
+# Si la búsqueda ya alcanzó el punto recordado. Es un interruptor y no un final:
+# a partir de ahí deja de correr hacia él y se pone a registrar la zona.
+var _ya_en_la_memoria: bool = false
+
+# Objetivo dentro del área de ataque y temporizador de cooldown entre impactos.
+var _target_in_range: Node2D = null
+var _attack_timer: float = 0.0
+
 
 func _ready() -> void:
 	add_to_group(GROUP)
+	_velocidad_actual = speed
 
 	# Una máscara a cero no choca con nada, así que la línea de visión queda
 	# desactivada y el infectado vuelve a verte a través de las paredes. Es un
@@ -145,11 +222,21 @@ func _ready() -> void:
 	# Sólo afecta a la búsqueda: la persecución ignora la llegada a propósito.
 	_agent.target_desired_distance = separation_radius * 1.25
 
+	if _attack_area != null:
+		_attack_area.body_entered.connect(_on_attack_area_body_entered)
+		_attack_area.body_exited.connect(_on_attack_area_body_exited)
+
 
 func _physics_process(delta: float) -> void:
+	_procesar_ataque(delta)
+
 	if not _navigation_started:
 		_try_start_navigation()
 		return
+
+	# Decaimiento del medidor de agitación
+	agitacion -= agitacion_decaimiento * delta
+	agitacion = clampf(agitacion, 0.0, 1.0)
 
 	_evaluar_transiciones(_percibir())
 
@@ -157,7 +244,9 @@ func _physics_process(delta: float) -> void:
 	# llegar. El movimiento en sí es común a las tres y vive en _avanzar().
 	match _estado:
 		Estado.RUTINA:
-			_conducta_rutina()
+			_conducta_rutina(delta)
+		Estado.ALERTA:
+			_conducta_alerta(delta)
 		Estado.PERSECUCION:
 			_conducta_persecucion()
 		Estado.BUSQUEDA:
@@ -165,6 +254,9 @@ func _physics_process(delta: float) -> void:
 
 	_avanzar(delta)
 	_actualizar_mirada(delta)
+
+	if mostrar_vision:
+		queue_redraw()
 
 
 ## Cambia de conducta. Pública porque la usan la percepción y las pruebas.
@@ -176,6 +268,15 @@ func cambiar_estado(nuevo: Estado) -> void:
 
 	if _estado == Estado.BUSQUEDA:
 		_search_countdown = search_duration
+
+	# El merodeo es de cada episodio, no del infectado: al cambiar de conducta
+	# se olvida del destino que llevaba y elige uno nuevo desde donde esté.
+	#
+	# Eso es lo que hace que, tras perderte, se quede rondando el sitio de tu
+	# error en vez de regresar a ninguna parte — la decisión de la tarea 2.4,
+	# «volver a la rutina desde donde esté», cumplida sin código propio.
+	_tiene_merodeo = false
+	_ya_en_la_memoria = false
 
 
 func estado_actual() -> Estado:
@@ -218,10 +319,20 @@ func _mirada_deseada() -> Vector2:
 	# permanente entre Persecución y Búsqueda. Persiguiéndote te mira: sólo un
 	# muro te salva.
 	if _estado == Estado.PERSECUCION and _tiene_memoria:
+		# Encima del objetivo la dirección se vuelve ruido: un vector unitario
+		# sacado de un píxel de diferencia apunta a cualquier sitio, y la cabeza
+		# se pone a girar sola mientras te tiene debajo. No se puede encarar algo
+		# sobre lo que estás, así que se queda mirando lo último que encaraba.
+		if global_position.distance_to(_ultima_posicion_conocida) < MIRADA_MINIMA:
+			return Vector2.ZERO
 		return global_position.direction_to(_ultima_posicion_conocida)
 
-	# Si no, mira hacia donde intenta ir. En Rutina no hay destino, así que esto
-	# vale cero y la mirada no se toca.
+	# Merodeando y parado: encara ya el sitio al que va, aunque todavía no camine.
+	# Es el giro anunciado, y es lo único que hace legible un recorrido al azar.
+	if _tiene_merodeo and _pausa_restante > 0.0:
+		return global_position.direction_to(_destino_merodeo)
+
+	# Si no, mira hacia donde intenta ir. Sin rumbo la mirada no se toca.
 	return _rumbo
 
 
@@ -232,6 +343,15 @@ func _mirada_deseada() -> Vector2:
 func _percibir() -> bool:
 	var jugador: Node2D = _jugador()
 	if jugador == null:
+		return false
+
+	var distancia: float = global_position.distance_to(jugador.global_position)
+	
+	# Quedarse quieto te salva (sigilo), a menos que estés a quemarropa.
+	# Si estás lejos y no te mueves físicamente, el infectado te ignora.
+	var cuerpo := jugador as CharacterBody2D
+	var se_mueve: bool = cuerpo != null and cuerpo.velocity.length_squared() > 0.001
+	if distancia > close_radius and not se_mueve:
 		return false
 
 	# La geometría va antes que el rayo a propósito: es la comprobación barata y
@@ -337,26 +457,126 @@ func _hay_linea_de_vision(destino: Vector2) -> bool:
 
 func _evaluar_transiciones(detectado: bool) -> void:
 	if detectado:
-		cambiar_estado(Estado.PERSECUCION)
-		return
+		agitacion = 1.0
 
-	# Dejar de detectarlo sólo cambia algo si lo estaba persiguiendo: ahí es
-	# cuando la memoria pasa a tener sentido. Esto cubre también que el Player
-	# desaparezca del árbol en mitad de una persecución — sin este caso, el
-	# infectado se quedaría clavado en persecución para siempre.
-	if _estado == Estado.PERSECUCION:
-		cambiar_estado(Estado.BUSQUEDA)
+	match _estado:
+		Estado.RUTINA:
+			if agitacion >= 1.0:
+				cambiar_estado(Estado.PERSECUCION)
+			elif agitacion > 0.0:
+				cambiar_estado(Estado.ALERTA)
+		Estado.ALERTA:
+			if agitacion >= 1.0:
+				cambiar_estado(Estado.PERSECUCION)
+			elif agitacion <= 0.0:
+				cambiar_estado(Estado.RUTINA)
+		Estado.PERSECUCION:
+			if not detectado:
+				cambiar_estado(Estado.BUSQUEDA)
+		Estado.BUSQUEDA:
+			if detectado or agitacion >= 1.0:
+				cambiar_estado(Estado.PERSECUCION)
+			# Nota: Si el temporizador de BUSQUEDA finaliza, el estado pasará a 
+			# RUTINA en _conducta_busqueda(). Si hay agitación restante, RUTINA
+			# lo pasará a ALERTA en el siguiente frame.
 
 
 # --- Conductas ---------------------------------------------------------------
 
-func _conducta_rutina() -> void:
-	# Sin rutas de patrulla todavía, la rutina es quedarse donde esté.
-	# No vuelve a ningún punto de origen: se detiene donde le pilló.
-	_tiene_destino = false
+## Sin nada de qué preocuparse, merodea.
+func _conducta_rutina(delta: float) -> void:
+	_velocidad_actual = wander_speed
+	_merodear(delta, wander_pause)
+
+
+## Agitado pero sin objetivo visual claro.
+func _conducta_alerta(delta: float) -> void:
+	_velocidad_actual = alert_speed
+	_detenerse_al_llegar = true
+	
+	if not _tiene_memoria:
+		# Si no sabe a dónde ir, simplemente deambula nervioso con menos pausas.
+		_merodear(delta, wander_pause * 0.5)
+		return
+		
+	# Camina despacio hacia la última posición conocida
+	_destino = _ultima_posicion_conocida
+	_tiene_destino = true
+
+
+## Merodear: elegir un sitio cerca, pararse a encararlo, ir, y repetir.
+##
+## El orden importa. Girar **durante la parada** es lo que hace legible un
+## recorrido al azar: no puedes aprender a dónde va, pero siempre ves cuándo
+## va a cambiar. Si camina, puedes cruzar por detrás; si se ha parado, no.
+##
+## Lo usan dos conductas, y cada una decide a qué velocidad y con qué pausa.
+##
+## Rutina se para: es tranquila y tiene que poder leerse para que planifiques.
+## Búsqueda **no se para**, porque acaba de perderte y ahí ese contrato no
+## aplica — pararse dos segundos en ese momento se lee como «ha dejado de
+## buscarme», que es justo lo contrario de lo que está pasando.
+func _merodear(delta: float, pausa: float) -> void:
+	_detenerse_al_llegar = true
+
+	if not _tiene_merodeo:
+		if not _elegir_merodeo():
+			# Ningún sitio válido cerca: se queda quieto y lo reintenta al
+			# fotograma siguiente. El peor caso es quedarse parado.
+			_tiene_destino = false
+			return
+		# Un poco de azar en la parada: desincroniza a los infectados entre sí
+		# y evita que el ritmo suene a metrónomo.
+		_pausa_restante = pausa * randf_range(0.8, 1.2)
+
+	if _pausa_restante > 0.0:
+		_pausa_restante -= delta
+		# Parado, pero ya encarando el sitio al que va. El cono barre aquí.
+		_tiene_destino = false
+		return
+
+	_destino = _destino_merodeo
+	_tiene_destino = true
+
+	if _llego_a(_destino_merodeo):
+		_tiene_merodeo = false
+
+
+## Elige un punto al azar cerca, sobre la malla. Devuelve si lo consiguió.
+##
+## En anillo y no en disco: con una distancia mínima, para que no dé saltitos de
+## veinte píxeles que se leerían como un temblor en vez de como merodeo.
+func _elegir_merodeo() -> bool:
+	var mapa: RID = _agent.get_navigation_map()
+	var minimo: float = wander_radius * 0.5
+
+	for _intento in INTENTOS_MERODEO:
+		var rumbo := Vector2.from_angle(randf() * TAU)
+		var tanteo: Vector2 = global_position + rumbo * randf_range(minimo, wander_radius)
+
+		# La malla devuelve el punto navegable más cercano al tanteo, que puede
+		# quedarse pegado al infectado si el tanteo cayó dentro de un muro.
+		var punto: Vector2 = NavigationServer2D.map_get_closest_point(mapa, tanteo)
+		if global_position.distance_to(punto) >= minimo:
+			_destino_merodeo = punto
+			_tiene_merodeo = true
+			return true
+
+	return false
+
+
+## Si el agente ya ha terminado su ruta HACIA ESE PUNTO en concreto.
+##
+## La segunda mitad de la condición no es un detalle: preguntada antes de
+## entregarle el destino, la navegación contesta «terminada» simplemente porque
+## todavía no tiene nada que recorrer.
+func _llego_a(punto: Vector2) -> bool:
+	return _agent.target_position.is_equal_approx(punto) and _agent.is_navigation_finished()
 
 
 func _conducta_persecucion() -> void:
+	_velocidad_actual = speed
+
 	# La percepción acaba de refrescar la memoria con la posición del Player,
 	# así que perseguir es sencillamente ir a la memoria.
 	_destino = _ultima_posicion_conocida
@@ -374,23 +594,33 @@ func _conducta_busqueda(delta: float) -> void:
 		cambiar_estado(Estado.RUTINA)
 		return
 
-	_destino = _ultima_posicion_conocida
-	_tiene_destino = true
+	# El tiempo es la ÚNICA autoridad sobre cuándo se rinde.
+	#
+	# Llegar al punto recordado NO termina la búsqueda. Si lo hiciera, bastaría
+	# con perderle de vista estando encima de él —lo que pasa en cuanto sales de
+	# su cono sin alejarte— para que se rindiera en el primer fotograma: la
+	# memoria ya está donde él está, así que «he llegado» es cierto de entrada.
+	# Y de paso, los segundos que el GDD asigna a cada fase no gobernarían nada.
+	_search_countdown -= delta
+	if _search_countdown <= 0.0:
+		cambiar_estado(Estado.RUTINA)
+		return
+
 	_detenerse_al_llegar = true
 
-	_search_countdown -= delta
+	if not _ya_en_la_memoria:
+		# Corriendo hacia donde te vio, a velocidad de caza.
+		_velocidad_actual = speed
+		_destino = _ultima_posicion_conocida
+		_tiene_destino = true
+		_ya_en_la_memoria = _llego_a(_ultima_posicion_conocida)
+		return
 
-	# La llegada sólo cuenta si el agente YA tiene ruta hacia este punto.
-	# Consultarlo antes devuelve «terminada» simplemente porque todavía no se
-	# le ha dado destino, y la búsqueda se rendiría en su primer fotograma.
-	var llego: bool = (
-		_agent.target_position.is_equal_approx(_ultima_posicion_conocida)
-		and _agent.is_navigation_finished()
-	)
-
-	# Se rinde por tiempo, o al llegar al punto y no encontrar nada.
-	if _search_countdown <= 0.0 or llego:
-		cambiar_estado(Estado.RUTINA)
+	# Está donde te vio y no te ha encontrado. Afloja el paso y registra la zona
+	# hasta que se le acabe la memoria. Merodear alrededor del punto es buscar:
+	# el ciclo elige sus destinos cerca de donde está, así que ronda sin irse.
+	_velocidad_actual = wander_speed
+	_merodear(delta, 0.0)
 
 
 # --- Movimiento común --------------------------------------------------------
@@ -407,7 +637,7 @@ func _avanzar(delta: float) -> void:
 			# Mismo patrón de movimiento que player.gd; lo único que cambia es
 			# de dónde viene la dirección: allí del joystick, aquí de la navegación.
 			var next_point: Vector2 = _agent.get_next_path_position()
-			deseada = global_position.direction_to(next_point) * speed
+			deseada = global_position.direction_to(next_point) * _velocidad_actual
 
 	# Se guarda antes de sumar la repulsión, porque esto es a dónde QUIERE ir.
 	# La mirada lee este dato y no la velocidad final: si leyera la velocidad,
@@ -418,6 +648,43 @@ func _avanzar(delta: float) -> void:
 	# encima de otros al llegar o al quedarse en rutina.
 	velocity = deseada + _separation()
 	move_and_slide()
+
+
+## Dibujo de depuración: el cono en V saliendo de los ojos, el alcance corto y
+## el alcance total. En espacio local, que aquí coincide con el global porque el
+## nodo nunca rota: lo que gira es la mirada, no el cuerpo.
+##
+## La V arranca en el borde del cuerpo y no en su centro, que es donde de verdad
+## se mide el ángulo. Son 24 px de diferencia en el vértice, imperceptibles, y a
+## cambio se lee como una mirada en vez de como un gráfico de sectores.
+func _draw() -> void:
+	if not mostrar_vision:
+		return
+
+	var encara: float = _mirada.angle()
+	var medio_cono: float = deg_to_rad(vision_angle) / 2.0
+
+	if vision_angle >= 360.0:
+		draw_arc(Vector2.ZERO, vision_radius, 0.0, TAU, TRAMOS_CONO, AMARILLO_BORDE, 1.5)
+		draw_arc(Vector2.ZERO, close_radius, 0.0, TAU, 32, ROJO_CERCA, 2.0)
+		return
+
+	# La cuña: el vértice en los ojos y el borde exterior siguiendo el arco.
+	var ojos: Vector2 = _mirada * RADIO_CUERPO
+	var cunya := PackedVector2Array([ojos])
+	for k in TRAMOS_CONO + 1:
+		var avance: float = float(k) / float(TRAMOS_CONO)
+		var angulo: float = encara - medio_cono + 2.0 * medio_cono * avance
+		cunya.append(Vector2.from_angle(angulo) * vision_radius)
+
+	draw_colored_polygon(cunya, AMARILLO_RELLENO)
+	draw_line(ojos, Vector2.from_angle(encara - medio_cono) * vision_radius, AMARILLO_BORDE, 1.5)
+	draw_line(ojos, Vector2.from_angle(encara + medio_cono) * vision_radius, AMARILLO_BORDE, 1.5)
+	draw_arc(Vector2.ZERO, vision_radius, encara - medio_cono, encara + medio_cono,
+		TRAMOS_CONO, AMARILLO_BORDE, 1.5)
+
+	# El alcance corto, que no depende de hacia dónde mire.
+	draw_arc(Vector2.ZERO, close_radius, 0.0, TAU, 32, ROJO_CERCA, 2.0)
 
 
 func _try_start_navigation() -> void:
@@ -474,3 +741,47 @@ func _separation() -> Vector2:
 		push += hacia.normalized() * (1.0 - distancia / separation_radius)
 
 	return push * separation_strength
+
+
+# --- Ataque y Daño -----------------------------------------------------------
+
+func _procesar_ataque(delta: float) -> void:
+	if _target_in_range == null:
+		return
+
+	if not is_instance_valid(_target_in_range) or not _target_in_range.is_in_group(PLAYER_GROUP):
+		_target_in_range = null
+		_attack_timer = 0.0
+		return
+
+	_attack_timer -= delta
+	if _attack_timer <= 0.0:
+		_attack_timer = attack_cooldown
+		_aplicar_dano_al_objetivo()
+
+
+func _aplicar_dano_al_objetivo() -> void:
+	if not is_instance_valid(_target_in_range):
+		return
+
+	if _target_in_range.has_method("receive_damage"):
+		_target_in_range.receive_damage(damage_amount)
+	elif _target_in_range.has_node("HealthComponent"):
+		var health: Node = _target_in_range.get_node("HealthComponent")
+		if health.has_method("take_damage"):
+			health.take_damage(damage_amount)
+
+
+func _on_attack_area_body_entered(body: Node2D) -> void:
+	if not body.is_in_group(PLAYER_GROUP):
+		return
+
+	_target_in_range = body
+	_attack_timer = attack_cooldown
+	_aplicar_dano_al_objetivo()
+
+
+func _on_attack_area_body_exited(body: Node2D) -> void:
+	if body == _target_in_range:
+		_target_in_range = null
+		_attack_timer = 0.0

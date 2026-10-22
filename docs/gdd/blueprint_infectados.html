@@ -1,0 +1,805 @@
+<title>Blueprint IA de Infectados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  /* Misma identidad que el Roadmap: paleta del GDD §07, hue reservado a peligro. */
+  :root{
+    --ground:#070d14;
+    --panel:#0a1628;
+    --panel-2:#0e1e35;
+    --line:#1a3a5a;
+    --line-soft:#14293f;
+    --text:#e3edf6;
+    --text-2:#a9bccd;
+    --muted:#8899aa;
+    --ice:#cfe1f0;
+    --danger:#c8574d;
+    --danger-bg:#2c1614;
+    --warn:#c9a227;
+    --warn-bg:#2a2311;
+
+    --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+    --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--ground);color:var(--text);font-family:var(--f-body);font-size:15.5px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1040px;margin:0 auto;padding:44px 26px 90px;}
+
+  .doc-head{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel) 0%, #081221 100%);padding:26px 28px 22px;}
+  .eyebrow{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0;}
+  h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.01em;margin:10px 0 6px;text-wrap:balance;color:var(--ice);}
+  .subtitle{color:var(--text-2);max-width:64ch;margin:0;}
+  .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:22px;}
+  .meta div{background:var(--panel);padding:11px 13px;}
+  .meta dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 3px;}
+  .meta dd{margin:0;font-family:var(--f-mono);font-size:13.5px;color:var(--ice);}
+
+  section{margin-top:56px;}
+  .sec-num{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  h2{font-family:var(--f-display);font-weight:600;font-size:25px;margin:0 0 6px;color:var(--ice);text-wrap:balance;}
+  .sec-note{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:14.5px;}
+  h3{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0 0 4px;color:var(--text);}
+  h4{font-family:var(--f-display);font-weight:600;font-size:16px;margin:26px 0 8px;color:var(--ice);}
+  p{max-width:70ch;}
+  code{font-family:var(--f-mono);font-size:.9em;color:var(--ice);background:var(--panel-2);border:1px solid var(--line-soft);padding:1px 5px;}
+
+  .scroller{overflow-x:auto;border:1px solid var(--line-soft);margin-top:8px;}
+  table{border-collapse:collapse;width:100%;min-width:580px;font-size:14px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  thead th{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--panel);border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:0;}
+  td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ice);white-space:nowrap;}
+  td.tag{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  td.tag.bad{color:var(--danger);}
+  td.tag.mid{color:var(--warn);}
+  td.tag.good{color:var(--ice);}
+  .pick{background:var(--panel);}
+  .pick td{color:var(--text);}
+
+  .block{display:grid;grid-template-columns:150px 1fr;gap:30px;padding:26px 0 4px;border-top:1px solid var(--line-soft);}
+  .block:first-of-type{border-top:1px solid var(--line);}
+  .rail{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;gap:5px;}
+  .rail .key{color:var(--ice);font-size:13px;letter-spacing:.09em;font-weight:600;}
+  .rail .verdict{text-transform:none;letter-spacing:0;font-size:11.5px;line-height:1.5;border-left:1px solid var(--line);padding-left:9px;margin-top:3px;color:var(--text-2);}
+  .rail .verdict.no{color:var(--danger);border-left-color:var(--danger);}
+  .rail .verdict.yes{color:var(--ice);border-left-color:var(--ice);}
+  .block p{margin:5px 0 0;color:var(--text-2);}
+
+  ol.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
+  ol.tasks li{display:grid;grid-template-columns:38px 1fr;gap:13px;align-items:start;}
+  .tid{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--muted);background:var(--panel-2);border:1px solid var(--line-soft);text-align:center;padding:2px 0;line-height:1.5;}
+  .tbody{color:var(--text-2);}
+  .tbody strong{font-weight:600;color:var(--text);}
+
+  .flag{margin-top:16px;border:1px solid var(--warn);border-left-width:3px;background:var(--warn-bg);padding:13px 17px;}
+  .flag.crit{border-color:var(--danger);background:var(--danger-bg);}
+  .flag .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:5px;}
+  .flag.crit .lbl{color:var(--danger);}
+  .flag p{margin:0 0 8px;font-size:14.5px;color:var(--text);max-width:72ch;}
+  .flag p:last-child{margin-bottom:0;}
+
+  .note{margin-top:16px;border:1px solid var(--line-soft);background:var(--panel);padding:13px 17px;}
+  .note .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  .note p{margin:0 0 8px;color:var(--text-2);font-size:14.5px;max-width:72ch;}
+  .note p:last-child{margin-bottom:0;}
+
+  .axes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line);margin-top:20px;}
+  .axis{background:var(--panel);padding:20px 22px;}
+  .axis .n{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:7px;}
+  .axis h4{margin:0 0 6px;font-size:18px;}
+  .axis p{margin:0;font-size:14px;color:var(--text-2);}
+  .axis .form{display:block;margin-top:10px;font-family:var(--f-mono);font-size:11.5px;color:var(--ice);}
+
+  .fsm{margin-top:22px;border:1px solid var(--line-soft);background:var(--panel);padding:16px 12px 8px;overflow-x:auto;}
+  .fsm svg{display:block;min-width:640px;}
+
+  .flow{margin-top:20px;border:1px solid var(--line);background:var(--panel);padding:20px 22px;overflow-x:auto;}
+  .flow pre{margin:0;font-family:var(--f-mono);font-size:13px;line-height:1.85;color:var(--ice);white-space:pre;}
+
+  .paso{border-top:1px solid var(--line-soft);padding:24px 0 6px;display:grid;grid-template-columns:96px 1fr;gap:26px;}
+  .paso:first-of-type{border-top:1px solid var(--line);}
+  .paso-n{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;gap:4px;}
+  .paso-n b{color:var(--ice);font-size:22px;letter-spacing:0;font-weight:600;line-height:1;}
+  .paso-n span{font-size:10.5px;line-height:1.4;}
+  .paso h3{font-size:19px;margin-bottom:6px;}
+  .paso > div > p{margin:0 0 12px;color:var(--text-2);}
+  .ok{border-left:2px solid var(--ice);padding:2px 0 2px 13px;margin-top:14px;font-size:14px;color:var(--text);}
+  .ok b{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:3px;font-weight:500;}
+  .hito-tag{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);background:var(--warn-bg);padding:2px 8px;margin-top:14px;}
+
+  .decision{border-top:1px solid var(--line-soft);padding:20px 0 4px;display:grid;grid-template-columns:44px 1fr;gap:16px;}
+  .decision:first-of-type{border-top:1px solid var(--line);}
+  .dnum{font-family:var(--f-mono);font-size:15px;font-weight:600;color:var(--ice);}
+  .decision h3{font-size:17px;margin-bottom:6px;}
+  .decision p{margin:0 0 9px;color:var(--text-2);font-size:14.5px;}
+  .rec{display:block;font-size:14px;color:var(--text);border-left:2px solid var(--ice);padding-left:12px;}
+  .rec b{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px;font-weight:500;}
+  .decision.closed .dnum{color:var(--muted);}
+  .settled{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);border:1px solid var(--line);background:var(--panel-2);padding:1px 7px;margin-left:9px;white-space:nowrap;vertical-align:2px;}
+  .rec.final{border-left-color:var(--warn);}
+  .rec.final b{color:var(--warn);}
+
+  footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line-soft);font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+
+  @media (max-width:720px){
+    .block,.decision{grid-template-columns:1fr;gap:14px;}
+    .rail{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:10px;}
+    .rail .verdict{border-left:0;padding-left:0;width:100%;}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="doc-head">
+    <p class="eyebrow">Project Frost · Documento de arquitectura</p>
+    <h1>Blueprint IA de Infectados</h1>
+    <p class="subtitle">Diseño conceptual del sistema de comportamiento: dos capas superpuestas, la fase de infección que define qué es cada criatura y el círculo de estados que define qué hace. Ninguna línea de código escrita.</p>
+    <dl class="meta">
+      <div><dt>Estado</dt><dd>4 de 9 pasos</dd></div>
+      <div><dt>Hito destino</dt><dd>009 · Infectado</dd></div>
+      <div><dt>Arquitectura</dt><dd>Fase + agitación</dd></div>
+      <div><dt>Último cerrado</dt><dd>Paso 3 · 14 sep</dd></div>
+      <div><dt>Decisiones</dt><dd>8 de 8 cerradas</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <span class="sec-num">01 — Diagnóstico</span>
+    <h2>Qué hay hoy y qué se reutiliza</h2>
+    <p class="sec-note">Todo lo de esta tabla está medido sobre el proyecto con Godot 4.6.2, no supuesto.</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Elemento</th><th>Estado real</th><th>Para la IA</th></tr></thead>
+        <tbody>
+          <tr><td>Patrón de spawn en <code>world.gd</code></td><td>Funcionando (<code>PlayerSpawn</code>)</td><td class="tag good">Reutilizable tal cual</td></tr>
+          <tr><td>Movimiento <code>CharacterBody2D</code></td><td><code>velocity</code> + <code>move_and_slide()</code></td><td class="tag good">Mismo patrón</td></tr>
+          <tr><td>Colisión de muros</td><td><code>physics_layer_0</code>, capa 1</td><td class="tag mid">Necesita plan de capas</td></tr>
+          <tr><td>Tamaño de tile</td><td>32 × 32 px</td><td class="tag good">Base de todos los radios</td></tr>
+          <tr><td>Tiles en uso</td><td>Suelo <code>(0,0)</code>, muro <code>(1,0)</code></td><td class="tag good">Mundo simple</td></tr>
+          <tr><td>Capas de navegación del TileSet</td><td>Añadida el 9 sep, polígono en el tile de suelo</td><td class="tag good">Resuelto</td></tr>
+          <tr><td>Suelo pintado bajo los muros</td><td>Las 123 celdas borradas el 6 sep</td><td class="tag good">Resuelto</td></tr>
+          <tr><td>Capas de oclusión</td><td>0</td><td class="tag mid">Afecta a visión y luz futuras</td></tr>
+          <tr><td><code>InputManager</code></td><td>Sólo joystick del Player</td><td class="tag bad">No usarlo para IA</td></tr>
+          <tr><td>Grupos de nodos</td><td><code>infected</code> y <code>player</code>, desde el 14 sep</td><td class="tag good">En uso</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flag">
+      <span class="lbl">Hallazgo bloqueante · resuelto el 9 sep, se conserva por lo que enseña</span>
+      <p>El TileSet <strong>no tenía ninguna capa de navegación</strong>. Un <code>NavigationAgent2D</code> no habría tenido absolutamente nada por donde caminar: rutas vacías y el infectado quieto. No era un bug futuro, era el estado del proyecto cuando se escribió este documento.</p>
+      <p>Y hay una trampa peor esperando: <strong>123 de las 128 celdas de muro tienen suelo pintado debajo</strong>. En cuanto añadas el polígono de navegación al tile de suelo, el navmesh cubrirá también el área bajo los muros.</p>
+      <p>La colisión física seguiría intacta, así que el infectado <em>no</em> atraviesa la pared: <strong>calcula una ruta que pasa por dentro del muro, camina hacia allí y se queda restregándose contra él indefinidamente</strong>. Parece que la IA está mal escrita cuando el fallo está en los datos del mapa. Es el tipo de bug que cuesta una tarde entera porque todo lo que miras <em>parece</em> correcto.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">02 — Problema de diseño</span>
+    <h2>Qué tiene que saber hacer un infectado</h2>
+    <p>El GDD fija una restricción que no es decorativa: <strong>no son muertos vivientes, son humanos con la conducta alterada.</strong> Eso descarta de entrada el enemigo que se mueve en línea recta hacia ti con precisión perfecta. Un humano alterado se equivoca, pierde el rastro, insiste donde no debe.</p>
+
+    <p>Pero hay un requisito más importante que ese, y es el que suele olvidarse:</p>
+
+    <div class="note">
+      <span class="lbl">El requisito que decide si el sigilo funciona</span>
+      <p>En un juego de sigilo, <strong>el trabajo de la IA no es ser lista: es ser legible.</strong> El jugador tiene que poder deducir en todo momento qué sabe el infectado — si le vio, si le está buscando, si le perdió.</p>
+      <p>Si no puede deducirlo, el sigilo no se siente difícil: se siente aleatorio e injusto. Un enemigo tonto pero legible produce mejor gameplay que uno brillante e ilegible.</p>
+    </div>
+
+    <h4>Capacidades mínimas reales</h4>
+    <ol class="tasks">
+      <li><span class="tid">01</span><span class="tbody"><strong>Percibir</strong> — ver con línea de visión real y oír, con alcances distintos.</span></li>
+      <li><span class="tid">02</span><span class="tbody"><strong>Recordar</strong> — guardar la última posición conocida del jugador. Sin esto la IA es o clarividente o amnésica, y ambas rompen el sigilo.</span></li>
+      <li><span class="tid">03</span><span class="tbody"><strong>Navegar</strong> — llegar hasta un punto rodeando la geometría sin atascarse en las esquinas.</span></li>
+      <li><span class="tid">04</span><span class="tbody"><strong>Comprometerse</strong> — no oscilar entre dos estados varias veces por segundo cuando el jugador está justo en el límite del radio.</span></li>
+      <li><span class="tid">05</span><span class="tbody"><strong>Olvidar</strong> — rendirse y volver a su rutina, para que escapar sea posible.</span></li>
+      <li><span class="tid">06</span><span class="tbody"><strong>Comunicarse con el jugador</strong> — que su estado interno se note por fuera.</span></li>
+      <li><span class="tid">07</span><span class="tbody"><strong>Ser barato</strong> — varios a la vez en un teléfono sin hundir los fotogramas.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="sec-num">03 — Alternativas</span>
+    <h2>Arquitecturas evaluadas</h2>
+    <p class="sec-note">Seis opciones reales. Cada una con el veredicto para este proyecto en concreto, no en abstracto.</p>
+
+    <div class="block">
+      <div class="rail"><span class="key">Opción A</span><span>FSM plana</span><span class="verdict yes">Base de la recomendación</span></div>
+      <div>
+        <h3>Máquina de estados con <code>enum</code> y <code>match</code></h3>
+        <p>Un solo script, un <code>enum</code> con los estados y un <code>match</code> en el ciclo de física. Depurar es imprimir una variable. Sin nodos extra, sin dependencias, sin marco conceptual que aprender.</p>
+        <p>Aguanta cómodamente hasta unos ocho estados antes de volverse incómoda. El sistema completo que necesitas usa cinco.</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail"><span class="key">Opción B</span><span>FSM por nodos</span><span class="verdict no">Sobreingeniería aquí</span></div>
+      <div>
+        <h3>Un nodo por estado, con <code>enter</code> / <code>exit</code> / <code>update</code></h3>
+        <p>Es la opción que enseñan casi todos los tutoriales, y por eso parece la profesional. Compensa cuando hay muchos estados o cuando quieres reutilizar estados sueltos entre tipos de entidad muy distintos.</p>
+        <p>Con cinco estados sólo añade ceremonia: cinco nodos más por cada infectado, multiplicado por los que haya en pantalla. En Android eso es coste real a cambio de nada.</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail"><span class="key">Opción C</span><span>Árbol de comportamiento</span><span class="verdict no">Todavía no</span></div>
+      <div>
+        <h3>Behavior Tree, con addon o escrito a mano</h3>
+        <p>Brilla cuando hay decisiones estratificadas con muchas contingencias. Para cinco comportamientos es un cañón para matar moscas: añade una dependencia externa, un modelo mental nuevo y herramientas de depuración que tendrías que construir tú.</p>
+        <p>Guárdalo en la recámara: si algún día quieres la conducta de grupo de la Fase 3 del GDD —rodear, flanquear, coordinarse—, ahí sí empieza a pagar. Pero eso es post-demo.</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail"><span class="key">Opción D</span><span>Utility AI</span><span class="verdict no">Mal encaje</span></div>
+      <div>
+        <h3>Puntuar acciones y ejecutar la mejor</h3>
+        <p>Sirve cuando muchas acciones compiten con prioridades difusas. Aquí las prioridades son duras y ordenadas: ver al jugador gana siempre a oír un ruido, y oír gana siempre a patrullar.</p>
+        <p>Aplicarlo te obligaría a ajustar curvas de puntuación para reproducir un orden que ya conoces. Complejidad sin beneficio.</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail"><span class="key">Opción E</span><span>Steering puro</span><span class="verdict no">Se tira a la basura</span></div>
+      <div>
+        <h3>Perseguir con raycasts y esquivar muros, sin navegación</h3>
+        <p>Tentador: cero preparación, funciona esta misma tarde en una habitación cuadrada. Y es cierto que en tu cuarto actual bastaría.</p>
+        <p>El problema es que se rompe justo con la geometría que trae el Capítulo 1: pasillos, esquinas en L, puertas. El infectado se queda pegado al lado equivocado de un muro empujando. Es trabajo que se descarta entero dentro de dos semanas.</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="rail"><span class="key">Opción F</span><span>Híbrido</span><span class="verdict yes">Recomendada</span></div>
+      <div>
+        <h3>Sensores independientes + FSM plana + perfil de datos</h3>
+        <p>No es una opción más de la lista: es la A, ordenada correctamente en tres ejes que el GDD hoy mezcla. Se desarrolla en la sección 06.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">04 — Comparación</span>
+    <h2>Las seis, lado a lado</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Criterio</th><th>A · FSM plana</th><th>B · Por nodos</th><th>C · BT</th><th>D · Utility</th><th>E · Steering</th><th>F · Híbrida</th></tr></thead>
+        <tbody>
+          <tr><td>Complejidad inicial</td><td class="tag good">Muy baja</td><td class="tag mid">Media</td><td class="tag bad">Alta</td><td class="tag bad">Alta</td><td class="tag good">Mínima</td><td class="tag good">Baja</td></tr>
+          <tr><td>Rendimiento Android</td><td class="tag good">Excelente</td><td class="tag mid">Bueno</td><td class="tag mid">Bueno</td><td class="tag mid">Medio</td><td class="tag good">Excelente</td><td class="tag good">Excelente</td></tr>
+          <tr><td>Escalabilidad</td><td class="tag mid">Hasta ~8 estados</td><td class="tag good">Alta</td><td class="tag good">Muy alta</td><td class="tag good">Alta</td><td class="tag bad">Ninguna</td><td class="tag good">Alta</td></tr>
+          <tr><td>Facilidad de depurar</td><td class="tag good">Trivial</td><td class="tag mid">Media</td><td class="tag bad">Necesita tooling</td><td class="tag bad">Difícil</td><td class="tag good">Trivial</td><td class="tag good">Trivial</td></tr>
+          <tr><td>Calidad del comportamiento</td><td class="tag mid">Suficiente</td><td class="tag mid">Suficiente</td><td class="tag good">Alta</td><td class="tag good">Emergente</td><td class="tag bad">Pobre</td><td class="tag good">Alta</td></tr>
+          <tr><td>Riesgo de refactor</td><td class="tag mid">Medio</td><td class="tag good">Bajo</td><td class="tag good">Bajo</td><td class="tag mid">Medio</td><td class="tag bad">Seguro</td><td class="tag good">Bajo</td></tr>
+          <tr><td>Encaje con Godot 4.6</td><td class="tag good">Nativo</td><td class="tag good">Nativo</td><td class="tag mid">Addon</td><td class="tag mid">Manual</td><td class="tag good">Nativo</td><td class="tag good">Nativo</td></tr>
+          <tr class="pick"><td><strong>Veredicto</strong></td><td>Base</td><td>No</td><td>Post-demo</td><td>No</td><td>No</td><td><strong>Elegida</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">05 — Riesgos</span>
+    <h2>Qué puede salir mal</h2>
+    <p class="sec-note">Ordenados por lo que costarían si nadie los ve venir.</p>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Riesgo</th><th>Gravedad</th><th>Prevención</th></tr></thead>
+        <tbody>
+          <tr><td>Navmesh bajo los muros: rutas que chocan contra la pared</td><td class="tag good">Resuelto</td><td>Las 123 celdas de suelo bajo muros se borraron el 6 sep. Queda la regla de dibujo para el mapa del Cap. 1</td></tr>
+          <tr><td>El TileSet no tiene capa de navegación</td><td class="tag good">Resuelto</td><td>Añadida el 9 sep y validada con un agente de prueba sin cerebro</td></tr>
+          <tr><td>Consultar rutas antes de que el mapa esté listo</td><td class="tag good">Resuelto</td><td>No es «un fotograma de física», pero tampoco son 16: <strong>esa cifra salía de un arnés de pruebas</strong>. En el juego real cargado con normalidad son 3, y el número cambia según el contexto y el dispositivo, así que <strong>no puede vivir en el código</strong>. Se resolvió con <code>map_get_iteration_id()</code>, que vale 0 hasta la primera sincronización: se le pregunta al servidor en vez de interpretar el <code>(0,0)</code></td></tr>
+          <tr><td>Picos de cálculo de rutas en oleadas de 15-20</td><td class="tag mid">Mitigado</td><td>Recálculo por temporizador con desfase propio ya implementado: 4 por segundo en vez de 60. Falta medirlo en el teléfono</td></tr>
+          <tr><td>Todo en la capa de colisión 1</td><td class="tag good">Resuelto</td><td>Capas repartidas el 13 sep: 1 Mundo, 2 Player, 3 Infectados</td></tr>
+          <tr><td>Infectados empujándose entre sí</td><td class="tag good">Resuelto</td><td>Decisión 2: sin colisión mutua, con repulsión suave</td></tr>
+          <tr><td>Oscilación entre estados en el límite del radio</td><td class="tag good">Resuelto</td><td>El medidor de agitación con decaimiento da la histéresis de forma natural</td></tr>
+          <tr><td>Sin capa de oclusión en el TileSet</td><td class="tag mid">Medio</td><td>No afecta a la IA (la visión usa raycasts físicos), pero sí a la iluminación futura</td></tr>
+          <tr><td>La cámara pierde su objetivo al reaparecer</td><td class="tag mid">Conocido</td><td>Ya anotado como tarea 4.3 en el roadmap</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">06 — Recomendación</span>
+    <h2>Dos capas que se superponen</h2>
+    <p>El GDD describe dos cosas distintas en la misma sección, y es fácil leerlas como una sola: las <strong>fases de infección</strong> —Alteración, Hostilidad, Adaptación— y una <strong>máquina de estados</strong> con Idle, Patrulla, Alerta, Persecución, Búsqueda y Regreso.</p>
+    <p>No compiten. Un infectado <strong>es</strong> de Fase 2 y <strong>está</strong> persiguiendo, igual que una persona es adulta y está corriendo. La fase dice qué tipo de criatura es; el estado, qué hace en este segundo.</p>
+
+    <div class="axes">
+      <div class="axis">
+        <span class="n">Capa 1 · qué es</span>
+        <h4>Fase de infección</h4>
+        <p>Alteración, Hostilidad o Adaptación. Se fija al aparecer y <strong>no cambia nunca</strong> en ese individuo. Lo decide el capítulo de la historia.</p>
+        <span class="form">Datos · un Resource con velocidad, radios y tiempos</span>
+      </div>
+      <div class="axis">
+        <span class="n">Capa 2 · qué hace</span>
+        <h4>Percepción</h4>
+        <p>Vista y oído, siempre activos en cualquier estado. No es un estado: es un sentido. Alimenta el medidor.</p>
+        <span class="form">Sensores independientes</span>
+      </div>
+      <div class="axis">
+        <span class="n">Capa 2 · qué hace</span>
+        <h4>Agitación</h4>
+        <p>Cuán encendido está ahora. Sube con los estímulos del jugador y decae sola con el tiempo. Es el motor que mueve el círculo de estados.</p>
+        <span class="form">Medidor con decaimiento</span>
+      </div>
+      <div class="axis">
+        <span class="n">Capa 2 · qué hace</span>
+        <h4>Estado</h4>
+        <p>La conducta concreta de este instante. Cambia varias veces por minuto según lo que empuje el medidor.</p>
+        <span class="form">FSM plana · el círculo de la sección 07</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Cómo encadenan</span>
+      <p><strong>Percepción → Agitación → Estado.</strong> Los sentidos detectan, el medidor acumula, y al cruzar un umbral el estado cambia. La fase de infección no participa en la cadena: se limita a <em>parametrizarla</em>, poniendo los números con los que trabajan las tres.</p>
+      <p>Por eso las dos capas caben juntas sin coste. Añadir las tres fases biológicas no son tres sistemas: son <strong>tres archivos de datos</strong>.</p>
+    </div>
+
+    <h4>Lo que cada fase desbloquea</h4>
+    <p>Aquí está la regla que hace que las dos capas se refuercen en vez de pisarse, y sale de la tabla del propio GDD: <strong>la fase decide hasta dónde del círculo puede llegar ese infectado.</strong> No es sólo «más rápido» — es cuánta conducta tiene disponible.</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Fase</th><th>Hasta dónde llega</th><th>Velocidad y radios</th><th>Qué se siente al encontrarlo</th></tr></thead>
+        <tbody>
+          <tr><td>1 · Alteración</td><td>Rutina y Alerta. <strong>Nunca persigue</strong></td><td>Lento, radios cortos, sólo ruidos fuertes</td><td>Ambiente inquietante. Se pone nervioso, investiga y vuelve</td></tr>
+          <tr><td>2 · Hostilidad</td><td>El círculo completo</td><td>Normales</td><td>La amenaza estándar. Persigue, pero se le escapa</td></tr>
+          <tr><td>3 · Adaptación</td><td>El círculo completo, y <strong>le cuesta salir</strong></td><td>Rápido, radios amplios, decaimiento lento</td><td>Insiste, recuerda dónde estabas, no se distrae</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Distribución por capítulos</span>
+      <p>La fase se decide al aparecer, según el capítulo. El Capítulo 1 puebla la base casi sólo de Alteración; hacia el Colapso y el Escape dominan los de Adaptación.</p>
+      <p>La dificultad escala <strong>sin tocar una línea de IA</strong>: sólo cambian las proporciones de la tabla de aparición. Y encaja con la estructura narrativa del GDD — el brote avanza, y lo notas en lo que te encuentras.</p>
+    </div>
+
+    <div class="flag">
+      <span class="lbl">Dos reglas que el medidor no puede saltarse</span>
+      <p><strong>Tiene que decaer.</strong> Si la agitación sólo sube, todos acaban a tope y el juego se convierte en caos permanente. La velocidad de bajada es la perilla que decide cuánto pesa cada error del jugador, y la vas a tocar muchas veces.</p>
+      <p><strong>No es lo mismo que el estado.</strong> Un infectado puede estar a tope de agitación y aun así estar <em>buscando</em>, porque te perdió. La agitación dice cuán encendido está; el estado dice qué hace. Fundirlos devuelve por la puerta de atrás el problema de las dieciocho combinaciones.</p>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Lo que el medidor resuelve de regalo</span>
+      <p><strong>La oscilación entre estados</strong>, que estaba en la lista de riesgos. Un valor que sube con estímulos y baja con el tiempo produce compromiso y escalada gradual por su propia naturaleza: no hace falta añadir histéresis aparte.</p>
+      <p><strong>La alerta en grupo</strong>, aparcada hasta después del Hito 009. Un infectado agitado simplemente le sube la agitación a los vecinos. Más limpio y más gradual que un aviso discreto de «todos a perseguir».</p>
+      <p><strong>La pregunta de si se puede escapar.</strong> Sí, pero lo dejas encendido mientras su agitación baja. Deja de ser un refinamiento futuro y pasa a ser consecuencia natural del sistema.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">07 — Diseño conceptual</span>
+    <h2>Cómo funcionaría</h2>
+
+    <h4>El círculo de estados</h4>
+    <p>Los seis nombres del GDD se reducen a <strong>cuatro posiciones reales</strong>.</p>
+    <p><strong>Idle y Patrulla son la misma posición</strong> —la rutina de base—, y desde el 18 de septiembre las dos son lo mismo: <strong>deambular</strong>. Lo que cambia entre fases son los números del deambular, no la conducta.</p>
+    <p><strong>Y Regreso no es un estado.</strong> Un infectado que siempre vuelve al mismo punto es un mueble con patas: en la vida real no tendría «su sitio». Volver a la rutina desde donde sea que esté es sencillamente lo que hace Rutina cuando estás fuera de tu ruta — un deambulante no tiene nada a lo que volver, así que simplemente sigue merodeando donde acabó — y eso significa que al perderte se queda rondando <em>el sitio de tu error</em>, no un circuito lejano. Eliminarlo simplifica el sistema y hace que los infectados <strong>vayan derivando por el mapa</strong>: vuelves a una zona que creías despejada y ya no lo está.</p>
+    <p>Lo importante no son las cajas, sino qué mueve el recorrido. <strong>Por la derecha empuja el jugador</strong>: cada ruido y cada movimiento suben la agitación. <strong>Por la izquierda devuelve el tiempo</strong>: al dejar de recibir estímulos la agitación decae sola y el círculo se cierra.</p>
+    <p>La máquina de estados es el círculo. El medidor de agitación es la fuerza que te mueve por él. No son dos diseños en competencia: uno es el motor del otro.</p>
+
+    <div class="fsm">
+      <svg width="100%" viewBox="0 0 900 470" role="img" aria-label="Ciclo cerrado de estados del infectado: Rutina, Alerta, Persecución, Búsqueda y Regreso">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M1 1L9 5L1 9" fill="none" stroke="#8899aa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <rect x="365" y="51" width="170" height="58" rx="4" fill="#0e1e35" stroke="#1a3a5a" stroke-width="1.5"/>
+        <text x="450" y="76" text-anchor="middle" fill="#cfe1f0" font-family="IBM Plex Sans Condensed, sans-serif" font-size="16" font-weight="600">Rutina</text>
+        <text x="450" y="95" text-anchor="middle" fill="#8899aa" font-family="IBM Plex Mono, monospace" font-size="11">Idle · Patrulla</text>
+
+        <rect x="670" y="191" width="140" height="48" rx="4" fill="#0e1e35" stroke="#1a3a5a" stroke-width="1.5"/>
+        <text x="740" y="221" text-anchor="middle" fill="#cfe1f0" font-family="IBM Plex Sans Condensed, sans-serif" font-size="16" font-weight="600">Alerta</text>
+
+        <rect x="525" y="356" width="150" height="48" rx="4" fill="#2c1614" stroke="#c8574d" stroke-width="1.5"/>
+        <text x="600" y="386" text-anchor="middle" fill="#e3edf6" font-family="IBM Plex Sans Condensed, sans-serif" font-size="16" font-weight="600">Persecución</text>
+
+        <rect x="230" y="356" width="140" height="48" rx="4" fill="#0e1e35" stroke="#1a3a5a" stroke-width="1.5"/>
+        <text x="300" y="386" text-anchor="middle" fill="#cfe1f0" font-family="IBM Plex Sans Condensed, sans-serif" font-size="16" font-weight="600">Búsqueda</text>
+
+        <path d="M538 93L666 196" fill="none" stroke="#8899aa" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="590" y="130" text-anchor="middle" fill="#8899aa" font-family="IBM Plex Mono, monospace" font-size="12">oye algo</text>
+
+        <path d="M741 242L651 352" fill="none" stroke="#8899aa" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="805" y="300" text-anchor="middle" fill="#8899aa" font-family="IBM Plex Mono, monospace" font-size="12">se enciende</text>
+
+        <path d="M521 373H375" fill="none" stroke="#8899aa" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="448" y="347" text-anchor="middle" fill="#8899aa" font-family="IBM Plex Mono, monospace" font-size="12">te pierde</text>
+
+        <path d="M375 393H521" fill="none" stroke="#8899aa" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="448" y="422" text-anchor="middle" fill="#8899aa" font-family="IBM Plex Mono, monospace" font-size="12">te vuelve a detectar</text>
+
+        <path d="M232 360C118 300 130 132 360 90" fill="none" stroke="#8899aa" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="152" y="215" text-anchor="middle" fill="#8899aa" font-family="IBM Plex Mono, monospace" font-size="12">se rinde</text>
+        <text x="152" y="233" text-anchor="middle" fill="#8899aa" font-family="IBM Plex Mono, monospace" font-size="12">donde esté</text>
+
+        <text x="452" y="212" text-anchor="middle" fill="#cfe1f0" font-family="IBM Plex Sans, sans-serif" font-size="15">El estímulo escala por la derecha</text>
+        <text x="452" y="238" text-anchor="middle" fill="#a9bccd" font-family="IBM Plex Sans, sans-serif" font-size="13">El decaimiento devuelve por la izquierda</text>
+
+        <text x="450" y="452" text-anchor="middle" fill="#a9bccd" font-family="IBM Plex Sans, sans-serif" font-size="13">Detectar movimiento del jugador salta a Persecución desde cualquier posición</text>
+      </svg>
+    </div>
+
+    <h4>Percepción: no te ven, detectan que algo se mueve</h4>
+    <p>El patógeno ataca el sistema nervioso central, <strong>no los ojos</strong>. Un infectado está vivo: la luz entra, la retina responde. Lo que se rompe es el procesamiento.</p>
+    <p>Y ahí hay un hecho neurológico que encaja con el juego: la detección de <strong>movimiento</strong> es una de las funciones visuales más primitivas del cerebro y no depende de la corteza visual. Existen casos reales de personas con la corteza dañada que no ven conscientemente pero reaccionan a lo que se mueve.</p>
+
+    <div class="flag">
+      <span class="lbl">La mecánica que esto regala</span>
+      <p><strong>Si te quedas inmóvil dentro de su cono, puede no registrarte.</strong> El jugador gana un verbo nuevo sin una sola línea de interfaz: congelarse. Y quedarse quieto viendo pasar algo a dos metros es de las cosas más tensas que existen en un juego de terror.</p>
+      <p>El coste es cero: la comprobación de movimiento es comparar la posición del jugador con la del fotograma anterior.</p>
+    </div>
+
+    <ol class="tasks">
+      <li><span class="tid">Vista</span><span class="tbody">Un cono hacia donde mira, más un radio corto de 360° para lo que tiene encima. <strong>Línea de visión real</strong> con un raycast contra los muros — sin esto te ve a través de las paredes y el sigilo muere el primer día. Y dentro del cono, <strong>sólo registra lo que se mueve</strong>.</span></li>
+      <li><span class="tid">Oído</span><span class="tbody">Radio de 360°, sin línea de visión — el sonido dobla las esquinas. Compara el ruido que generas contra un umbral. Con la vista degradada, <strong>el oído pasa a ser el sentido dominante</strong>. Depende del Hito 010 del roadmap, «Ruido y sigilo completo».</span></li>
+    </ol>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Fase</th><th>Qué procesa la vista</th><th>Alcance</th></tr></thead>
+        <tbody>
+          <tr><td>1 · Alteración</td><td>Sólo movimiento amplio y cercano</td><td>Funcionalmente casi ciego</td></tr>
+          <tr><td>2 · Hostilidad</td><td>Movimiento con fiabilidad</td><td>Cono y radio normales</td></tr>
+          <tr><td>3 · Adaptación</td><td>Registra hasta el movimiento leve</td><td>Cono y radio amplios</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Para el GDD: la pupila dilatada</span>
+      <p>El GDD ya establece que la adrenalina está disparada, y la adrenalina <strong>dilata la pupila</strong>. Eso resuelve dos cosas de golpe.</p>
+      <p><strong>El cambio visual de Fases 2 y 3</strong> que el GDD pide, sin necesidad de heridas ni podredumbre: basta la mirada mal. Pupilas enormes, fijas, sin parpadeo.</p>
+      <p><strong>Y la fotofobia.</strong> Con la pupila dilatada la luz molesta, así que los infectados prefieren la oscuridad. Con eso, «las zonas oscuras son más peligrosas» deja de ser una convención de género y pasa a tener causa biológica dentro del propio universo.</p>
+    </div>
+
+    <h4>Qué dispara Alerta → Persecución</h4>
+    <p>No hay un disparador especial: es <strong>el medidor cruzando su segundo umbral</strong>. Lo que le sube la aguja mientras está en Alerta:</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Estímulo</th><th>Efecto en la aguja</th></tr></thead>
+        <tbody>
+          <tr><td>Movimiento tuyo dentro del cono, con línea de visión</td><td class="tag good">Sube mucho · es el principal</td></tr>
+          <tr><td>Ruido fuerte y cercano</td><td class="tag good">Sube mucho</td></tr>
+          <tr><td>Proximidad extrema, aunque estés quieto</td><td class="tag mid">Sube algo</td></tr>
+          <tr><td>Nada, sólo tiempo pasando</td><td class="tag">Baja</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Con eso, el momento de Alerta se convierte en una decisión real del jugador: te ha oído, viene hacia aquí, está escaneando. <strong>¿Corres y confirmas su sospecha, o te quedas inmóvil y apuestas a que la aguja baje antes de que llegue?</strong></p>
+
+    <div class="flag">
+      <span class="lbl">Tensión de diseño en móvil</span>
+      <p>Un cono estrecho es realista pero injusto en un top-down táctil: no hay forma clara de saber hacia dónde mira un sprite pequeño en la pantalla de un teléfono. La combinación cono ancho más radio corto de 360° resuelve las dos cosas: puedes rodearlo por detrás a distancia, pero nunca pegarte a él impunemente.</p>
+    </div>
+
+    <h4>Memoria y pérdida del objetivo</h4>
+    <p>Es el detalle que separa un sigilo justo de uno tramposo. Cuando el infectado te pierde de vista, va a <strong>tu última posición conocida</strong>, no a tu posición actual. Si fuera a la actual, sería clarividente y esconderse no serviría de nada.</p>
+    <p>El GDD coloca «recuerda última posición» en la Fase 3, como rasgo avanzado. <strong>Debería estar en el sistema base desde el primer día</strong>, porque sin memoria la IA sólo puede ser clarividente o amnésica, y ambas rompen el juego. Lo que sí puede escalar por fases es <em>cuánto tiempo</em> recuerda y con cuánta precisión.</p>
+
+    <h4>Navegación</h4>
+    <p>Rutas con el sistema nativo de Godot, recalculadas por temporizador y sólo cuando el objetivo se ha movido lo suficiente. Nunca cada fotograma.</p>
+    <p>Sobre la ruta, una capa fina de suavizado: seguir el camino al pie de la letra produce movimiento robótico de tramo recto en tramo recto. Un poco de imperfección al girar no es sólo estética — <strong>es exactamente lo que el GDD pide</strong> cuando dice que son humanos alterados y no máquinas.</p>
+
+    <h4>Legibilidad</h4>
+    <p>Cada estado necesita una señal externa que el jugador pueda leer sin HUD: cómo se mueve, hacia dónde mira, si se detiene. No hace falta arte todavía — en el prototipo basta con que la velocidad y la dirección de la mirada delaten el estado.</p>
+  </section>
+
+  <section>
+    <span class="sec-num">08 — Síntesis</span>
+    <h2>Qué vamos a construir y cómo</h2>
+    <p class="sec-note">Todo lo anterior, agrupado en una página. Si sólo lees una sección del documento, lee esta.</p>
+
+    <h4>En una frase</h4>
+    <p>Un infectado es <strong>un cuerpo que navega, dos sentidos que nunca se apagan, una aguja que sube con tus estímulos y baja con el tiempo, y cuatro conductas entre las que esa aguja lo mueve</strong> — todo ello con los números de una ficha que decide qué tipo de criatura es.</p>
+
+    <h4>Las piezas</h4>
+    <div class="axes">
+      <div class="axis">
+        <span class="n">Pieza 1</span>
+        <h4>El cuerpo</h4>
+        <p>Un <code>CharacterBody2D</code> con colisión, sprite y agente de navegación. Se crea desde <code>world.gd</code> sobre un marcador, igual que el Player.</p>
+        <span class="form">Reutiliza el patrón de spawn ya existente</span>
+      </div>
+      <div class="axis">
+        <span class="n">Pieza 2</span>
+        <h4>Los sentidos</h4>
+        <p>Vista con cono, línea de visión y detección de movimiento. Oído de 360° que atraviesa esquinas. Activos siempre, en cualquier conducta.</p>
+        <span class="form">Escritos una vez, válidos en todo el sistema</span>
+      </div>
+      <div class="axis">
+        <span class="n">Pieza 3</span>
+        <h4>La aguja</h4>
+        <p>El medidor de agitación. Sube con lo que perciben los sentidos, decae sola con el tiempo, y al cruzar umbrales cambia la conducta.</p>
+        <span class="form">Es el motor de todo el sistema</span>
+      </div>
+      <div class="axis">
+        <span class="n">Pieza 4</span>
+        <h4>Las conductas</h4>
+        <p>Rutina, Alerta, Persecución y Búsqueda. Una sola activa a la vez, elegida por dónde esté la aguja.</p>
+        <span class="form">Máquina de estados plana, un enum</span>
+      </div>
+      <div class="axis">
+        <span class="n">Pieza 5</span>
+        <h4>La ficha</h4>
+        <p>Tres perfiles de datos: Alteración, Hostilidad, Adaptación. Velocidades, radios, umbrales y decaimiento. La fija el capítulo al aparecer.</p>
+        <span class="form">Tres archivos, cero código nuevo</span>
+      </div>
+      <div class="axis">
+        <span class="n">Pieza 6</span>
+        <h4>El terreno</h4>
+        <p>Una capa de navegación en el TileSet que define por dónde se puede caminar. Sin esto, ninguna de las otras cinco piezas sirve de nada.</p>
+        <span class="form">Trabajo de editor, no de código</span>
+      </div>
+    </div>
+
+    <h4>Cómo encajan</h4>
+    <div class="flow"><pre>   LA FICHA  ·  fija al aparecer, la decide el capítulo
+       │  pone los números de todo lo de abajo
+       ▼
+   LOS SENTIDOS  →  LA AGUJA  →  LAS CONDUCTAS  →  EL CUERPO
+   ve y oye         sube y baja   elige una        navega el terreno
+       ▲                                               │
+       └───────────────────────────────────────────────┘
+                    lo que percibe depende de dónde está</pre></div>
+
+    <h4>Cómo lo vamos a hacer</h4>
+    <p>Una pieza cada vez, y <strong>cada paso tiene que poder probarse solo</strong>. Esa es toda la metodología, y no es un capricho: si montas percepción, agitación, estados y navegación a la vez y el infectado hace algo raro, tienes cuatro sospechosos y ninguna forma de saber cuál miente.</p>
+    <p>Por eso el orden empieza por lo que <strong>no</strong> es inteligencia artificial —el terreno— y sólo después añade cerebro. Y por eso la detección arranca siendo tosca, por distancia pura, y se va afinando: es más fácil añadir precisión a algo que funciona que arreglar algo que nunca llegó a funcionar.</p>
+
+    <div class="flag">
+      <span class="lbl">Lo que NO se construye todavía</span>
+      <p>Conducta de grupo y flanqueo, oleadas de quince o veinte, transiciones visuales entre fases, animaciones, sonido, y cualquier tipo de infectado más allá de los tres del GDD.</p>
+      <p>Todo eso es legítimo y llegará. Pero ninguna de esas cosas se puede ajustar bien hasta que un solo infectado se sienta correcto persiguiéndote por un pasillo.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">09 — Pasos</span>
+    <h2>El orden de construcción</h2>
+    <p class="sec-note">Ocho pasos. Cada uno con su prueba de que funciona: si no la pasa, no se avanza al siguiente. El Paso 0 quedó validado el 9 de septiembre.</p>
+
+    <div class="paso">
+      <div class="paso-n"><b>0</b><span class="settled">Hecho · 9 sep</span></div>
+      <div>
+        <h3>Que el terreno sea navegable</h3>
+        <p>Añadir una capa de navegación al TileSet y pintar el polígono en el tile de suelo <code>(0,0)</code>. El suelo bajo los muros ya estaba borrado, así que los agujeros con forma de pared salieron solos.</p>
+        <p>Después, y esto es lo importante: comprobarlo con <strong>un agente de prueba tonto</strong>, no con la IA. Un cuadrado que va del punto A al punto B.</p>
+        <div class="ok"><b>Verificado</b>Un agente sin cerebro cruzó el cuarto de esquina a esquina siguiendo 51 puntos de ruta: 1289,6 px recorridos frente a 1219,3 en línea recta, y cero píxeles de error al llegar. Rodea la geometría en vez de empotrarse.</div>
+
+        <div class="flag crit" style="margin-top:16px">
+          <span class="lbl">La lección · esperar a que el mapa esté listo</span>
+          <p>El servidor de navegación <strong>no está operativo al arrancar</strong>. Durante los primeros fotogramas responde <code>(0,0)</code> a cualquier consulta de posición — que parece «aquí no hay nada» y en realidad significa «todavía no sé dónde estás». Como el GPS del teléfono buscando señal.</p>
+          <p>La creencia extendida de que basta «un fotograma de física» es falsa. Pero la primera medición de este documento —<strong>16 fotogramas</strong>— también lo era: salió de un arnés de pruebas que instanciaba el mundo dentro de otra escena. <strong>En el juego real, cargado con normalidad, son 3.</strong></p>
+          <p>Y esa contradicción es justamente la prueba de por qué el número <strong>no puede vivir en el código</strong>: cambia según el contexto y cambiará otra vez en un teléfono.</p>
+          <p><strong>La forma robusta, la que se implementó:</strong> <code>NavigationServer2D.map_get_iteration_id()</code> vale 0 hasta la primera sincronización. Es una pregunta directa al servidor —<em>¿has sincronizado ya?</em>— en lugar de deducirlo de un síntoma, y evita por completo tener que interpretar el <code>(0,0)</code>.</p>
+          <p><strong>Nota de diagnóstico:</strong> Godot emite un error explícito cuando esto pasa — <code>navigation map query failed because it was made before first map synchronization</code>. Durante la depuración se filtró la consola buscando sólo los <code>print</code> propios y ese mensaje se perdió. <strong>No filtrar la consola cuando algo no funciona.</strong></p>
+        </div>
+
+        <div class="note" style="margin-top:16px">
+          <span class="lbl">Por qué este paso existía</span>
+          <p>Este mismo fallo, apareciendo en el Paso 4 con percepción, agitación y cuatro conductas ya encima, se habría buscado durante días en el código de la IA — que habría estado perfecto. Aquí lo encontramos con un cuadrado sin cerebro en pantalla, donde no había nada más que pudiera ser el culpable.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>1</b><span class="settled">Hecho · 12 sep</span></div>
+      <div>
+        <h3>Que exista y no atraviese paredes</h3>
+        <p>Crear <code>infected.tscn</code> con su <code>CharacterBody2D</code>, colisión y sprite, y un marcador <code>InfectedSpawn</code> que <code>world.gd</code> use para instanciarlo — el mismo patrón exacto que ya usa el Player.</p>
+        <p>Sin cerebro todavía. Sólo un cuerpo quieto en el mundo.</p>
+        <div class="ok"><b>Verificado</b>Tres infectados sobre sus marcadores, todos sobre suelo válido y sobre la malla de navegación. <strong>Cero incursiones en celda de muro</strong> comprobando la capa <code>Walls</code> bajo cada uno en 900 fotogramas. El contenedor <code>InfectedSpawns</code> hace que añadir uno al nivel sea duplicar un <code>Marker2D</code>: el código no se toca.</div>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>2</b><span class="settled">Hecho · 13 sep</span></div>
+      <div>
+        <h3>Que sepa ir a un sitio</h3>
+        <p>Conectar el agente de navegación y hacer que camine hasta un punto cualquiera. Recálculo de ruta <strong>por temporizador escalonado</strong>, nunca cada fotograma — y con un desfase distinto por infectado, para que veinte no calculen a la vez.</p>
+        <div class="ok"><b>Verificado</b>Rutas de 38, 20 y 35 puntos rodeando la geometría, y <strong>40 recálculos en 10 segundos</strong> por infectado en vez de 600: quince veces menos trabajo. Llegan y se asientan con <strong>0,0 px</strong> de movimiento tardío.</div>
+        <div class="flag" style="margin-top:16px">
+          <span class="lbl">La lección · dos números peleándose</span>
+          <p>Al llegar, los infectados rebotaban en el sitio indefinidamente. La tolerancia de llegada del agente es de 10 px por defecto y el radio de separación es de 48: llego → la repulsión me empuja 30 px → «no he llegado» → vuelvo a caminar → me empuja otra vez.</p>
+          <p><strong>El radio de llegada tiene que ser mayor que el de separación</strong>, y se deriva de él en el código (<code>separation_radius * 1.25</code>) en lugar de escribirse suelto, para que la relación no se rompa sola el día que se ajuste la separación.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>3</b><span class="settled">Hecho · 14 sep</span></div>
+      <div>
+        <h3>Perseguir, perder y rendirse</h3>
+        <p>Detección por <strong>distancia pura</strong> a 224 px, siete tiles: sin cono, sin línea de visión, sin movimiento. Tosca a propósito. Y tres conductas: Rutina, Persecución y Búsqueda, con memoria de tu última posición conocida desde el primer día.</p>
+        <p>Feo, injusto y te ve a través de las paredes. Da igual: es la primera vez que algo te persigue.</p>
+        <div class="ok"><b>Verificado · 26 comprobaciones, 0 fallos</b>Se planta a <strong>1,7 px</strong> del jugador, no a los 60 de la tolerancia del agente. Al perderlo, la memoria queda congelada a 1132 px de su posición real, recorre 143 px hasta el punto recordado y se rinde en <strong>0,65 s por llegada</strong>. Oscilando 120 veces en 2 s en el borde del radio: <strong>7 recálculos</strong>, no 120.</div>
+
+        <div class="flag" style="margin-top:16px">
+          <span class="lbl">La lección · revisar el plan sale más barato que revisar el código</span>
+          <p>Antes de escribir una línea, el plan de este paso pasó por tres revisiones independientes: <strong>26 problemas</strong>, 9 de ellos graves. Siete se corrigieron en el plan y cuatro se rechazaron por optimización prematura.</p>
+          <p>Los tres graves de verdad <strong>no los habría cazado ninguna prueba automática</strong>. El peor: perseguir se detenía al alcanzar la tolerancia del agente, lo que habría dejado al infectado aparcado a 60 px de ti —dos cuerpos— sin alcanzarte jamás. Ninguno de los tres rompe nada: producen un juego que funciona y se siente mal.</p>
+          <p>Dos reglas salieron de ahí y valen para todo el sistema: <strong>la memoria es una copia, no una referencia</strong>, y <strong>un cambio de estado nunca adelanta trabajo caro</strong> — oscilar en el borde de una condición lo dispararía cada fotograma.</p>
+        </div>
+
+        <div class="flag crit" style="margin-top:16px">
+          <span class="lbl">Límite conocido · Búsqueda no es alcanzable jugando todavía</span>
+          <p>En la habitación actual, un rectángulo vacío, <strong>no se puede despistar a un infectado</strong>. Va a 220 px/s contra los 180 del jugador, así que la distancia sólo puede encogerse; y aunque la línea de visión ya existiera, no hay nada tras lo que esconderse.</p>
+          <p>Los números: la diagonal son 1548 px, cruzarla lleva 8,6 s caminando, y en ese tiempo el infectado recorta 344 px. Búsqueda está construida y verificada, pero <strong>hoy sólo se alcanza forzándola</strong>. Se levanta con el Paso 4 —la línea de visión— y con el correr a 320 px/s.</p>
+        </div>
+
+        <span class="hito-tag">Aquí ya hay clip para el canal</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>4</b><span>Los ojos</span></div>
+      <div>
+        <h3>Que el sigilo empiece a existir</h3>
+        <p>Tres cosas, en este orden y probando entre medias: <strong>línea de visión</strong> con raycast contra los muros, después el <strong>cono</strong> más el radio corto de 360°, y por último la <strong>detección de movimiento</strong>.</p>
+        <div class="ok"><b>Funciona si</b>Esconderte tras un muro te salva. Rodearlo por detrás a distancia te salva. Y quedarte completamente inmóvil dentro de su cono te salva — pero moverte un poco te delata.</div>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>5</b><span>La aguja</span></div>
+      <div>
+        <h3>Escalada gradual en vez de interruptor</h3>
+        <p>Añadir el medidor de agitación con su decaimiento, los umbrales que disparan cada conducta, y la cuarta conducta: <strong>Alerta</strong>, que hasta ahora no existía.</p>
+        <p>Es el paso que convierte una IA de encendido y apagado en algo que se enciende poco a poco.</p>
+        <div class="ok"><b>Funciona si</b>Ya no oscila entre conductas cuando estás justo en el límite del radio. Y estando en Alerta, quedarte quieto hace que la aguja baje y se rinda; moverte hace que suba y te persiga.</div>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>6</b><span>Consecuencia</span></div>
+      <div>
+        <h3>Que alcanzarte signifique algo</h3>
+        <p>Vida del jugador, zona de detección de daño con recarga, muerte y reaparición. Y aquí toca arreglar la deuda que ya tenemos anotada: <strong>la cámara resuelve su objetivo una sola vez</strong> y se queda apuntando al Player destruido.</p>
+        <div class="ok"><b>Funciona si</b>Mueres y reapareces tres veces seguidas sin que la cámara se pierda ni la consola tire errores de instancia liberada.</div>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>7</b><span>Las tres fases</span></div>
+      <div>
+        <h3>Alteración, Hostilidad, Adaptación</h3>
+        <p>Sacar todos los números a un Resource y crear los tres perfiles. La tabla de aparición por capítulo decide cuál recibe cada infectado al nacer.</p>
+        <p>Ningún código nuevo de IA. Sólo datos y el techo de conducta por fase.</p>
+        <div class="ok"><b>Funciona si</b>Un Alteración no te persigue por mucho ruido que hagas — se pone nervioso, investiga y se va. Y un Adaptación te sigue insistiendo mucho después de haberlo perdido.</div>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="paso-n"><b>8</b><span>Después</span></div>
+      <div>
+        <h3>Lo que viene cuando el sigilo ya se siente bien</h3>
+        <p>Oído y sistema de ruido, que dependen del Hito 010 del roadmap. Contagio de agitación entre infectados vecinos. Y las oleadas de quince o veinte para la secuencia de escape, con cerebro completo sólo en los más cercanos.</p>
+        <p><b>La patrulla ya no está aquí:</b> se adelantó a la tarea 3.3a el 18 de septiembre. Sin ella, la detección por movimiento de 3.3 no tendría ocasión de usarse — contra un infectado parado nunca hace falta congelarse, basta con no entrar en su cono.</p>
+        <div class="ok"><b>Antes de empezar el paso 8</b>Un solo infectado tiene que sentirse correcto persiguiéndote por un pasillo. Si eso no está, nada de lo de arriba se puede equilibrar.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-num">10 — Decisiones</span>
+    <h2>Lo que tienes que decidir tú</h2>
+    <p class="sec-note">Las ocho están cerradas. Conviene reflejar en el GDD la relación entre las dos capas, que el documento describe por separado sin decir cómo se combinan.</p>
+
+    <div class="decision closed">
+      <span class="dnum">1</span>
+      <div>
+        <h3>El suelo bajo los muros<span class="settled">Resuelta</span></h3>
+        <p><strong>Hecho.</strong> Las 123 celdas se borraron con un script de un solo uso: elimina de <code>Ground</code> exactamente las celdas donde <code>Walls</code> tiene algo, ni una más. <code>Ground</code> pasa de 2697 a 2574 celdas y quedan cero muros con suelo debajo. Sólo cambió la línea <code>tile_map_data</code> del nodo <code>Ground</code>; la escena no se volvió a guardar, así que todos los <code>unique_id</code> y demás propiedades siguen intactos. Regresión completa verificada: el Player aparece sobre el spawn, la cámara lo sigue y los muros bloquean con los mismos valores que antes del cambio.</p>
+        <p>123 de 128 celdas de muro tienen suelo pintado debajo. Dos caminos: borrar ese suelo, o dejarlo y generar el navmesh a partir de las colisiones en vez de a partir de los tiles.</p>
+        <p><strong>Verificado:</strong> el tile de muro no tiene un solo píxel transparente — 1024 de 1024 opacos. Ese suelo no se ve nunca, así que borrarlo no cambia nada en pantalla ni toca la colisión, que vive en la capa <code>Walls</code>.</p>
+        <p><strong>Lo que gana:</strong> la capa <code>Ground</code> deja de significar «dónde pinté suelo» y pasa a significar «dónde se puede estar». Esa coincidencia es lo que impide que la navegación contradiga a la física. De regalo, ocultar <code>Walls</code> en el editor muestra la zona caminable como una silueta: los agujeros son los muros, y cualquier fallo de navegación se ve de un vistazo. Y los sistemas futuros —aparición de infectados, colocación de evidencia, destinos del deambular— pueden leer esa misma capa como definición de espacio válido.</p>
+        <p><strong>El matiz:</strong> la regla no es «nunca pintes suelo bajo un muro», sino «no lo pintes bajo un muro <em>sólido y opaco</em>». Una reja, un cristal o una pared rota sí necesitan suelo debajo, porque se ve a través.</p>
+        <span class="rec"><b>Recomendación</b>Borrarlo. El navmesh se actualiza solo mientras pintas y no hay nada que re-hornear. La alternativa se corrige sola pero exige volver a hornear tras cada cambio del mapa: elígela si te preocupa olvidar la regla en alguna esquina del Capítulo 1.</span>
+      </div>
+    </div>
+
+    <div class="decision closed">
+      <span class="dnum">2</span>
+      <div>
+        <h3>¿Los infectados chocan entre ellos?<span class="settled">Cerrada</span></h3>
+        <p>Si chocan, se apelotonan y pueden bloquear un pasillo. Si se atraviesan, varios se solapan en el mismo píxel y se ve mal.</p>
+        <span class="rec final"><b>Decidido · sin colisión, con repulsión suave</b>No colisionan entre sí; una repulsión suave los mantiene separados. Se acercan sin fundirse ni atrancarse. Un pasillo bloqueado por dos infectados atascados arruina una partida entera, y con oleadas de quince o veinte el riesgo se multiplica.</span>
+      </div>
+    </div>
+
+    <div class="decision closed">
+      <span class="dnum">3</span>
+      <div>
+        <h3>Daño por contacto: ¿colisión física o zona de detección?<span class="settled">Cerrada</span></h3>
+        <p>Con colisión, el infectado empuja al jugador. Con una zona de detección, lo atraviesa pero le hace daño.</p>
+        <span class="rec final"><b>Decidido · zona de detección</b>Delegada al criterio técnico. Elegida la zona de detección por tres razones: que un enemigo te empuje fuera de una puerta en plena huida se siente injusto; el empuje entre cuerpos físicos genera bugs de posición difíciles de reproducir; y el daño pasa a controlarlo un temporizador explícito en lugar de depender de cuántos fotogramas dure el contacto físico.</span>
+      </div>
+    </div>
+
+    <div class="decision closed">
+      <span class="dnum">4</span>
+      <div>
+        <h3>¿Cono de visión o radio de 360°?<span class="settled">Cerrada</span></h3>
+        <p>El cono permite rodear por detrás; el radio es más simple pero elimina esa posibilidad.</p>
+        <span class="rec final"><b>Decidido · cono ancho más radio corto</b>El cono permite rodearlo a distancia; el radio corto de 360° impide pegársele por la espalda impunemente. En un top-down táctil un cono estrecho sería injusto: no hay forma clara de leer hacia dónde mira un sprite pequeño en un teléfono. Se implementa en dos pasos: radio puro en la tarea 2.2, ya hecha, y cono en la 3.2, para no depurar dos cosas a la vez.</span>
+      </div>
+    </div>
+
+    <div class="decision closed">
+      <span class="dnum">5</span>
+      <div>
+        <h3>Las tres fases: ¿tipos de enemigo o progresión?<span class="settled">Cerrada</span></h3>
+        <p>El GDD describe las fases como etapas biológicas —Alteración, Hostilidad, Adaptación— y, en la misma sección, una máquina de estados. Se leían como una sola cosa.</p>
+        <span class="rec final"><b>Decidido · las dos capas coexisten</b>La <strong>fase de infección es biológica y se fija al aparecer</strong>, determinada por el capítulo: el Capítulo 1 puebla la base de Alteración, el Escape de Adaptación. Un individuo nunca cambia de fase. Lo que sí sube y baja durante la partida es la <strong>agitación</strong>, que mueve al infectado por el círculo de estados. Y la fase pone el techo: un Alteración no persigue por mucho ruido que hagas.</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Cómo se llegó hasta aquí</span>
+      <p>Esta decisión pasó por tres versiones. Primero se planteó como tipos por capítulo; luego, al describir el desarrollador que «el infectado progresa», se reconstruyó como un medidor de agitación que sustituía a las fases; finalmente, al releer el GDD, quedó claro que ese medidor describía en realidad <strong>el recorrido por los estados</strong>, y que las fases biológicas son una capa aparte.</p>
+      <p>La versión final conserva lo mejor de las tres: fases como datos por capítulo, agitación como motor del círculo, y la regla de que la fase limita cuánto círculo hay disponible. Ninguna de las tres partes se descarta.</p>
+    </div>
+
+    <div class="decision closed">
+      <span class="dnum">6</span>
+      <div>
+        <h3>Patrulla: ¿puntos fijos o deambular?<span class="settled">Revisada el 18 sep</span></h3>
+        <p>Los puntos fijos son predecibles y se pueden aprender, que es justo lo que el sigilo necesita. Deambular es más orgánico pero imposible de planificar para el jugador.</p>
+        <span class="rec final"><b>Decidido · deambular, en todas las fases</b>Se invierte la decisión original, que daba puntos fijos a las fases 2 y 3. El argumento de la ruta aprendible vale en un sigilo en primera persona, donde no ves al enemigo y memorizar su recorrido es tu única herramienta. <strong>Esto es cenital:</strong> ves al infectado y ves su cono, así que lees la situación en vivo en lugar de memorizarla. Y con los 4 a 10 infectados simultáneos que pide el GDD, memorizar diez rutas no lo hace nadie.</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Cómo encaja con la fase de infección</span>
+      <p>Idle y Patrulla ocupan la misma posición del círculo — son una conducta con dos cuerpos, no dos estados: tienen <strong>exactamente las mismas transiciones</strong>, y separarlas duplicaría la tabla sin añadir una sola decisión.</p>
+      <p><b>El riesgo del azar, y cómo se resuelve sin puntos fijos.</b> Deambular al azar puede darse la vuelta justo cuando cruzas por detrás, y eso no se siente difícil sino arbitrario. La solución es que <strong>cada giro esté anunciado</strong>: elige un destino y se compromete, al llegar se para, <em>gira durante la parada</em> y sólo entonces echa a andar. El jugador no aprende su ruta — aprende su ritmo: «está caminando, puedo cruzar; se ha parado, va a girar».</p>
+      <p><b>Y lo que la Fase 1 pierde, lo recupera la ficha.</b> La decisión original reservaba el deambular a Alteración porque la desorientación la define. Si deambulan todas, esa diferencia pasa a los <strong>números del deambular dentro del perfil de fase</strong>: Alteración da saltos cortos y erráticos con paradas largas; Adaptación, tramos largos y paradas breves. Cambia el mecanismo, no la intención.</p>
+      <p>Lo más simple es asignar la ruta a todos al aparecer y que los de Alteración sencillamente la ignoren. Cuesta lo mismo y evita un caso especial.</p>
+    </div>
+
+    <div class="decision closed">
+      <span class="dnum">7</span>
+      <div>
+        <h3>¿Cuántos infectados a la vez?<span class="settled">Cerrada</span></h3>
+        <p>Objetivo del desarrollador: <strong>de 4 a 10 sostenidos</strong>, con picos puntuales de <strong>15 a 20</strong> en tramos concretos de acción, como la secuencia final de escape.</p>
+        <span class="rec final"><b>Viable · con dos condiciones</b>De 4 a 10 es holgado: el coste por infectado es una comprobación de distancia, un rayo de visión y una consulta de ruta ocasional. Los picos de 15 a 20 también son viables, pero exigen <strong>escalonar los recálculos de ruta</strong> para que no coincidan en el mismo fotograma — es el único coste que se dispara. Y en oleada conviene que sólo los cinco o seis más cercanos usen navegación completa; los del fondo pueden moverse con dirección simple sin que el jugador note la diferencia.</span>
+      </div>
+    </div>
+
+    <div class="flag">
+      <span class="lbl">Aviso de diseño sobre las oleadas</span>
+      <p>El GDD establece que el jugador nunca puede eliminar a los infectados, sólo evitarlos, y que el combate es mínimo. Con veinte encima y sin combate, esa escena <strong>sólo puede funcionar como huida</strong>. Es perfecta para el clímax del escape; si se plantea como enfrentamiento, se sentirá injusta.</p>
+      <p>Falta un dato para afinar el presupuesto: <strong>la gama de Android objetivo</strong>. En un teléfono reciente veinte no es discusión; en uno de gama baja de hace varios años conviene medirlo antes de comprometerse con la cifra alta.</p>
+    </div>
+
+    <div class="decision closed">
+      <span class="dnum">8</span>
+      <div>
+        <h3>¿Se puede escapar de verdad?<span class="settled">Absorbida</span></h3>
+        <p>¿El infectado se rinde del todo y vuelve a su rutina, o mantiene una vigilancia elevada de la zona?</p>
+        <span class="rec final"><b>Resuelta por el medidor de agitación</b>La decisión 5 la responde sola: escapas, pero lo dejas encendido mientras su agitación decae. No hay que diseñar una vigilancia residual aparte — es lo que hace el medidor por su propia naturaleza. La velocidad de decaimiento se convierte en la perilla que decide cuánto cuesta escapar.</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Project Frost · Blueprint IA de Infectados</span>
+    <span>8 decisiones cerradas · 8 pasos definidos</span>
+  </footer>
+
+</div>

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://brt4cpi318j1t" path="res://Scripts/Player/player.gd" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://c8306ul5ihghm" path="res://Assets/Placeholders/player_1.png" id="2_a3d8c"]
+[ext_resource type="Script" uid="uid://3ga4724qd0cu" path="res://Scripts/Player/health_component.gd" id="3_health"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_a3d8c"]
 radius = 26.0
@@ -17,3 +18,6 @@ shape = SubResource("CircleShape2D_a3d8c")
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1891386436]
 scale = Vector2(2.4999998, 2.59375)
 texture = ExtResource("2_a3d8c")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=264636419]
+script = ExtResource("3_health")
