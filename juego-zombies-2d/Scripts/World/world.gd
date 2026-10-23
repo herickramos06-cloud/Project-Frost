@@ -28,12 +28,16 @@ func _ready() -> void:
 	_comprobar_holgura(_spawn_infected())
 
 
-func _spawn_player() -> void:
+func _spawn_player() -> Node2D:
+	if not is_inside_tree():
+		return null
+
 	if _player_spawn == null:
 		push_error("World: falta el nodo 'PlayerSpawn'; no se creó el Player.")
-		return
+		return null
 
 	var player := PLAYER_SCENE.instantiate() as Node2D
+	player.player_died.connect(_on_player_died.bind(player))
 	add_child(player)
 
 	# Se posiciona DESPUÉS de add_child y con global_position (no position)..
@@ -41,9 +45,17 @@ func _spawn_player() -> void:
 	
 	# ..para que el spawn sea correcto aunque World o PlayerSpawn tengan su propia transformación.
 	# ..so the spawn is correct even if World or PlayerSpawn carry their own transform.
-	
-	
 	player.global_position = _player_spawn.global_position
+	return player
+
+
+## Gestiona la muerte del Player: retira y destruye la instancia muerta de forma
+## segura y crea un nuevo Player sobre el marcador de spawn en el siguiente frame.
+func _on_player_died(dead_player: Node2D) -> void:
+	if is_instance_valid(dead_player):
+		dead_player.queue_free()
+
+	_spawn_player.call_deferred()
 
 
 func _spawn_infected() -> Array[Node2D]:

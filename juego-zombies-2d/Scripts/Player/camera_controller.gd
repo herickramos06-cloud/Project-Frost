@@ -34,7 +34,7 @@ func _ready() -> void:
 	# Resuelve el objetivo inicial.
 	_follow_target = _find_target()
 
-	if is_instance_valid(_follow_target):
+	if _is_target_valid(_follow_target):
 		# Posicionar instantáneamente en el primer frame (sin transición).
 		# Position instantly on the first frame (no transition).
 		global_position = _follow_target.global_position
@@ -43,8 +43,8 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	# Si la referencia actual se liberó o aún no existe, intenta re-resolverla de forma segura.
-	if not is_instance_valid(_follow_target):
+	# Si la referencia actual no es válida, está fuera del árbol o murió, re-resolver dinámicamente.
+	if not _is_target_valid(_follow_target):
 		_follow_target = _find_target()
 		if _follow_target == null:
 			return
@@ -57,19 +57,35 @@ func _physics_process(_delta: float) -> void:
 	global_position = _follow_target.global_position
 
 
-## Resuelve dinámicamente el objetivo: primero busca por NodePath si es válido,
-## y como alternativa robusta busca la instancia activa en el grupo "player".
+## Comprueba si un objetivo es válido, está dentro del árbol y no ha sido destruido o marcado para liberación.
+## Si el objetivo corresponde a una instancia de Player (posee la señal player_died),
+## además debe permanecer dentro del grupo oficial "player". Al morir, player.gd se retira del grupo
+## inmediatamente en su _on_died(), invalidando el seguimiento antes de su queue_free().
+func _is_target_valid(target: Node2D) -> bool:
+	if not is_instance_valid(target):
+		return false
+	if not target.is_inside_tree():
+		return false
+	if target.is_queued_for_deletion():
+		return false
+	if target.has_signal(&"player_died"):
+		return target.is_in_group(PLAYER_GROUP)
+	return true
+
+
+## Resuelve dinámicamente el objetivo: prioriza la búsqueda por grupo "player"
+## (según la Convención 6 de arquitectura) y utiliza follow_target_path como alternativa.
 func _find_target() -> Node2D:
+	var jugadores := get_tree().get_nodes_in_group(PLAYER_GROUP)
+	for nodo in jugadores:
+		var jugador := nodo as Node2D
+		if _is_target_valid(jugador):
+			return jugador
+
 	if follow_target_path != NodePath() and has_node(follow_target_path):
 		var candidato := get_node(follow_target_path) as Node2D
-		if is_instance_valid(candidato):
+		if _is_target_valid(candidato):
 			return candidato
-
-	var jugadores := get_tree().get_nodes_in_group(PLAYER_GROUP)
-	if not jugadores.is_empty():
-		var primer_jugador := jugadores[0] as Node2D
-		if is_instance_valid(primer_jugador):
-			return primer_jugador
 
 	return null
 
@@ -77,7 +93,7 @@ func _find_target() -> Node2D:
 ## Permite reasignar explícitamente el objetivo (útil para el respawn en 4.2).
 func set_target(new_target: Node2D, instant: bool = false) -> void:
 	_follow_target = new_target
-	if instant and is_instance_valid(_follow_target):
+	if instant and _is_target_valid(_follow_target):
 		global_position = _follow_target.global_position
 		reset_smoothing()
 		force_update_scroll()
