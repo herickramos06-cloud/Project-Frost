@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="InfectedProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Infected/infected_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+fase_nombre = "Hostilidad"
+speed = 220.0
+alert_speed = 70.0
+wander_speed = 120.0
+turn_speed = 150.0
+vision_radius = 190.0
+vision_angle = 100.0
+close_radius = 64.0
+wander_radius = 350.0
+wander_pause = 1.0
+search_duration = 8.0
+agitacion_decaimiento = 0.08
+damage_amount = 20.0
+attack_cooldown = 1.0
+max_estado = 2
+

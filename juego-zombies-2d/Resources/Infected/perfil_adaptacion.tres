@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="InfectedProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Infected/infected_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+fase_nombre = "Adaptación"
+speed = 280.0
+alert_speed = 120.0
+wander_speed = 160.0
+turn_speed = 220.0
+vision_radius = 320.0
+vision_angle = 140.0
+close_radius = 80.0
+wander_radius = 480.0
+wander_pause = 0.4
+search_duration = 20.0
+agitacion_decaimiento = 0.03
+damage_amount = 30.0
+attack_cooldown = 0.8
+max_estado = 2
+

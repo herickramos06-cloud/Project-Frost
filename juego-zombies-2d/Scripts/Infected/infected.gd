@@ -13,65 +13,61 @@ extends CharacterBody2D
 ## Búsqueda    — te perdió. Acude a la última posición conocida y no te encuentra.
 enum Estado { RUTINA, ALERTA, PERSECUCION, BUSQUEDA }
 
+## Perfil de fase que gobierna los parámetros biológicos y de comportamiento.
+## Se asigna desde el inspector (o se inyecta desde el spawner/world).
+@export var profile: InfectedProfile
+
 ## Nivel de agitación del infectado, de 0.0 a 1.0. 
 ## Gobierna las transiciones entre estados.
 var agitacion: float = 0.0
 
-## Cuánto decae la agitación por segundo si no hay estímulos.
-@export var agitacion_decaimiento: float = 0.08
+# --- Parámetros aplicados desde el perfil de fase (_aplicar_perfil) ---
+# Tienen valores por defecto de Hostilidad para garantizar funcionamiento
+# si no hay perfil asignado.
 
-## Velocidad en píxeles por segundo. Editable desde el inspector.
-## Es un valor de partida, no una fase de comportamiento: las fases del GDD
-## (Alteración, Hostilidad, Adaptación) llegan como perfiles de datos más adelante.
-@export var speed: float = 220.0
+## Cuánto decae la agitación por segundo si no hay estímulos.
+var agitacion_decaimiento: float = 0.08
+
+## Velocidad en píxeles por segundo en persecución.
+var speed: float = 220.0
 
 ## Velocidad en estado de Alerta, cuando camina investigando.
-@export var alert_speed: float = 70.0
+var alert_speed: float = 70.0
 
 ## Daño que aplica al Player al entrar en su radio de ataque o por cada segundo que permanezca dentro.
-@export var damage_amount: float = 20.0
+var damage_amount: float = 20.0
 
 ## Intervalo en segundos entre cada golpe consecutivo mientras el Player permanezca en el área.
-@export var attack_cooldown: float = 1.0
+var attack_cooldown: float = 1.0
 
-## Hasta dónde llega la vista dentro del cono, en píxeles. 224 son 7 tiles de 32.
-## Valor de partida: no es ajustable de verdad hasta poder jugarlo en el teléfono.
-@export var vision_radius: float = 190.0
+## Hasta dónde llega la vista dentro del cono, en píxeles.
+var vision_radius: float = 190.0
 
-## Apertura total del cono de visión, en grados. 120 es el valor que el GDD
-## asigna a la fase Hostilidad: ancho a propósito, porque en un cenital táctil
-## no hay forma clara de leer hacia dónde mira un sprite pequeño, y un cono
-## estrecho se sentiría injusto.
-##
-## A 360 el cono abarca todo y vuelve a ver igual por detrás que por delante.
-@export_range(10.0, 360.0, 5.0) var vision_angle: float = 100.0
+## Apertura total del cono de visión, en grados.
+var vision_angle: float = 100.0
 
 ## Alcance a quemarropa, en píxeles, que funciona en 360° mire donde mire.
-## Es lo que impide que pegarse a su espalda salga gratis — y, cuando 3.3 haga
-## del quedarse quieto una defensa, que congelarse encima de él sea un truco.
-@export var close_radius: float = 64.0
+var close_radius: float = 64.0
 
 ## Cuánto tarda en girar la cabeza, en grados por segundo.
-##
-## Girar de golpe es ilegible: el jugador no podría anticipar hacia dónde va a
-## mirar, y con el cono eso se convierte en detecciones que se sienten
-## arbitrarias. 120 son tres segundos por vuelta, ajustado jugando.
-@export var turn_speed: float = 150
+var turn_speed: float = 150.0
 
 ## Cuánto se aleja en cada salto del merodeo, en píxeles.
-## Corto lo deja rondando una zona; largo lo hace cruzar el mapa.
-@export var wander_radius: float = 350.0
+var wander_radius: float = 350.0
 
 ## Cuánto se para en cada punto antes de echar a andar, en segundos.
-##
-## Es también el tiempo que tiene para girar la cabeza, y el giro va ahí a
-## propósito: un giro anunciado por una parada se puede leer, y uno a mitad de
-## camino no. El jugador no aprende su recorrido — aprende su ritmo.
-@export var wander_pause: float = 1.0
+var wander_pause: float = 1.0
 
-## A qué ritmo merodea. Muy por debajo de `speed`, que es velocidad de caza:
-## un patrullero con prisa no da miedo, da prisa.
-@export var wander_speed: float = 120
+## A qué ritmo merodea en Rutina y Búsqueda local.
+var wander_speed: float = 120.0
+
+## Cuánto insiste buscando antes de rendirse, en segundos.
+var search_duration: float = 8.0
+
+## Estado máximo al que puede escalar según su perfil (0 = RUTINA, 1 = ALERTA, 2 = PERSECUCION).
+var max_estado: int = Estado.PERSECUCION
+
+# --- Parámetros estructurales y de depuración (locales a la instancia) ---
 
 ## Dibuja el cono, el alcance corto y la mirada. Sólo para depurar.
 @export var mostrar_vision: bool = false
@@ -94,10 +90,6 @@ var agitacion: float = 0.0
 ## apuntar: es suerte, no habilidad. Esa fantasía la dará 3.3, cuando quedarse
 ## quieto sea una defensa de verdad. Ahí se sube a 1.
 @export_range(0.0, 1.0, 0.05) var silueta_factor: float = 1.0
-
-## Cuánto insiste buscando antes de rendirse, en segundos.
-## 8 s es el valor que el GDD asigna a la memoria de la fase Hostilidad.
-@export var search_duration: float = 8.0
 
 ## Cada cuántos segundos se vuelve a entregar el destino al agente.
 ## Recalcular la ruta es lo único caro de la navegación: hacerlo cada fotograma,
@@ -203,7 +195,30 @@ var _target_in_range: Node2D = null
 var _attack_timer: float = 0.0
 
 
+## Copia los parámetros del perfil de fase a las variables locales.
+## Si no hay perfil asignado, carga Hostilidad como respaldo seguro.
+func _aplicar_perfil() -> void:
+	if profile == null:
+		profile = preload("res://Resources/Infected/perfil_hostilidad.tres")
+		push_warning("Infectado '%s': sin perfil asignado, usando Hostilidad por defecto." % name)
+	speed = profile.speed
+	alert_speed = profile.alert_speed
+	wander_speed = profile.wander_speed
+	turn_speed = profile.turn_speed
+	vision_radius = profile.vision_radius
+	vision_angle = profile.vision_angle
+	close_radius = profile.close_radius
+	wander_radius = profile.wander_radius
+	wander_pause = profile.wander_pause
+	search_duration = profile.search_duration
+	agitacion_decaimiento = profile.agitacion_decaimiento
+	damage_amount = profile.damage_amount
+	attack_cooldown = profile.attack_cooldown
+	max_estado = profile.max_estado
+
+
 func _ready() -> void:
+	_aplicar_perfil()
 	add_to_group(GROUP)
 	_velocidad_actual = speed
 
@@ -261,6 +276,13 @@ func _physics_process(delta: float) -> void:
 
 ## Cambia de conducta. Pública porque la usan la percepción y las pruebas.
 func cambiar_estado(nuevo: Estado) -> void:
+	# Respetar el techo de conducta del perfil asignado.
+	if max_estado < Estado.PERSECUCION:
+		if nuevo == Estado.PERSECUCION:
+			nuevo = Estado.ALERTA if max_estado >= Estado.ALERTA else Estado.RUTINA
+		elif nuevo == Estado.BUSQUEDA:
+			nuevo = Estado.RUTINA
+
 	if nuevo == _estado:
 		return
 
@@ -462,11 +484,12 @@ func _evaluar_transiciones(detectado: bool) -> void:
 	match _estado:
 		Estado.RUTINA:
 			if agitacion >= 1.0:
-				cambiar_estado(Estado.PERSECUCION)
+				var destino: Estado = Estado.PERSECUCION if max_estado >= Estado.PERSECUCION else Estado.ALERTA
+				cambiar_estado(destino)
 			elif agitacion > 0.0:
 				cambiar_estado(Estado.ALERTA)
 		Estado.ALERTA:
-			if agitacion >= 1.0:
+			if agitacion >= 1.0 and max_estado >= Estado.PERSECUCION:
 				cambiar_estado(Estado.PERSECUCION)
 			elif agitacion <= 0.0:
 				cambiar_estado(Estado.RUTINA)

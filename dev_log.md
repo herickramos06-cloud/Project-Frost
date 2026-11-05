@@ -457,6 +457,36 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-11-04
+
+### Fase 1 — Bloque 5: Tarea 5.1 (Extracción de Parámetros a Resource y Perfiles de Fase)
+* **Sistema:** Infectados / Inteligencia Artificial / Configuración de Fases
+* **Decisión:**
+  1. Creación de la clase Resource `InfectedProfile` ([infected_profile.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected_profile.gd)) que encapsula los 13 parámetros biológicos y de comportamiento que varían entre fases evolutivas: movimiento (`speed`, `alert_speed`, `wander_speed`, `turn_speed`), percepción (`vision_radius`, `vision_angle`, `close_radius`), merodeo (`wander_radius`, `wander_pause`), combate (`damage_amount`, `attack_cooldown`), persistencia (`search_duration`, `agitacion_decaimiento`) y el techo de transición (`max_estado`).
+  2. Creación de los tres Resources de fase en `Resources/Infected/`:
+     - [perfil_hostilidad.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/Infected/perfil_hostilidad.tres): Fase base. Mantiene con exactitud los valores probados en dispositivo móvil del código existente (`speed = 220.0`, `alert_speed = 70.0`, `damage_amount = 20.0`, `attack_cooldown = 1.0`, etc.).
+     - [perfil_alteracion.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/Infected/perfil_alteracion.tres): Fase inicial/desorientada. Sentidos reducidos, marcha lenta, menor daño y techo en `ALERTA` (`max_estado = 1`).
+     - [perfil_adaptacion.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/Infected/perfil_adaptacion.tres): Fase de cazador persistente. Velocidad incrementada, mayor visión y memoria sensorial prolongada.
+  3. Refactorización de [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd): sustitución de los 13 `@export` dispersos por `@export var profile: InfectedProfile`. Se conservan como variables miembro locales y se sincronizan al inicio mediante `_aplicar_perfil()`, garantizando cero impacto en rendimiento durante `_physics_process` y fallback automático a Hostilidad si no se asigna perfil.
+  4. Preservación estricta de parámetros estructurales locales: `RADIO_CUERPO`, `separation_radius`, `separation_strength`, `repath_interval`, `vision_mask` y `silueta_factor` permanecen en el nodo/código base para no alterar el acoplamiento crítico con el horneado de navegación (`navigation_baker.gd`).
+  5. Asignación del perfil por defecto `perfil_hostilidad.tres` en la escena base [infected.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Infected/infected.tscn).
+* **Motivo:** Cumplir el primer paso del Bloque 5 ("Las tres fases"), desacoplando los datos de comportamiento de la lógica algorítmica de la IA y habilitando la configuración escalable de fases evolutivas para spawner y diseño de niveles.
+* **Archivos:** [infected_profile.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected_profile.gd) | [perfil_hostilidad.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/Infected/perfil_hostilidad.tres) | [perfil_alteracion.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/Infected/perfil_alteracion.tres) | [perfil_adaptacion.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/Infected/perfil_adaptacion.tres) | [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd) | [infected.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/Infected/infected.tscn)
+
+---
+
+### Fase 1 — Bloque 5: Tarea 5.2 (Techo de Conducta por Fase)
+* **Sistema:** Infectados / Inteligencia Artificial / Máquina de Estados
+* **Decisión:**
+  1. Integración de `max_estado` en [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd): lectura directa desde el Resource `profile.max_estado` en `_aplicar_perfil()`.
+  2. Control de escalada en `_evaluar_transiciones()`: si un infectado con `max_estado == ALERTA` detecta al jugador (`agitacion = 1.0`), transiciona a `Estado.ALERTA` en vez de `Estado.PERSECUCION`. Dentro de `ALERTA`, permanece investigando hacia `_ultima_posicion_conocida` a `alert_speed` (50 px/s) sin escalar a `PERSECUCION`. Al cesar los estímulos, la agitación decae a `0.25/s` retornando limpiamente a `RUTINA`.
+  3. Protección defensiva universal en `cambiar_estado()`: si una invocación externa o interna solicita un estado superior al techo permitido por la fase (`max_estado < Estado.PERSECUCION`), degrada suavemente a `Estado.ALERTA` (o `Estado.RUTINA`), evitando saltos ilegítimos sin introducir errores ni bloqueos.
+  4. Preservación absoluta de las fases con acceso completo: los perfiles de `Hostilidad` y `Adaptación` (`max_estado = 2`) conservan el 100% de la funcionalidad del ciclo completo de 4 estados (`RUTINA`, `ALERTA`, `PERSECUCION`, `BUSQUEDA`).
+* **Motivo:** Materializar la regla de diseño central del GDD y Roadmap para el Bloque 5 ("Un Alteración llega a Alerta y nunca a Persecución, por mucho ruido que hagas. Se pone nervioso, investiga y se va").
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd)
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -530,3 +560,5 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [ ] **Versionar el roadmap y el blueprint en `docs/`.** El código los cita como autoridad —«paso 3 del blueprint», «Bloque 2 del roadmap»— pero sólo existen publicados, no en el repositorio: no hay forma de saber qué decían cuando se escribió cada commit.
 - [ ] **Nunca ejecutado en un teléfono.** Casi cuatro meses construyendo para Android sin un solo arranque en Android, sin `export_presets.cfg`, sin orientación ni modo de estiramiento. Es el mayor riesgo abierto del proyecto.
 - [x] **Completado (4.3):** `CameraController` resuelve su objetivo de forma dinámica y protegida con `is_instance_valid()`, búsqueda por grupo `player` y método `set_target()`. Soporta destrucción y reaparición continua sin errores de instancia liberada.
+- [x] **5.1 completo — perfiles de fase en Resource:** clase `InfectedProfile`, recursos `.tres` para Alteración, Hostilidad y Adaptación, e integración desacoplada en `infected.gd` y `infected.tscn`. Parámetros de combate (`damage_amount`, `attack_cooldown`) incluidos en los perfiles.
+- [x] **5.2 completo — techos de conducta:** control de escalada de estados por fase. Alteración topa en Alerta (no persigue ni busca); Hostilidad y Adaptación conservan el ciclo completo de 4 estados.

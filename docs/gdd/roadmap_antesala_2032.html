@@ -369,13 +369,13 @@
               <li><span class="sid">3.2b</span><span class="sb">Detección = (dentro del cono <b>y</b> a menos de 224 px) <b>o</b> (a menos de 64 px, mire donde mire), y en los dos casos con línea de visión limpia. El alcance corto <b>también respeta las paredes</b>: es vista a quemarropa, no un sexto sentido.</span></li>
             </ol>
           </span></li>
-          <li><span class="tid">3.3</span><span class="tbody"><strong>Que estar quieto te salve.</strong>
+          <li class="ok"><span class="tid">3.3</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Que estar quieto te salve.</strong>
             <ol class="subs">
               <li><span class="sid">3.3a</span><span class="sb"><b>La patrulla.</b> Rutina deja de ser esperar de pie: elige un destino cerca, <b>se para y gira la cabeza hacia él</b>, camina despacio y repite. Sin puntos fijos que pintar — el azar se vuelve legible porque <b>cada giro va anunciado por una parada</b>.<br>No estaba en esta ruta: el blueprint la tenía en su Paso 8, después del Hito 009. Se adelanta porque <b>sin ella 3.3b no tiene ocasión de usarse</b>: contra un infectado parado nunca hace falta congelarse, basta con no entrar en su cono.</span></li>
               <li><span class="sid">3.3b</span><span class="sb"><b>Detección por movimiento.</b> No te ve: detecta que algo se mueve. Quedarse inmóvil pasa a ser una defensa. El alcance corto de 64 px sigue notándote quieto, para que congelarse encima de él no sea un truco. Es también el momento de encender los costados de 3.1b.</span></li>
             </ol>
           </span></li>
-          <li><span class="tid">3.4</span><span class="tbody"><strong>Medidor de agitación</strong> con decaimiento, sus umbrales, y la cuarta conducta: Alerta.</span></li>
+          <li class="ok"><span class="tid">3.4</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Medidor de agitación</strong> con decaimiento, sus umbrales, y la cuarta conducta: Alerta.</span></li>
         </ol>
         <div class="note">
           <span class="lbl">Verificado con el motor · 3.1 y 3.2</span>
@@ -384,7 +384,7 @@
         </div>
         <div class="check">
           <span class="lbl">Verificación</span>
-          <p><s>Esconderte tras un muro te salva.</s> <s>Rodearlo por detrás te salva.</s> Falta: quedarte completamente inmóvil dentro de su cono te salva, pero moverte un poco te delata. Y que ya no oscile entre conductas cuando estás justo en el límite.</p>
+          <p><s>Esconderte tras un muro te salva.</s> <s>Rodearlo por detrás te salva.</s> <s>Quedarte completamente inmóvil dentro de su cono te salva, pero moverte un poco te delata. Y que ya no oscile entre conductas cuando estás justo en el límite.</s></p>
         </div>
       </div>
     </div>
@@ -393,15 +393,15 @@
       <div class="rail">
         <span>Bloque 4</span>
         <span class="hito">Consecuencia</span>
-        <span class="dep">Desbloqueado. Sin esto el infectado es un juguete</span>
+        <span class="dep">Cerrado</span>
       </div>
       <div>
         <h3>Que alcanzarte signifique algo</h3>
         <p class="block-lead">Paso 6. Corto, pero es el que convierte la persecución en juego.</p>
         <ol class="tasks">
-          <li><span class="tid">4.1</span><span class="tbody"><strong>Vida del jugador</strong> con señal de cambio, y <strong>zona de detección de daño</strong> con recarga — no colisión física, para que no te empuje fuera de una puerta en plena huida.</span></li>
-          <li><span class="tid">4.2</span><span class="tbody"><strong>Muerte y reaparición</strong> en <code>PlayerSpawn</code>. Aquí paga su inversión el spawn del Hito 008.</span></li>
-          <li><span class="tid">4.3</span><span class="tbody"><strong>Arreglar el objetivo de la cámara.</strong> Resuelve su target una sola vez en <code>_ready()</code> y quedará apuntando al Player destruido.</span></li>
+          <li class="ok"><span class="tid">4.1</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Vida del jugador</strong> con señal de cambio, y <strong>zona de detección de daño</strong> con recarga — no colisión física, para que no te empuje fuera de una puerta en plena huida.</span></li>
+          <li class="ok"><span class="tid">4.2</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Muerte y reaparición</strong> en <code>PlayerSpawn</code>. Aquí paga su inversión el spawn del Hito 008.</span></li>
+          <li class="ok"><span class="tid">4.3</span><span class="tbody"><span class="done-tag">Hecho</span><strong>Arreglar el objetivo de la cámara.</strong> Resuelve su target una sola vez en <code>_ready()</code> y quedará apuntando al Player destruido.</span></li>
         </ol>
         <div class="check">
           <span class="lbl">Verificación</span>
@@ -414,14 +414,14 @@
       <div class="rail">
         <span>Bloque 5</span>
         <span class="hito">Las tres fases</span>
-        <span class="dep">Necesita 3 y 4. Cierra el Hito 009</span>
+        <span class="dep hot">En curso · 5.1 y 5.2 listos</span>
       </div>
       <div>
         <h3>Alteración, Hostilidad, Adaptación</h3>
         <p class="block-lead">Paso 7. Ningún código nuevo de IA: sólo datos y el techo de conducta por fase.</p>
         <ol class="tasks">
-          <li><span class="tid">5.1</span><span class="tbody"><strong>Extraer todos los números a un Resource</strong> y crear los tres perfiles con sus velocidades, radios, umbrales y decaimiento.</span></li>
-          <li><span class="tid">5.2</span><span class="tbody"><strong>El techo por fase.</strong> Un Alteración llega a Alerta y nunca a Persecución, por mucho ruido que hagas.</span></li>
+          <li class="ok"><span class="tid">5.1</span><span class="tbody"><span class="done-tag">Hecho 4 nov</span><strong>Extraer todos los números a un Resource</strong> y crear los tres perfiles con sus velocidades, radios, umbrales y decaimiento.</span></li>
+          <li class="ok"><span class="tid">5.2</span><span class="tbody"><span class="done-tag">Hecho 4 nov</span><strong>El techo por fase.</strong> Un Alteración llega a Alerta y nunca a Persecución, por mucho ruido que hagas.</span></li>
           <li><span class="tid">5.3</span><span class="tbody"><strong>El infectado recibe su perfil al nacer</strong>, desde <code>world.gd</code>, igual que hoy recibe su posición. El script del infectado no elige nada.</span></li>
           <li><span class="tid">5.4</span><span class="tbody"><strong>Tabla de aparición por capítulo</strong>, que decide qué perfil recibe cada infectado al nacer. La dificultad escala sin tocar código.</span></li>
           <li><span class="tid">5.5</span><span class="tbody"><strong>Medir en el teléfono</strong> con 4, 10 y 20 infectados. El presupuesto es 16,6 ms por fotograma y menos de 200 draw calls.</span></li>
