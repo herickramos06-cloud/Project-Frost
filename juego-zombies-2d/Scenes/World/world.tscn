@@ -28,9 +28,12 @@ position = Vector2(78, 701)
 
 [node name="Spawn1" type="Marker2D" parent="InfectedSpawns" unique_id=1904773215]
 position = Vector2(862, 52)
+metadata/fase = "alteracion"
 
 [node name="Spawn2" type="Marker2D" parent="InfectedSpawns" unique_id=1188456903]
 position = Vector2(487, 181)
+metadata/fase = "hostilidad"
 
 [node name="Spawn3" type="Marker2D" parent="InfectedSpawns" unique_id=1657024488]
 position = Vector2(1044, 660)
+metadata/fase = "adaptacion"

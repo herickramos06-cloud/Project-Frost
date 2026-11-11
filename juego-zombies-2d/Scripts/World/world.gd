@@ -10,6 +10,14 @@ extends Node2D
 const PLAYER_SCENE: PackedScene = preload("res://Scenes/Player/player.tscn")
 const INFECTED_SCENE: PackedScene = preload("res://Scenes/Infected/infected.tscn")
 
+@export_group("Perfiles de Infectados")
+## Perfil de fase Alteración (fase temprana, desorientado).
+@export var perfil_alteracion: InfectedProfile = preload("res://Resources/Infected/perfil_alteracion.tres")
+## Perfil de fase Hostilidad (fase estándar de referencia).
+@export var perfil_hostilidad: InfectedProfile = preload("res://Resources/Infected/perfil_hostilidad.tres")
+## Perfil de fase Adaptación (cazador persistente).
+@export var perfil_adaptacion: InfectedProfile = preload("res://Resources/Infected/perfil_adaptacion.tres")
+
 # Marcador que define dónde aparece el Player al iniciar el mundo.
 # Marker that defines where the Player appears when the world starts.
 @onready var _player_spawn: Marker2D = $PlayerSpawn
@@ -79,6 +87,11 @@ func _spawn_infected() -> Array[Node2D]:
 
 		var infected := INFECTED_SCENE.instantiate() as Node2D
 
+		# Inyectar el perfil de fase ANTES de add_child para que _ready() inicialice con los datos finales.
+		var perfil_asignado: InfectedProfile = _resolver_perfil_para_marcador(marcador)
+		if infected.has_method("set_profile"):
+			infected.set_profile(perfil_asignado)
+
 		# El segundo argumento fuerza nombres legibles: Infected, Infected2,
 		# The second argument forces readable names: Infected, Infected2,
 		# Infected3... En lugar de @CharacterBody2D@2, que es lo que Godot
@@ -92,6 +105,35 @@ func _spawn_infected() -> Array[Node2D]:
 		creados.append(infected)
 
 	return creados
+
+
+## Resuelve qué perfil de fase corresponde a un marcador de spawn.
+## Permite configuración por metadatos ("profile" o "fase") o asigna Hostilidad por defecto.
+func _resolver_perfil_para_marcador(marcador: Marker2D) -> InfectedProfile:
+	if marcador.has_meta("profile"):
+		var meta_profile = marcador.get_meta("profile")
+		if meta_profile is InfectedProfile:
+			return meta_profile
+		if meta_profile is String:
+			match meta_profile.to_lower():
+				"alteracion", "alteración":
+					return perfil_alteracion
+				"adaptacion", "adaptación":
+					return perfil_adaptacion
+				"hostilidad":
+					return perfil_hostilidad
+
+	if marcador.has_meta("fase"):
+		var meta_fase: String = str(marcador.get_meta("fase")).to_lower()
+		match meta_fase:
+			"alteracion", "alteración":
+				return perfil_alteracion
+			"adaptacion", "adaptación":
+				return perfil_adaptacion
+			"hostilidad":
+				return perfil_hostilidad
+
+	return perfil_hostilidad
 
 
 ## La malla de navegación se encoge una distancia fija contra los muros, y los

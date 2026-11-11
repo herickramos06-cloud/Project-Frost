@@ -487,6 +487,28 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-11-11
+
+### Fase 1 — Bloque 5: Tarea 5.3 (Inyección de Perfiles al Nacer y Coexistencia Multiclase)
+* **Sistema:** World / Spawn / Inteligencia Artificial / Inyección de Dependencias
+* **Decisión:**
+  1. Adición de la interfaz de inyección `set_profile(new_profile: InfectedProfile) -> void` en [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd):
+     - Soporta asignación antes de ingresar al árbol de escenas (`is_node_ready() == false`): almacena `profile` de manera atómica para que `_ready()` ejecute `_aplicar_perfil()` una única vez sin coste de doble inicialización ni saltos de fotograma.
+     - Soporta reasignación reactiva en caliente (`is_node_ready() == true`): sincroniza parámetros locales de inmediato y aplica cláusula de guarda si el nuevo perfil tiene un `max_estado` inferior al estado actual, degradando `PERSECUCION` o `BUSQUEDA` a `ALERTA` (o `RUTINA`).
+  2. Implementación de resolución dinámica de perfiles en [world.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/world.gd):
+     - Exportación y precarga (`preload`) de los Resources `@export var perfil_alteracion`, `perfil_hostilidad` y `perfil_adaptacion`.
+     - Creación de función auxiliar robusta `_resolver_perfil_para_marcador(marcador: Marker2D) -> InfectedProfile` que consulta los metadatos del nodo (`metadata/profile`, `metadata/perfil` o `metadata/fase`, aceptando tanto recursos tipados como nombres en texto).
+     - Mecanismo de fallback seguro hacia `perfil_hostilidad` (y subsidiariamente `perfil_alteracion`) ante marcadores sin metadata o con valores no reconocidos, protegiendo contra excepciones `null`.
+     - Inyección del perfil a la instancia recién creada *antes* de añadirla al árbol de la escena con `add_child(infected, true)`.
+  3. Configuración de marcadores de spawn en [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn):
+     - `Spawn1` asignado con metadato `fase = "alteracion"`.
+     - `Spawn2` asignado con metadato `fase = "hostilidad"`.
+     - `Spawn3` asignado con metadato `fase = "adaptacion"`.
+* **Motivo:** Conectar los Resources de comportamiento desarrollados en 5.1 y las restricciones de 5.2 con el ciclo de vida real de instanciación en el mundo. Desacoplar al infectado de la responsabilidad de decidir qué tipo de enemigo es, permitiendo que el Spawner / World determine la composición de amenazas de la sala y habilitando la coexistencia de distintas fases en una misma escena sin interferencias de memoria.
+* **Archivos:** [infected.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/Infected/infected.gd) | [world.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/world.gd) | [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn)
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -562,3 +584,4 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] **Completado (4.3):** `CameraController` resuelve su objetivo de forma dinámica y protegida con `is_instance_valid()`, búsqueda por grupo `player` y método `set_target()`. Soporta destrucción y reaparición continua sin errores de instancia liberada.
 - [x] **5.1 completo — perfiles de fase en Resource:** clase `InfectedProfile`, recursos `.tres` para Alteración, Hostilidad y Adaptación, e integración desacoplada en `infected.gd` y `infected.tscn`. Parámetros de combate (`damage_amount`, `attack_cooldown`) incluidos en los perfiles.
 - [x] **5.2 completo — techos de conducta:** control de escalada de estados por fase. Alteración topa en Alerta (no persigue ni busca); Hostilidad y Adaptación conservan el ciclo completo de 4 estados.
+- [x] **5.3 completo — asignación de perfiles al nacer:** inyección de recursos `InfectedProfile` desde `world.gd` a cada instancia de infectado vía `set_profile()`, resolución por metadatos en marcadores de spawn y coexistencia simultánea de fases en el mapa.

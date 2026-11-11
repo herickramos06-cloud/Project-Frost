@@ -195,6 +195,17 @@ var _target_in_range: Node2D = null
 var _attack_timer: float = 0.0
 
 
+## Asigna e inyecta un perfil de fase al infectado.
+## Si el nodo ya está listo en el árbol, sincroniza sus parámetros de inmediato.
+func set_profile(new_profile: InfectedProfile) -> void:
+	if new_profile == null:
+		push_warning("Infectado '%s': se intentó asignar un perfil nulo." % name)
+		return
+	profile = new_profile
+	if is_node_ready():
+		_aplicar_perfil()
+
+
 ## Copia los parámetros del perfil de fase a las variables locales.
 ## Si no hay perfil asignado, carga Hostilidad como respaldo seguro.
 func _aplicar_perfil() -> void:
@@ -215,6 +226,10 @@ func _aplicar_perfil() -> void:
 	damage_amount = profile.damage_amount
 	attack_cooldown = profile.attack_cooldown
 	max_estado = profile.max_estado
+
+	# Si el nuevo perfil impone un techo inferior al estado actual, reajustar inmediatamente.
+	if max_estado < Estado.PERSECUCION and (_estado == Estado.PERSECUCION or _estado == Estado.BUSQUEDA):
+		cambiar_estado(Estado.ALERTA if max_estado >= Estado.ALERTA else Estado.RUTINA)
 
 
 func _ready() -> void:
