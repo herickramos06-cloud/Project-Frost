@@ -18,6 +18,10 @@ const INFECTED_SCENE: PackedScene = preload("res://Scenes/Infected/infected.tscn
 ## Perfil de fase Adaptación (cazador persistente).
 @export var perfil_adaptacion: InfectedProfile = preload("res://Resources/Infected/perfil_adaptacion.tres")
 
+@export_group("Generación y Probabilidades")
+## Tabla de aparición de infectados por probabilidades ponderadas para este nivel/capítulo.
+@export var spawn_table: SpawnTable = preload("res://Resources/World/tabla_default.tres")
+
 # Marcador que define dónde aparece el Player al iniciar el mundo.
 # Marker that defines where the Player appears when the world starts.
 @onready var _player_spawn: Marker2D = $PlayerSpawn
@@ -108,7 +112,9 @@ func _spawn_infected() -> Array[Node2D]:
 
 
 ## Resuelve qué perfil de fase corresponde a un marcador de spawn.
-## Permite configuración por metadatos ("profile" o "fase") o asigna Hostilidad por defecto.
+## 1. Comprueba si el marcador tiene override manual por metadato ("profile" o "fase").
+## 2. Si no tiene metadato, consulta la tabla de aparición ponderada (spawn_table).
+## 3. Si no hay tabla o está vacía, recurre al perfil de Hostilidad por defecto.
 func _resolver_perfil_para_marcador(marcador: Marker2D) -> InfectedProfile:
 	if marcador.has_meta("profile"):
 		var meta_profile = marcador.get_meta("profile")
@@ -133,7 +139,14 @@ func _resolver_perfil_para_marcador(marcador: Marker2D) -> InfectedProfile:
 			"hostilidad":
 				return perfil_hostilidad
 
-	return perfil_hostilidad
+	# Si el marcador no tiene un metadato explícito, resuelve mediante la tabla ponderada
+	if spawn_table != null:
+		var perfil_seleccionado: InfectedProfile = spawn_table.pick_profile()
+		if perfil_seleccionado != null:
+			return perfil_seleccionado
+
+	# Fallback seguro
+	return perfil_hostilidad if perfil_hostilidad != null else perfil_alteracion
 
 
 ## La malla de navegación se encoge una distancia fija contra los muros, y los

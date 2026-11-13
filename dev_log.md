@@ -509,6 +509,36 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 
 ---
 
+## 2026-11-13
+
+### Fase 1 — Bloque 5: Tarea 5.4 (Tabla de Aparición por Probabilidades Ponderadas)
+* **Sistema:** World / Spawner / Resources / Balance de Fases
+* **Decisión:**
+  1. Creación de los recursos de datos `SpawnTable` ([spawn_table.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/spawn_table.gd)) y `SpawnTableEntry` ([spawn_table_entry.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/spawn_table_entry.gd)):
+     - Encapsulan una lista tipada de entradas compuestas por un `InfectedProfile` y un peso (`weight >= 0.0`).
+     - Algoritmo de selección ponderada en `pick_profile()`: acumulación de pesos totales, tirada estocástica normalizada (`randf() * peso_total`) y fallback de frontera numérico ante imprecisiones de punto flotante.
+  2. Creación del recurso [tabla_default.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/World/tabla_default.tres) con distribución calibrada para el mapa de pruebas:
+     - Alteración: peso 5.0 (50.0%)
+     - Hostilidad: peso 3.0 (30.0%)
+     - Adaptación: peso 2.0 (20.0%)
+  3. Modificación de [world.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/world.gd):
+     - Exportación del recurso `@export var spawn_table: SpawnTable` con carga por defecto de `tabla_default.tres`.
+     - Actualización de `_resolver_perfil_para_marcador(marcador: Marker2D)` con precedencia por capas:
+       1) Override manual prioritario si el `Marker2D` conserva metadato `profile` o `fase`.
+       2) Selección dinámica estocástica desde `spawn_table.pick_profile()` si el marcador carece de metadatos.
+       3) Fallback defensivo a `perfil_hostilidad` si la tabla no está asignada o sus pesos suman cero.
+  4. Actualización de [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn):
+     - Liberación de los metadatos fijos en `Spawn1`, `Spawn2` y `Spawn3`, delegando la resolución de perfiles a la tabla de aparición activa del mundo.
+* **Motivo:** Cumplir el objetivo del Bloque 5.4 permitiendo modular y escalar la dificultad y composición de enemigos entre capítulos/niveles mediante configuración de Resources sin alterar código ni lógica de la IA.
+* **Archivos:** [spawn_table.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/spawn_table.gd) | [spawn_table_entry.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/spawn_table_entry.gd) | [tabla_default.tres](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Resources/World/tabla_default.tres) | [world.gd](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scripts/World/world.gd) | [world.tscn](file:///c:/Users/HERICK/Desktop/PROJECT-FROST/juego-zombies-2d/Scenes/World/world.tscn)
+* **Verificación:** Ejecutada prueba headless con Godot 4.6.2 sobre el árbol de juego real:
+  - 10,000 tiradas estocásticas en `tabla_default.tres`: Alteración 50.0% (5000), Hostilidad 30.1% (3007), Adaptación 19.9% (1993) — concordancia con los pesos de diseño.
+  - Instanciación real en `world.tscn`: 3 marcadores procesados, 3 infectados creados en escena con perfiles asignados desde la tabla y sincronización exacta de velocidad local con `profile.speed`.
+  - Override manual verificado con marcador con metadata `fase = "alteracion"`.
+  - Fallback a Hostilidad verificado con `spawn_table = null` (0 fallos reportados).
+
+---
+
 ## Convenciones de Arquitectura
 
 1. **Estructura de Carpetas:**
@@ -585,3 +615,4 @@ Registro de decisiones de diseño, soluciones a problemas técnicos y convencion
 - [x] **5.1 completo — perfiles de fase en Resource:** clase `InfectedProfile`, recursos `.tres` para Alteración, Hostilidad y Adaptación, e integración desacoplada en `infected.gd` y `infected.tscn`. Parámetros de combate (`damage_amount`, `attack_cooldown`) incluidos en los perfiles.
 - [x] **5.2 completo — techos de conducta:** control de escalada de estados por fase. Alteración topa en Alerta (no persigue ni busca); Hostilidad y Adaptación conservan el ciclo completo de 4 estados.
 - [x] **5.3 completo — asignación de perfiles al nacer:** inyección de recursos `InfectedProfile` desde `world.gd` a cada instancia de infectado vía `set_profile()`, resolución por metadatos en marcadores de spawn y coexistencia simultánea de fases en el mapa.
+- [x] **5.4 completo — tabla de aparición por capítulo:** clases `SpawnTable` y `SpawnTableEntry`, recurso `tabla_default.tres` con selección ponderada por pesos, integración en `world.gd` con soporte de overrides y fallback defensivo.
